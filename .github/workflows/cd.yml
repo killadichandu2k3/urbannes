@@ -31,8 +31,19 @@ jobs:
       - name: Rebuild images and load them into Kind
         run: ./scripts/build-images.sh
 
-      - name: Apply k8s manifests
-        run: kubectl apply -k k8s/
+      - name: Deploy via ArgoCD (install if not present & trigger sync)
+        run: |
+          if ! kubectl get deployment argocd-server -n argocd >/dev/null 2>&1; then
+            echo "ArgoCD not found — running setup-argocd.sh"
+            ./scripts/setup-argocd.sh
+          else
+            echo "ArgoCD active — refreshing in-cluster git repository & triggering sync"
+            kubectl delete pod git-server -n argocd --ignore-not-found
+            kubectl apply -f k8s-argocd/git-server.yaml
+            kubectl patch application urbannest -n argocd --type merge \
+              -p '{"operation":{"sync":{"revision":"HEAD"}}}' >/dev/null 2>&1 || true
+          fi
+          kubectl apply -k k8s/
 
       - name: Force rollout of updated images
         run: |
