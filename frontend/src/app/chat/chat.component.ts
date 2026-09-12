@@ -36,7 +36,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly chat: ChatService,
-    private readonly auth: AuthService,
+    public readonly auth: AuthService,
   ) {}
 
   async ngOnInit(): Promise<void> {

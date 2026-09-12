@@ -1,10 +1,14 @@
 <div>
-  <h1>Upcoming events</h1>
-  <p class="muted">Find something happening near you and pick your seats.</p>
+  <div style="margin-bottom: var(--sp-6);">
+    <h1>Explore Live Events</h1>
+    <p class="muted">Discover upcoming concerts, sports, and live shows. Pick your seats in real-time.</p>
+    <app-search-autocomplete (select)="onSearchSelect($event)"></app-search-autocomplete>
+  </div>
 
-  <app-search-autocomplete (select)="onSearchSelect($event)"></app-search-autocomplete>
-
-  <div *ngIf="error" class="error-banner">{{ error }}</div>
+  <div *ngIf="error" class="error-banner">
+    <span>⚠️</span>
+    <span>{{ error }}</span>
+  </div>
 
   <div class="grid grid-2" *ngIf="loading">
     <div class="skeleton skeleton-card" *ngFor="let _ of [1,2,3,4]"></div>
@@ -12,22 +16,34 @@
 
   <div class="empty-state" *ngIf="!loading && !error && events.length === 0">
     <div class="icon">🎟️</div>
-    <p>No events yet. Check back soon.</p>
+    <h3>No events listed</h3>
+    <p class="muted">Check back soon for new event schedules.</p>
   </div>
 
   <div class="grid grid-2" *ngIf="!loading && events.length > 0">
     <div class="card interactive event-card" *ngFor="let event of events">
       <div class="event-card-head">
-        <h3>{{ event.title }}</h3>
+        <div>
+          <h3 style="font-size: var(--fs-lg); margin-bottom: 4px;">{{ event.title }}</h3>
+          <span class="muted" style="font-size: var(--fs-xs);">📍 Venue ID: {{ event.venueId }}</span>
+        </div>
         <span class="badge" [class.ok]="event.bookingOpen" [class.danger]="!event.bookingOpen">
-          {{ event.bookingOpen ? 'Open' : 'Closed' }}
+          {{ event.bookingOpen ? '● Booking Open' : '● Sold Out' }}
         </span>
       </div>
-      <p class="muted">{{ formatDate(event.startsAt) }}</p>
-      <div class="event-card-foot">
-        <span class="price">From ₹{{ event.basePrice }}</span>
-        <a [routerLink]="['/events', event.id, 'seats']">
-          <button [disabled]="!event.bookingOpen">Pick seats</button>
+
+      <div style="margin: var(--sp-3) 0;">
+        <span class="faint">Starts: </span>
+        <span class="muted" style="font-weight: 600;">{{ formatDate(event.startsAt) }}</span>
+      </div>
+
+      <div class="event-card-foot" style="display: flex; align-items: center; justify-content: space-between; margin-top: var(--sp-3); border-top: 1px solid var(--border); padding-top: var(--sp-3);">
+        <div>
+          <span class="faint" style="display: block;">Starts from</span>
+          <span class="price" style="color: var(--ok);">₹{{ event.basePrice }}</span>
+        </div>
+        <a [routerLink]="['/events', event.id, 'seats']" class="btn" [class.disabled]="!event.bookingOpen">
+          Select Seats &rarr;
         </a>
       </div>
     </div>

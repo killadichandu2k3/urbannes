@@ -1,18 +1,26 @@
 <div class="app-shell">
   <nav class="nav">
-    <span class="brand">🎟️ UrbanNest</span>
-    <ng-container *ngIf="auth.isLoggedIn">
-      <a routerLink="/" routerLinkActive="active">Events</a>
-      <a routerLink="/my-bookings" routerLinkActive="active">My Bookings</a>
-      <a routerLink="/chat" routerLinkActive="active">Chat</a>
-    </ng-container>
+    <div class="brand">
+      <div class="brand-logo">🎟️</div>
+      <span>UrbanNest</span>
+    </div>
+    <div class="nav-links">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">Events</a>
+      <ng-container *ngIf="auth.isLoggedIn">
+        <a routerLink="/my-bookings" routerLinkActive="active" class="nav-item">My Bookings</a>
+        <a routerLink="/chat" routerLinkActive="active" class="nav-item">Community Chat</a>
+      </ng-container>
+    </div>
     <span class="spacer"></span>
     <ng-container *ngIf="auth.isLoggedIn; else loggedOut">
-      <span class="muted">{{ (auth.user$ | async)?.displayName }}</span>
+      <div class="user-badge">
+        <div class="user-avatar">{{ ((auth.user$ | async)?.displayName || 'U')[0].toUpperCase() }}</div>
+        <span class="muted" style="font-weight: 600;">{{ (auth.user$ | async)?.displayName }}</span>
+      </div>
       <button class="secondary" (click)="logout()">Sign out</button>
     </ng-container>
     <ng-template #loggedOut>
-      <a routerLink="/auth/login" routerLinkActive="active">Sign in</a>
+      <a routerLink="/auth/login" class="btn">Sign in</a>
     </ng-template>
   </nav>
   <router-outlet></router-outlet>

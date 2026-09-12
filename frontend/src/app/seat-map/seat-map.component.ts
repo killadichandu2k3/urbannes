@@ -1,8 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { GraphqlService } from '../core/services/graphql.service';
 import { GraphqlWsService } from '../core/services/graphql-ws.service';
+import { AuthService } from '../core/services/auth.service';
 import { Seat, SeatMap } from '../core/models';
 
 @Component({
@@ -22,15 +23,13 @@ export class SeatMapComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly route: ActivatedRoute,
+    private readonly router: Router,
     private readonly graphql: GraphqlService,
     private readonly graphqlWs: GraphqlWsService,
+    public readonly auth: AuthService,
   ) {}
 
   ngOnInit(): void {
-    // route params, not @Input() props — the Vue version received eventId
-    // as a router-passed prop (`props: true` in the route config); the
-    // Angular idiom for the same "route param as component data" pattern
-    // is reading it off ActivatedRoute.
     this.eventId = this.route.snapshot.paramMap.get('eventId') || '';
     this.loadSeatMap();
 
@@ -47,7 +46,7 @@ export class SeatMapComponent implements OnInit, OnDestroy {
 
   seatLabel(seatId: string): string {
     const seat = this.seatMap?.seats.find((s) => s.id === seatId);
-    return seat ? `${seat.rowLabel}${seat.seatNumber} (${seat.tier})` : seatId;
+    return seat ? `Row ${seat.rowLabel}, Seat ${seat.seatNumber} (${seat.tier})` : seatId;
   }
 
   seatClasses(seat: Seat): string {
@@ -59,10 +58,24 @@ export class SeatMapComponent implements OnInit, OnDestroy {
     if (seat.status !== 'AVAILABLE') return;
     if (this.selected.has(seat.id)) this.selected.delete(seat.id);
     else this.selected.add(seat.id);
-    // Reassign to a new Set so Angular's change detection sees a new
-    // reference — mirrors the Vue version's `selected.value = new
-    // Set(selected.value)` reactivity trick, same reason.
     this.selected = new Set(this.selected);
+  }
+
+  calculateTotal(): number {
+    if (!this.seatMap) return 0;
+    let total = 0;
+    const basePrice = 500; // default base estimate
+    for (const id of this.selected) {
+      const seat = this.seatMap.seats.find((s) => s.id === id);
+      if (seat) {
+        let mult = 1.0;
+        if (seat.tier === 'VIP') mult = 2.0;
+        else if (seat.tier === 'PLATINUM') mult = 1.5;
+        else if (seat.tier === 'GOLD') mult = 1.25;
+        total += Math.round(basePrice * mult);
+      }
+    }
+    return total;
   }
 
   loadSeatMap(): void {
@@ -80,6 +93,11 @@ export class SeatMapComponent implements OnInit, OnDestroy {
   }
 
   createBooking(): void {
+    if (!this.auth.isLoggedIn) {
+      this.router.navigate(['/auth/login'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+
     this.booking = true;
     this.error = '';
     this.graphql
@@ -90,16 +108,12 @@ export class SeatMapComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data) => {
           this.activeBooking = { status: data.status, message: data.message };
-          // In this build the ACCEPTED reply carries a human-readable
-          // message rather than the generated booking id — see README
-          // "Extension points" for wiring the full id through for
-          // one-click payment confirmation directly from this screen.
           this.loadSeatMap();
           this.selected = new Set();
           this.booking = false;
         },
         error: (err) => {
-          this.error = err.message || 'Booking failed';
+          this.error = err.message || 'Booking failed. Please try again.';
           this.booking = false;
         },
       });

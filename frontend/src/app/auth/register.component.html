@@ -1,62 +1,76 @@
 <div class="auth-page">
   <div class="card auth-card">
-    <h1>Create your account</h1>
-    <p class="muted">Book events, save your seats, and pick up where you left off.</p>
+    <div style="text-align: center; margin-bottom: var(--sp-5);">
+      <div class="brand-logo" style="width: 48px; height: 48px; font-size: 24px; margin: 0 auto var(--sp-3);">🎟️</div>
+      <h2>Create an Account</h2>
+      <p class="muted">Join UrbanNest to book live events and reserve your seats.</p>
+    </div>
 
-    <div *ngIf="error" class="error-banner">{{ error }}</div>
+    <div *ngIf="error" class="error-banner">
+      <span>⚠️</span>
+      <span>{{ error }}</span>
+    </div>
 
     <form (ngSubmit)="submit()" #form="ngForm">
-      <label class="faint" for="register-name">Display name</label>
-      <input
-        id="register-name"
-        name="displayName"
-        type="text"
-        autocomplete="name"
-        [(ngModel)]="displayName"
-        required
-        placeholder="Jordan Rivera"
-      />
+      <div>
+        <label class="muted" style="font-weight: 600; margin-bottom: 6px; display: block;" for="register-name">Full Name / Display Name</label>
+        <input
+          id="register-name"
+          name="displayName"
+          type="text"
+          autocomplete="name"
+          [(ngModel)]="displayName"
+          required
+          placeholder="Jordan Rivera"
+        />
+      </div>
 
-      <label class="faint" for="register-email">Email</label>
-      <input
-        id="register-email"
-        name="email"
-        type="email"
-        autocomplete="email"
-        [(ngModel)]="email"
-        required
-        placeholder="you@example.com"
-      />
+      <div style="margin-top: var(--sp-3);">
+        <label class="muted" style="font-weight: 600; margin-bottom: 6px; display: block;" for="register-email">Email Address</label>
+        <input
+          id="register-email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          [(ngModel)]="email"
+          required
+          placeholder="you@example.com"
+        />
+      </div>
 
-      <label class="faint" for="register-password">Password</label>
-      <input
-        id="register-password"
-        name="password"
-        type="password"
-        autocomplete="new-password"
-        [(ngModel)]="password"
-        required
-        placeholder="At least 8 characters"
-      />
+      <div style="margin-top: var(--sp-3);">
+        <label class="muted" style="font-weight: 600; margin-bottom: 6px; display: block;" for="register-password">Password</label>
+        <input
+          id="register-password"
+          name="password"
+          type="password"
+          autocomplete="new-password"
+          [(ngModel)]="password"
+          required
+          placeholder="At least 8 characters"
+        />
+      </div>
 
-      <label class="faint" for="register-confirm">Confirm password</label>
-      <input
-        id="register-confirm"
-        name="confirmPassword"
-        type="password"
-        autocomplete="new-password"
-        [(ngModel)]="confirmPassword"
-        required
-        placeholder="Retype your password"
-      />
+      <div style="margin-top: var(--sp-3);">
+        <label class="muted" style="font-weight: 600; margin-bottom: 6px; display: block;" for="register-confirm">Confirm Password</label>
+        <input
+          id="register-confirm"
+          name="confirmPassword"
+          type="password"
+          autocomplete="new-password"
+          [(ngModel)]="confirmPassword"
+          required
+          placeholder="Retype your password"
+        />
+      </div>
 
-      <button type="submit" [disabled]="submitting">
-        {{ submitting ? 'Creating account…' : 'Create account' }}
+      <button type="submit" style="margin-top: var(--sp-4); width: 100%; padding: 12px;" [disabled]="submitting">
+        {{ submitting ? 'Creating Account…' : 'Create Account' }}
       </button>
     </form>
 
-    <p class="muted auth-switch">
-      Already have an account? <a routerLink="/auth/login">Sign in</a>
+    <p class="muted auth-switch" style="margin-top: var(--sp-5); text-align: center;">
+      Already have an account? <a routerLink="/auth/login" style="font-weight: 600;">Sign in</a>
     </p>
   </div>
 </div>

@@ -1,36 +1,52 @@
 <div>
-  <h1>Chat</h1>
-  <p class="muted">Join a room to talk with other attendees in real time.</p>
+  <div style="margin-bottom: var(--sp-5);">
+    <h1>Community Chat Lobby</h1>
+    <p class="muted">Connect with attendees in real-time. Join lobbies or switch rooms below.</p>
+  </div>
 
-  <div class="card">
-    <div class="chat-toolbar">
-      <input class="room-input" [(ngModel)]="roomIdInput" placeholder="Room id, e.g. event-lobby" />
-      <button class="secondary" (click)="joinRoom()" [disabled]="connected && currentRoom === roomIdInput">Join</button>
-      <span class="badge ok" *ngIf="connected">● Connected</span>
-      <span class="badge danger" *ngIf="!connected">● Disconnected</span>
-      <span class="badge" *ngIf="currentRoom">{{ participantCount }} online</span>
+  <div class="card chat-toolbar">
+    <div style="display: flex; align-items: center; gap: var(--sp-2); flex: 1;">
+      <span class="muted" style="font-weight: 600;">Room:</span>
+      <input
+        class="room-input"
+        type="text"
+        [(ngModel)]="roomIdInput"
+        (keyup.enter)="joinRoom()"
+        placeholder="Enter room ID..."
+      />
+      <button class="secondary" (click)="joinRoom()">Join Room</button>
     </div>
+    <div style="display: flex; align-items: center; gap: var(--sp-2);">
+      <span class="badge ok">● {{ participantCount }} Active Online</span>
+    </div>
+  </div>
 
+  <div class="card" style="margin-top: var(--sp-4);">
     <div class="chat-log" #logEl>
       <div class="empty-state chat-empty" *ngIf="messages.length === 0">
         <div class="icon">💬</div>
-        <p class="muted">No messages yet — say something.</p>
+        <p class="muted">No messages in #{{ currentRoom }} yet. Say hello!</p>
       </div>
-      <div class="chat-bubble" *ngFor="let m of messages">
-        <div class="who">{{ m.userId }} · {{ m.sentAt | date: 'shortTime' }}</div>
-        <div>{{ m.body }}</div>
+
+      <div
+        *ngFor="let msg of messages"
+        class="chat-bubble"
+        [class.mine]="msg.userId === auth.currentUser?.id"
+      >
+        <div class="who">{{ msg.userId === auth.currentUser?.id ? 'You' : ('User ' + msg.userId.slice(0, 6)) }}</div>
+        <div>{{ msg.body }}</div>
       </div>
     </div>
 
     <div class="chat-compose">
       <input
         class="compose-input"
+        type="text"
         [(ngModel)]="draft"
-        placeholder="Type a message…"
         (keyup.enter)="send()"
-        [disabled]="!currentRoom"
+        placeholder="Type a message and press Enter..."
       />
-      <button (click)="send()" [disabled]="!currentRoom || !draft.trim()">Send</button>
+      <button (click)="send()" [disabled]="!draft.trim()">Send</button>
     </div>
   </div>
 </div>

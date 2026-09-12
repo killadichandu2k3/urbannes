@@ -1,40 +1,50 @@
 <div class="auth-page">
   <div class="card auth-card">
-    <h1>Sign in</h1>
-    <p class="muted">Welcome back to UrbanNest.</p>
+    <div style="text-align: center; margin-bottom: var(--sp-5);">
+      <div class="brand-logo" style="width: 48px; height: 48px; font-size: 24px; margin: 0 auto var(--sp-3);">🎟️</div>
+      <h2>Welcome Back</h2>
+      <p class="muted">Sign in to your UrbanNest account to access tickets and seat reservations.</p>
+    </div>
 
-    <div *ngIf="error" class="error-banner">{{ error }}</div>
+    <div *ngIf="error" class="error-banner">
+      <span>⚠️</span>
+      <span>{{ error }}</span>
+    </div>
 
     <form (ngSubmit)="submit()" #form="ngForm">
-      <label class="faint" for="login-email">Email</label>
-      <input
-        id="login-email"
-        name="email"
-        type="email"
-        autocomplete="email"
-        [(ngModel)]="email"
-        required
-        placeholder="you@example.com"
-      />
+      <div>
+        <label class="muted" style="font-weight: 600; margin-bottom: 6px; display: block;" for="login-email">Email Address</label>
+        <input
+          id="login-email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          [(ngModel)]="email"
+          required
+          placeholder="name@example.com"
+        />
+      </div>
 
-      <label class="faint" for="login-password">Password</label>
-      <input
-        id="login-password"
-        name="password"
-        type="password"
-        autocomplete="current-password"
-        [(ngModel)]="password"
-        required
-        placeholder="••••••••"
-      />
+      <div style="margin-top: var(--sp-3);">
+        <label class="muted" style="font-weight: 600; margin-bottom: 6px; display: block;" for="login-password">Password</label>
+        <input
+          id="login-password"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          [(ngModel)]="password"
+          required
+          placeholder="••••••••"
+        />
+      </div>
 
-      <button type="submit" [disabled]="submitting">
+      <button type="submit" style="margin-top: var(--sp-4); width: 100%; padding: 12px;" [disabled]="submitting">
         {{ submitting ? 'Signing in…' : 'Sign in' }}
       </button>
     </form>
 
-    <p class="muted auth-switch">
-      New here? <a routerLink="/auth/register">Create an account</a>
+    <p class="muted auth-switch" style="margin-top: var(--sp-5); text-align: center;">
+      New to UrbanNest? <a routerLink="/auth/register" style="font-weight: 600;">Create an account</a>
     </p>
   </div>
 </div>
