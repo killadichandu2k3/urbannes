@@ -15,6 +15,7 @@
 # without a personal access token you'd have to paste in here. This
 # script pauses and tells you exactly where to get it.
 set -euo pipefail
+export PATH="$PATH:/c/Windows/System32:/c/Windows/System32/WindowsPowerShell/v1.0:/c/WINDOWS/System32:/c/WINDOWS/System32/WindowsPowerShell/v1.0"
 cd "$(dirname "$0")/.."
 
 echo "==> Step 1: git init"
@@ -65,11 +66,13 @@ if [ -z "$RUNNER_TOKEN" ]; then
   echo "    once you have a token — same steps GitHub's own instructions"
   echo "    give you, included here so this script is the one place to look:"
   echo ""
-  echo "      mkdir -p ~/actions-runner && cd ~/actions-runner"
-  echo "      curl -o actions-runner.tar.gz -L https://github.com/actions/runner/releases/latest/download/actions-runner-linux-x64.tar.gz"
-  echo "      tar xzf actions-runner.tar.gz"
-  echo "      ./config.sh --url https://github.com/<you>/<repo> --token <TOKEN> --labels kind"
-  echo "      ./run.sh"
+  RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/' || echo "2.337.0")
+  if [ -z "$RUNNER_VERSION" ]; then RUNNER_VERSION="2.337.0"; fi
+  echo "    mkdir -p ~/actions-runner && cd ~/actions-runner"
+  echo "    curl -o actions-runner.tar.gz -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz"
+  echo "    tar xzf actions-runner.tar.gz"
+  echo "    ./config.sh --url https://github.com/<you>/<repo> --token <TOKEN> --labels kind"
+  echo "    ./run.sh"
   echo ""
   echo "    --labels kind adds the 'kind' label; 'self-hosted' is added"
   echo "    automatically by every self-hosted runner. Leave ./run.sh"
@@ -80,22 +83,62 @@ if [ -z "$RUNNER_TOKEN" ]; then
 fi
 
 read -rp "    Your GitHub repo URL again (owner/repo or full URL): " REPO_URL
+REPO_URL="${REPO_URL%.git}"
 
 echo ""
 echo "==> Downloading and configuring the runner in ~/actions-runner"
 mkdir -p ~/actions-runner && cd ~/actions-runner
-if [ ! -f config.sh ]; then
-  curl -o actions-runner.tar.gz -L https://github.com/actions/runner/releases/latest/download/actions-runner-linux-x64.tar.gz
-  tar xzf actions-runner.tar.gz
+if [ ! -f config.sh ] && [ ! -f config.cmd ]; then
+  RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/' || echo "2.337.0")
+  if [ -z "$RUNNER_VERSION" ]; then RUNNER_VERSION="2.337.0"; fi
+
+  OS_NAME=$(uname -s 2>/dev/null || echo "Linux")
+  case "$OS_NAME" in
+    MINGW*|MSYS*|CYGWIN*)
+      RUNNER_URL="https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-win-x64-${RUNNER_VERSION}.zip"
+      echo "    Downloading Windows runner binaries from ${RUNNER_URL}..."
+      curl -o actions-runner.zip -L "$RUNNER_URL"
+      if command -v unzip >/dev/null 2>&1; then
+        unzip -q -o actions-runner.zip
+      elif command -v powershell.exe >/dev/null 2>&1; then
+        powershell.exe -Command "Expand-Archive -Path actions-runner.zip -DestinationPath . -Force"
+      elif [ -f "/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe" ]; then
+        /c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -Command "Expand-Archive -Path actions-runner.zip -DestinationPath . -Force"
+      elif [ -f "/c/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe" ]; then
+        /c/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe -Command "Expand-Archive -Path actions-runner.zip -DestinationPath . -Force"
+      elif command -v tar >/dev/null 2>&1; then
+        tar -xf actions-runner.zip
+      else
+        echo "    Error: Unable to extract actions-runner.zip. PowerShell or unzip not found." >&2
+        exit 1
+      fi
+      rm -f actions-runner.zip
+      ;;
+    *)
+      RUNNER_URL="https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz"
+      echo "    Downloading Linux runner binaries from ${RUNNER_URL}..."
+      curl -o actions-runner.tar.gz -L "$RUNNER_URL"
+      tar xzf actions-runner.tar.gz
+      rm -f actions-runner.tar.gz
+      ;;
+  esac
 else
   echo "    Runner binaries already present — skipping download."
 fi
 
-./config.sh --url "$REPO_URL" --token "$RUNNER_TOKEN" --labels kind
+if [ -f ./config.cmd ]; then
+  ./config.cmd --url "$REPO_URL" --token "$RUNNER_TOKEN" --labels kind
+else
+  ./config.sh --url "$REPO_URL" --token "$RUNNER_TOKEN" --labels kind
+fi
 
 echo ""
 echo "==> Runner configured. Start it now with:"
-echo "      cd ~/actions-runner && ./run.sh"
+if [ -f ./run.cmd ]; then
+  echo "      cd ~/actions-runner && ./run.cmd"
+else
+  echo "      cd ~/actions-runner && ./run.sh"
+fi
 echo ""
 echo "    Leave that running (or install as a service — see the option"
 echo "    './svc.sh install && ./svc.sh start' printed by config.sh above)"
