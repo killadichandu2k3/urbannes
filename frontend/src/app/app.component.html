@@ -12,6 +12,11 @@
       </ng-container>
     </div>
     <span class="spacer"></span>
+    
+    <button class="theme-toggle" (click)="toggleTheme()" [title]="'Switch to ' + (currentTheme === 'dark' ? 'Light' : 'Dark') + ' mode'">
+      {{ currentTheme === 'dark' ? '☀️ Light' : '🌙 Dark' }}
+    </button>
+
     <ng-container *ngIf="auth.isLoggedIn; else loggedOut">
       <div class="user-badge">
         <div class="user-avatar">{{ ((auth.user$ | async)?.displayName || 'U')[0].toUpperCase() }}</div>

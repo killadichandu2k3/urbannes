@@ -1,5 +1,5 @@
 /* ============================================================================
-   UrbanNest Design System — Professional Dark Theme
+   UrbanNest Design System — Professional Dark & Light Theme
    ============================================================================ */
 
 :root {
@@ -56,16 +56,36 @@
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Light Theme Overrides */
+[data-theme="light"] {
+  --bg: #f8fafc;
+  --bg-subtle: #f1f5f9;
+  --bg-elevated: #ffffff;
+  --bg-elevated-2: #f1f5f9;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --border-glow: rgba(59, 130, 246, 0.3);
+
+  --text: #0f172a;
+  --text-muted: #475569;
+  --text-faint: #94a3b8;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; min-height: 100vh; }
 
 body {
-  background: radial-gradient(circle at 50% 0%, #151a28 0%, var(--bg) 75%);
+  background: var(--bg);
   color: var(--text);
   font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: var(--fs-base);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  transition: background 0.3s var(--ease), color 0.3s var(--ease);
 }
 
 /* Typography */
@@ -131,13 +151,12 @@ button.secondary:hover:not(:disabled), .btn-secondary:hover:not(:disabled) {
   border-color: var(--text-muted);
 }
 
-button.outline, .btn-outline {
-  background: transparent;
-  color: var(--accent);
-  border: 1px solid var(--accent);
-}
-button.outline:hover:not(:disabled) {
-  background: rgba(59, 130, 246, 0.1);
+button.theme-toggle {
+  background: var(--bg-elevated-2);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
 }
 
 /* Inputs */
@@ -172,18 +191,19 @@ input::placeholder { color: var(--text-faint); }
 .nav {
   display: flex;
   align-items: center;
-  gap: var(--sp-5);
+  gap: var(--sp-4);
   padding: var(--sp-4) var(--sp-5);
   margin: var(--sp-3) 0 var(--sp-6);
-  background: rgba(22, 26, 38, 0.75);
+  background: var(--bg-elevated);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   position: sticky;
   top: var(--sp-3);
   z-index: 100;
   box-shadow: var(--shadow-md);
+  transition: background 0.3s var(--ease), border-color 0.3s var(--ease);
 }
 .nav .brand {
   display: flex;
@@ -193,7 +213,7 @@ input::placeholder { color: var(--text-faint); }
   font-size: var(--fs-lg);
   color: var(--text);
   letter-spacing: -0.03em;
-  margin-right: var(--sp-4);
+  margin-right: var(--sp-3);
 }
 .nav .brand-logo {
   width: 32px;
@@ -221,7 +241,7 @@ input::placeholder { color: var(--text-faint); }
 }
 .nav a.nav-item:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-elevated-2);
 }
 .nav a.nav-item.active {
   color: #ffffff;
@@ -365,7 +385,7 @@ input::placeholder { color: var(--text-faint); }
 .seat:hover:not(.LOCKED):not(.BOOKED) {
   transform: scale(1.12);
   z-index: 5;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 .seat.AVAILABLE {
   background: var(--bg-elevated-2);
