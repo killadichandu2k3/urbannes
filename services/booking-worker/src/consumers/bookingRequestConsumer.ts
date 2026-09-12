@@ -213,10 +213,11 @@ async function handleCreateBooking(payload: {
       const finalPrice = seatsPrice + addOnsPrice;
 
       const status: BookingStatus = nextBookingStatus('CREATED', 'LOCK_SEATS');
-      const now = new Date().toISOString();
+      const now = new Date();
+      const nowIso = now.toISOString();
       const bookingRes = await client.query(
-        `INSERT INTO bookings (user_id, event_id, status, base_price, final_price, discount_code, pricing_strategy, history)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+        `INSERT INTO bookings (user_id, event_id, status, base_price, final_price, discount_code, pricing_strategy, history, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $9) RETURNING *`,
         [
           payload.userId,
           payload.eventId,
@@ -225,7 +226,8 @@ async function handleCreateBooking(payload: {
           finalPrice,
           draft.discountCode ?? null,
           strategy.name,
-          JSON.stringify([{ status: 'CREATED', at: now }, { status, at: now }]),
+          JSON.stringify([{ status: 'CREATED', at: nowIso }, { status, at: nowIso }]),
+          now,
         ],
       );
       const bookingRow = bookingRes.rows[0];
@@ -233,7 +235,7 @@ async function handleCreateBooking(payload: {
       for (const seatId of payload.seatIds) {
         await client.query(
           'INSERT INTO booking_seats (booking_id, booking_created_at, seat_id) VALUES ($1, $2, $3)',
-          [bookingRow.id, bookingRow.created_at, seatId],
+          [bookingRow.id, now, seatId],
         );
         await client.query(
           `INSERT INTO seat_locks (seat_id, event_id, booking_id, expires_at)
@@ -245,12 +247,12 @@ async function handleCreateBooking(payload: {
       for (const addOn of draft.addOns) {
         await client.query(
           'INSERT INTO booking_addons (booking_id, booking_created_at, addon_code, price) VALUES ($1, $2, $3, $4)',
-          [bookingRow.id, bookingRow.created_at, addOn.code, addOn.price],
+          [bookingRow.id, now, addOn.code, addOn.price],
         );
       }
 
       for (const seatId of payload.seatIds) {
-        seatAvailabilitySubject.notify({ eventId: payload.eventId, seatId, type: 'LOCKED', at: now });
+        seatAvailabilitySubject.notify({ eventId: payload.eventId, seatId, type: 'LOCKED', at: nowIso });
       }
 
       return {
