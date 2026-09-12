@@ -12,6 +12,9 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success'
     runs-on: [self-hosted, kind]
     environment: production-local
+    defaults:
+      run:
+        shell: bash
     env:
       CLUSTER_NAME: urbannest
     steps:
