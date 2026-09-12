@@ -1,0 +1,36 @@
+<div>
+  <h1>Chat</h1>
+  <p class="muted">Join a room to talk with other attendees in real time.</p>
+
+  <div class="card">
+    <div class="chat-toolbar">
+      <input class="room-input" [(ngModel)]="roomIdInput" placeholder="Room id, e.g. event-lobby" />
+      <button class="secondary" (click)="joinRoom()" [disabled]="connected && currentRoom === roomIdInput">Join</button>
+      <span class="badge ok" *ngIf="connected">● Connected</span>
+      <span class="badge danger" *ngIf="!connected">● Disconnected</span>
+      <span class="badge" *ngIf="currentRoom">{{ participantCount }} online</span>
+    </div>
+
+    <div class="chat-log" #logEl>
+      <div class="empty-state chat-empty" *ngIf="messages.length === 0">
+        <div class="icon">💬</div>
+        <p class="muted">No messages yet — say something.</p>
+      </div>
+      <div class="chat-bubble" *ngFor="let m of messages">
+        <div class="who">{{ m.userId }} · {{ m.sentAt | date: 'shortTime' }}</div>
+        <div>{{ m.body }}</div>
+      </div>
+    </div>
+
+    <div class="chat-compose">
+      <input
+        class="compose-input"
+        [(ngModel)]="draft"
+        placeholder="Type a message…"
+        (keyup.enter)="send()"
+        [disabled]="!currentRoom"
+      />
+      <button (click)="send()" [disabled]="!currentRoom || !draft.trim()">Send</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,30 @@
+<div>
+  <h1>My bookings</h1>
+  <p class="muted">Everything you've booked, in one place.</p>
+
+  <div *ngIf="error" class="error-banner">{{ error }}</div>
+
+  <div class="grid grid-2" *ngIf="loading">
+    <div class="skeleton skeleton-card" *ngFor="let _ of [1,2,3]"></div>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && bookings.length === 0">
+    <div class="icon">📭</div>
+    <p>No bookings yet — go pick some seats!</p>
+  </div>
+
+  <div class="grid grid-2" *ngIf="!loading && bookings.length > 0">
+    <div class="card" *ngFor="let b of bookings">
+      <div class="booking-card-head">
+        <h3>{{ eventTitle(b.eventId) }}</h3>
+        <span class="badge" [ngClass]="{
+          ok: b.status === 'CONFIRMED',
+          warn: b.status === 'SEATS_LOCKED' || b.status === 'PAYMENT_PENDING',
+          danger: b.status === 'CANCELLED' || b.status === 'EXPIRED'
+        }">{{ b.status | titlecase }}</span>
+      </div>
+      <p class="muted">{{ b.seatIds.length }} seat{{ b.seatIds.length === 1 ? '' : 's' }}</p>
+      <p class="price">₹{{ b.finalPrice }}</p>
+    </div>
+  </div>
+</div>

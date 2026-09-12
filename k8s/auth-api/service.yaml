@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-api
+  namespace: urbannest
+spec:
+  selector:
+    app: auth-api
+  ports:
+  - port: 4600
+    targetPort: 4600

@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-graphql
+  namespace: urbannest
+  annotations:
+    urbannest.io/note: >-
+      This is the Apollo Gateway (GraphQL schema composition), distinct
+      from the NGINX `gateway` Deployment in k8s/gateway/ (reverse proxy,
+      load balancing, and rate limiting — the actual public edge, now that
+      Kong has been removed). Two different "gateway" words, two different
+      jobs — see services/gateway-graphql/src/server.ts for the full
+      explanation.
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gateway-graphql
+  template:
+    metadata:
+      labels:
+        app: gateway-graphql
+    spec:
+      # Spreads replicas across different nodes — see booking-api/deployment.yaml's
+      # topologySpreadConstraints comment for the full explanation.
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: gateway-graphql
+      containers:
+      - name: gateway-graphql
+        image: urbannest/gateway-graphql:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 4500
+        env:
+        - name: PORT
+          value: "4500"
+        - name: AUTH_API_GRAPHQL_URL
+          value: "http://auth-api:4600/graphql"
+        - name: BOOKING_API_GRAPHQL_URL
+          value: "http://booking-api:4000/graphql"
+        - name: ANALYTICS_API_GRAPHQL_URL
+          value: "http://analytics-api:4300/graphql"
+        readinessProbe:
+          httpGet: {path: /health, port: 4500}
+            # Longer initial delay than most services — on startup this
+            # Gateway must successfully introspect ALL THREE subgraphs (see
+            # IntrospectAndCompose in server.ts) before it can serve
+            # anything, so it needs auth-api, booking-api, and
+            # analytics-api to already be reachable, not just itself.
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        livenessProbe:
+          httpGet: {path: /health, port: 4500}
+          initialDelaySeconds: 30
+          periodSeconds: 20
+        resources:
+          requests: {cpu: "100m", memory: "128Mi"}
+          limits: {cpu: "500m", memory: "512Mi"}

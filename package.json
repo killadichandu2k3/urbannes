@@ -1,0 +1,15 @@
+{
+  "name": "urbannest",
+  "version": "1.0.0",
+  "private": true,
+  "description": "UrbanNest — a microservices platform demonstrating LLD design patterns and HLD system design concepts end-to-end.",
+  "workspaces": [
+    "services/*",
+    "frontend"
+  ],
+  "scripts": {
+    "install:all": "npm install --workspaces --include-workspace-root",
+    "build:all": "npm run build --workspaces --if-present"
+  },
+  "license": "MIT"
+}

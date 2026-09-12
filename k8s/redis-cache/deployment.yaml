@@ -1,0 +1,44 @@
+# Single instance — GET-side cache-aside for auth-api (me), analytics-api
+# (venueStats/eventStats/platformStats/search), and booking-worker (seat
+# maps/events).
+#
+# This used to be a 6-node Redis Cluster (3 masters + 3 replicas — see git
+# history for k8s/redis-cluster/), sharded by Redis's own hash slots. That
+# has been collapsed to a single instance alongside the Postgres
+# de-sharding — no cluster topology, no slot hashing, no per-node
+# StatefulSet, just one Deployment. Deliberately kept SEPARATE from
+# redis-coord (k8s/redis-coord/): that instance holds seat locks and
+# Pub/Sub reply/push channels, which shouldn't share memory pressure or
+# eviction behavior with cache data.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-cache
+  namespace: urbannest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-cache
+  template:
+    metadata:
+      labels:
+        app: redis-cache
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        resources:
+          requests: {cpu: "50m", memory: "64Mi"}
+          limits: {cpu: "250m", memory: "256Mi"}
+        readinessProbe:
+          exec: {command: ["redis-cli", "ping"]}
+          initialDelaySeconds: 3
+          periodSeconds: 5
+        livenessProbe:
+          exec: {command: ["redis-cli", "ping"]}
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          failureThreshold: 5

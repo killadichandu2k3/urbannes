@@ -1,0 +1,19 @@
+# PodDisruptionBudget — with only 1 replica, this doesn't allow voluntary
+# disruptions (node drains, cluster upgrades) to evict this pod unless a
+# replacement can come up, since there IS no replacement for a
+# single-instance database. maxUnavailable: 0 makes that explicit rather
+# than leaving it to chance — a real multi-node production cluster
+# performing a rolling node drain will correctly BLOCK on this pod instead
+# of silently taking the database down. On a single-node Kind cluster this
+# is more about encoding the intent than changing observed behavior, but
+# it's the right production pattern for any singleton stateful workload.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: postgres-pdb
+  namespace: urbannest
+spec:
+  maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: postgres

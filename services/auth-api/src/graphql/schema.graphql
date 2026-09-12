@@ -1,0 +1,43 @@
+# ============================================================================
+# UrbanNest auth-api GraphQL schema — Apollo Federation SUBGRAPH.
+# ----------------------------------------------------------------------------
+# Composed into the same supergraph as booking-api/analytics-api by
+# gateway-graphql (see services/gateway-graphql/src/server.ts — just add
+# this subgraph's URL to its `subgraphs` list). The frontend keeps talking
+# to the ONE Apollo Gateway endpoint; register/login are just more
+# mutations on that same schema, not a separate API to wire up.
+# ============================================================================
+
+type User {
+  id: ID!
+  email: String!
+  displayName: String!
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+input RegisterInput {
+  email: String!
+  password: String!
+  displayName: String!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type Query {
+  # Resolves the caller's own identity from the Authorization header —
+  # lets the Angular app restore a session on page reload without
+  # re-sending the password (see AuthService.restoreSession()).
+  me: User
+}
+
+type Mutation {
+  register(input: RegisterInput!): AuthPayload!
+  login(input: LoginInput!): AuthPayload!
+}

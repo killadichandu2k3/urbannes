@@ -1,0 +1,19 @@
+<div class="app-shell">
+  <nav class="nav">
+    <span class="brand">🎟️ UrbanNest</span>
+    <ng-container *ngIf="auth.isLoggedIn">
+      <a routerLink="/" routerLinkActive="active">Events</a>
+      <a routerLink="/my-bookings" routerLinkActive="active">My Bookings</a>
+      <a routerLink="/chat" routerLinkActive="active">Chat</a>
+    </ng-container>
+    <span class="spacer"></span>
+    <ng-container *ngIf="auth.isLoggedIn; else loggedOut">
+      <span class="muted">{{ (auth.user$ | async)?.displayName }}</span>
+      <button class="secondary" (click)="logout()">Sign out</button>
+    </ng-container>
+    <ng-template #loggedOut>
+      <a routerLink="/auth/login" routerLinkActive="active">Sign in</a>
+    </ng-template>
+  </nav>
+  <router-outlet></router-outlet>
+</div>

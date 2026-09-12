@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-service
+  namespace: urbannest
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: chat-service
+  template:
+    metadata:
+      labels:
+        app: chat-service
+    spec:
+      # Spreads replicas across different nodes — see booking-api/deployment.yaml's
+      # topologySpreadConstraints comment for the full explanation.
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: chat-service
+      containers:
+      - name: chat-service
+        image: urbannest/chat-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 4200
+        envFrom:
+        - configMapRef: {name: urbannest-config}
+        env:
+        - name: PORT
+          value: "4200"
+        readinessProbe:
+          httpGet: {path: /health, port: 4200}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet: {path: /health, port: 4200}
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+          requests: {cpu: "100m", memory: "128Mi"}
+          limits: {cpu: "400m", memory: "256Mi"}

@@ -1,0 +1,37 @@
+# Single instance — deliberately NOT the same instance as redis-cache
+# (k8s/redis-cache/). Backs seat locks (needs simple multi-key Lua scripts without Cluster's
+# CROSSSLOT restriction) and the Pub/Sub reply/push channels for the
+# request/reply bridge and chat/booking WebSocket fan-out. See
+# services/booking-worker/src/cache/seatLock.ts for the full rationale.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-coord
+  namespace: urbannest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-coord
+  template:
+    metadata:
+      labels:
+        app: redis-coord
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        resources:
+          requests: {cpu: "50m", memory: "64Mi"}
+          limits: {cpu: "250m", memory: "256Mi"}
+        readinessProbe:
+          exec: {command: ["redis-cli", "ping"]}
+          initialDelaySeconds: 3
+          periodSeconds: 5
+        livenessProbe:
+          exec: {command: ["redis-cli", "ping"]}
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          failureThreshold: 5

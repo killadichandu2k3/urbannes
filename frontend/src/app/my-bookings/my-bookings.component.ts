@@ -1,0 +1,40 @@
+import { Component, OnInit } from '@angular/core';
+import { forkJoin } from 'rxjs';
+import { GraphqlService } from '../core/services/graphql.service';
+import { Booking, EventItem } from '../core/models';
+
+@Component({
+  selector: 'app-my-bookings',
+  templateUrl: './my-bookings.component.html',
+})
+export class MyBookingsComponent implements OnInit {
+  bookings: Booking[] = [];
+  eventsById = new Map<string, EventItem>();
+  loading = true;
+  error = '';
+
+  constructor(private readonly graphql: GraphqlService) {}
+
+  ngOnInit(): void {
+    // Bookings only carry an eventId — fetch events once and join
+    // client-side so the list can show a title instead of a raw id.
+    forkJoin({
+      bookings: this.graphql.myBookings(),
+      events: this.graphql.events(),
+    }).subscribe({
+      next: ({ bookings, events }) => {
+        this.eventsById = new Map(events.map((e) => [e.id, e]));
+        this.bookings = bookings;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = err.message || 'Failed to load bookings';
+        this.loading = false;
+      },
+    });
+  }
+
+  eventTitle(eventId: string): string {
+    return this.eventsById.get(eventId)?.title ?? 'Event';
+  }
+}

@@ -1,0 +1,29 @@
+<div class="search-wrap">
+  <div class="search-input-row">
+    <span class="search-icon">{{ loading ? '⏳' : '🔎' }}</span>
+    <input
+      [(ngModel)]="query"
+      (input)="onInput()"
+      (keydown)="onKeydown($event)"
+      (focus)="results.length && (open = true)"
+      (blur)="onBlur()"
+      placeholder="Search events or venues…"
+      autocomplete="off"
+    />
+  </div>
+  <div class="search-results" *ngIf="open">
+    <div
+      class="search-result-item"
+      *ngFor="let r of results; let i = index"
+      [class.active]="i === activeIndex"
+      (mousedown)="pick(r)"
+    >
+      <div>
+        <div [innerHTML]="highlight(r.title)"></div>
+        <div class="faint">{{ r.subtitle }}</div>
+      </div>
+      <span class="kind">{{ r.kind }}</span>
+    </div>
+    <div class="search-empty" *ngIf="results.length === 0 && !loading">No matches</div>
+  </div>
+</div>

@@ -1,0 +1,59 @@
+# Kind cluster config for UrbanNest.
+# -----------------------------------------------------------------------------
+# TWO WORKER NODES, NOT ONE — this is what makes "services run on different
+# nodes and talk to each other" a real, observable thing instead of a
+# label. Kind runs each `role: worker` as its own Docker container acting
+# as a full separate Kubernetes node (its own kubelet, its own container
+# runtime) — the Kubernetes scheduler then spreads pods across both based
+# on the topology spread constraints in each Deployment (see k8s/base/...
+# and each service's deployment.yaml `topologySpreadConstraints` block).
+# Two pods of the same Deployment landing on different nodes still reach
+# each other through the exact same Service DNS name (`booking-api:4000`,
+# etc.) as they would on one node — kube-proxy's ClusterIP routing works
+# identically across node boundaries, which is the whole point of a
+# Service abstraction: callers never need to know or care which node the
+# pod they're talking to actually landed on.
+#
+# Previously 3 workers — dropped to 2 to cut cluster bring-up time and
+# baseline resource footprint. Every app Deployment runs 2 replicas by
+# default (see each `hpa.yaml`'s `minReplicas`), so 2 worker nodes is
+# still enough for `maxSkew: 1` to force real cross-node spread — the
+# scheduling behavior this project demonstrates doesn't need a third node,
+# it just makes the node list a little longer to look at.
+#
+# Verify the spread after `kubectl apply -k k8s/`:
+#   kubectl get pods -n urbannest -o wide
+# The NODE column should show pods for the same app split across
+# urbannest-worker / urbannest-worker2, not both on one.
+#
+# Kind has no built-in equivalent of `minikube service` (which opens a
+# tunnel on demand). Instead, Kind maps a container port on the
+# CONTROL-PLANE node straight to a port on your host machine, at cluster
+# creation time — that's what extraPortMappings below does for the
+# gateway's own NodePort (30000), so the app is reachable at
+# http://localhost:30000 with no extra tunneling step and no Kong in front
+# of it (Kong has been removed — see the top-level README).
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: urbannest
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - containerPort: 30000
+        hostPort: 30000
+        protocol: TCP
+    # Mounts this whole project folder into the control-plane node at
+    # /urbannest-repo, read-only. This exists solely so the in-cluster
+    # git-server (k8s-argocd/git-server.yaml) can serve k8s/ as a real,
+    # always-current Git repo for ArgoCD to read — see
+    # k8s-argocd/README-argocd.md for why ArgoCD needs a Git source at
+    # all and can't just point at a local path directly. Nothing else in
+    # this project depends on this mount; if you only care about the
+    # `kubectl apply -k k8s/` deploy path (deploy-kind.sh), you can ignore
+    # this block entirely.
+    extraMounts:
+      - hostPath: .
+        containerPath: /urbannest-repo
+        readOnly: true
+  - role: worker
+  - role: worker

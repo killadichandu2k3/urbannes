@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-api
+  namespace: urbannest
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: auth-api
+  template:
+    metadata:
+      labels:
+        app: auth-api
+    spec:
+      # Spreads replicas across different nodes — see booking-api/deployment.yaml's
+      # topologySpreadConstraints comment for the full explanation.
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: auth-api
+      containers:
+      - name: auth-api
+        image: urbannest/auth-api:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 4600
+        envFrom:
+        - configMapRef: {name: urbannest-config}
+        env:
+        - name: PORT
+          value: "4600"
+        - name: PGUSER
+          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: PGUSER}}
+        - name: PGPASSWORD
+          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: PGPASSWORD}}
+        - name: JWT_SECRET
+          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: JWT_SECRET}}
+        readinessProbe:
+          httpGet: {path: /health, port: 4600}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet: {path: /health, port: 4600}
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+          requests: {cpu: "100m", memory: "128Mi"}
+          limits: {cpu: "500m", memory: "512Mi"}

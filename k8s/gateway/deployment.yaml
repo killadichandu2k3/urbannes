@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  namespace: urbannest
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      # Spreads replicas across different nodes — see booking-api/deployment.yaml's
+      # topologySpreadConstraints comment for the full explanation. This one
+      # matters most of all seven: gateway is the sole public entrypoint
+      # (see service.yaml), so if both replicas landed on the same node, a
+      # single node failure would take down the entire app's front door.
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: gateway
+      containers:
+      - name: gateway
+        image: urbannest/gateway:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        readinessProbe:
+          httpGet: {path: /gateway/health, port: 8080}
+          initialDelaySeconds: 3
+          periodSeconds: 10
+        livenessProbe:
+          httpGet: {path: /gateway/health, port: 8080}
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        resources:
+          requests: {cpu: "50m", memory: "64Mi"}
+          limits: {cpu: "250m", memory: "128Mi"}
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: gateway-nginx-config

@@ -1,0 +1,172 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAMESPACE: ${{ github.repository_owner }}/urbannest
+
+jobs:
+  typecheck:
+    name: Typecheck (${{ matrix.workspace }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        workspace:
+          - shared
+          - auth-api
+          - booking-api
+          - booking-worker
+          - analytics-api
+          - gateway-graphql
+          - notification-service
+          - chat-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install workspace deps
+        run: npm install --workspaces --include-workspace-root --no-audit --no-fund
+      - name: Build shared first (dependency of every other workspace)
+        if: matrix.workspace != 'shared'
+        run: npm run build --workspace=@urbannest/shared
+      - name: Typecheck / build ${{ matrix.workspace }}
+        run: npm run build --workspace=@urbannest/${{ matrix.workspace }}
+
+  frontend-build:
+    name: Frontend build + typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package.json
+      - run: cd frontend && npm install --no-audit --no-fund
+      # Angular's own build (ng build) runs full TypeScript type-checking
+      # as part of compilation — no separate typecheck-only step needed,
+      # unlike the old vue-tsc + vite build two-step (Vite doesn't
+      # typecheck on its own).
+      - run: cd frontend && npx ng build --configuration production
+
+  k8s-validate:
+    name: Validate k8s manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate k8s YAML (kubeconform)
+        run: |
+          curl -sSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz
+          # Recursive glob — manifests now live nested one directory per
+          # service (k8s/<service>/deployment.yaml etc.), not flat under
+          # k8s/<category>/*.yaml, so this needs **/*.yaml, not */*.yaml.
+          ./kubeconform -summary -ignore-missing-schemas k8s/**/*.yaml
+
+  docker-build-push:
+    name: Build + push Docker images
+    runs-on: ubuntu-latest
+    needs: [typecheck, frontend-build, k8s-validate]
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - service: auth-api
+            dockerfile: services/auth-api/Dockerfile
+          - service: booking-api
+            dockerfile: services/booking-api/Dockerfile
+          - service: booking-worker
+            dockerfile: services/booking-worker/Dockerfile
+          - service: analytics-api
+            dockerfile: services/analytics-api/Dockerfile
+          - service: gateway-graphql
+            dockerfile: services/gateway-graphql/Dockerfile
+          - service: notification-service
+            dockerfile: services/notification-service/Dockerfile
+          - service: chat-service
+            dockerfile: services/chat-service/Dockerfile
+          - service: gateway
+            dockerfile: gateway/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Log in to GHCR
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build ${{ matrix.service }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: ${{ github.event_name == 'push' }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.service }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.service }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  compose-smoke-test:
+    name: Docker Compose smoke test
+    runs-on: ubuntu-latest
+    needs: [docker-build-push]
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Bring up the full stack
+        run: docker compose up --build -d
+      - name: Wait for gateway health
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8080/graphql -X POST -H 'content-type: application/json' -d '{"query":"{ __typename }"}'; then echo "gateway healthy"; exit 0; fi
+            echo "waiting for stack... ($i/30)"; sleep 10
+          done
+          echo "stack never became healthy"; docker compose logs; exit 1
+      - name: Smoke test — list events via GraphQL (public query, no auth needed)
+        run: |
+          curl -sf http://localhost:8080/graphql \
+            -X POST -H 'content-type: application/json' \
+            -d '{"query":"{ events { id title } }"}' | tee /tmp/resp.json
+          grep -q '"events"' /tmp/resp.json
+      - name: Smoke test — register, then use the token on an authenticated query
+        run: |
+          EMAIL="ci-smoke-$(date +%s)@example.com"
+          REGISTER_RESP=$(curl -sf http://localhost:8080/graphql \
+            -X POST -H 'content-type: application/json' \
+            -d "{\"query\":\"mutation Register(\$input: RegisterInput!) { register(input: \$input) { token user { id email } } }\",\"variables\":{\"input\":{\"email\":\"$EMAIL\",\"password\":\"smoke-test-pw\",\"displayName\":\"CI Smoke Test\"}}}")
+          echo "$REGISTER_RESP"
+          TOKEN=$(echo "$REGISTER_RESP" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+          if [ -z "$TOKEN" ]; then echo "register did not return a token"; exit 1; fi
+          # myBookings requires auth (see booking-api's requireAuth()) — a
+          # fresh account has none yet, so an empty array is success here;
+          # the point of this check is that the JWT round-trips end to end
+          # (auth-api issues it -> gateway forwards it -> booking-api
+          # verifies it), not the booking data itself.
+          BOOKINGS_RESP=$(curl -sf http://localhost:8080/graphql \
+            -X POST -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' \
+            -d '{"query":"{ myBookings { id } }"}')
+          echo "$BOOKINGS_RESP"
+          echo "$BOOKINGS_RESP" | grep -q '"myBookings":\[\]'
+      - name: Dump logs on failure
+        if: failure()
+        run: docker compose logs
+      - name: Tear down
+        if: always()
+        run: docker compose down -v

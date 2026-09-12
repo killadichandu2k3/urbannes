@@ -1,0 +1,67 @@
+# StatefulSet (not Deployment) because a database pod needs a stable
+# network identity and its OWN persistent volume that survives pod
+# restarts/rescheduling. volumeClaimTemplates gives the replica its own
+# PersistentVolumeClaim.
+#
+# Sharding has been removed from this project — this used to be two of
+# these StatefulSets (postgres-shard-0, postgres-shard-1), each a
+# physically independent Postgres instance selected via a consistent hash
+# ring (see git history / README for the old design). Now there's exactly
+# one Postgres instance and one StatefulSet.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: urbannest
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:16-alpine
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: PGUSER}}
+        - name: POSTGRES_PASSWORD
+          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: PGPASSWORD}}
+        - name: POSTGRES_DB
+          value: urbannest
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/postgresql/data
+        readinessProbe:
+          exec: {command: ["pg_isready", "-U", "urbannest"]}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+            # Deliberately more lenient than the readiness probe — pg_isready
+            # can briefly fail during checkpointing/heavy load without the
+            # process actually being dead. A liveness probe that's as
+            # trigger-happy as readiness risks Kubernetes killing a healthy-
+            # but-busy Postgres, which is worse than doing nothing.
+          exec: {command: ["pg_isready", "-U", "urbannest"]}
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          failureThreshold: 5
+        resources:
+          requests: {cpu: "200m", memory: "256Mi"}
+          limits: {cpu: "1000m", memory: "1Gi"}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: urbannest-db-storage
+      resources:
+        requests:
+          storage: 2Gi

@@ -1,0 +1,35 @@
+<div>
+  <h1>Upcoming events</h1>
+  <p class="muted">Find something happening near you and pick your seats.</p>
+
+  <app-search-autocomplete (select)="onSearchSelect($event)"></app-search-autocomplete>
+
+  <div *ngIf="error" class="error-banner">{{ error }}</div>
+
+  <div class="grid grid-2" *ngIf="loading">
+    <div class="skeleton skeleton-card" *ngFor="let _ of [1,2,3,4]"></div>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && !error && events.length === 0">
+    <div class="icon">🎟️</div>
+    <p>No events yet. Check back soon.</p>
+  </div>
+
+  <div class="grid grid-2" *ngIf="!loading && events.length > 0">
+    <div class="card interactive event-card" *ngFor="let event of events">
+      <div class="event-card-head">
+        <h3>{{ event.title }}</h3>
+        <span class="badge" [class.ok]="event.bookingOpen" [class.danger]="!event.bookingOpen">
+          {{ event.bookingOpen ? 'Open' : 'Closed' }}
+        </span>
+      </div>
+      <p class="muted">{{ formatDate(event.startsAt) }}</p>
+      <div class="event-card-foot">
+        <span class="price">From ₹{{ event.basePrice }}</span>
+        <a [routerLink]="['/events', event.id, 'seats']">
+          <button [disabled]="!event.bookingOpen">Pick seats</button>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

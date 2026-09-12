@@ -1,0 +1,45 @@
+# Registers UrbanNest with ArgoCD as the real deploy path — see
+# README-argocd.md in this same folder for the full reasoning behind
+# switching to automated sync (this used to be read-only observability
+# only; see git history for the old syncPolicy-less version).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: urbannest
+  namespace: argocd
+  # Protects this Application object itself from being swept up if this
+  # namespace is ever deleted as part of a broader ArgoCD cleanup —
+  # unrelated to the urbannest app namespace's own resources.
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git://git-server.argocd.svc.cluster.local/urbannest.git
+    targetRevision: main
+    path: k8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: urbannest
+  syncPolicy:
+    automated:
+      # prune: true means ArgoCD deletes any live resource that's no
+      # longer in k8s/ (e.g. after you remove a Deployment from a
+      # kustomization) — without this, deleted manifests would leave
+      # orphaned resources running forever.
+      prune: true
+      # selfHeal: true means ArgoCD reverts manual cluster edits (a stray
+      # `kubectl delete pod`, `kubectl edit deployment`, `kubectl scale`)
+      # back to what k8s/ says within seconds. This is what makes "delete
+      # a pod from the ArgoCD UI" and "kubectl delete pod" both work the
+      # way you'd expect: ArgoCD either recreates it immediately (because
+      # the Deployment in git still wants N replicas) or the deletion
+      # sticks (because you also updated git first) — never a silent,
+      # permanent drift between the cluster and git.
+      selfHeal: true
+    syncOptions:
+      # CreateNamespace is unnecessary here (base/namespace.yaml already
+      # creates it), but harmless to leave on for resilience if that
+      # manifest is ever removed from kustomization.yaml by mistake.
+      - CreateNamespace=true
+  revisionHistoryLimit: 10

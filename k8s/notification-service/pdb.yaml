@@ -1,0 +1,15 @@
+# maxUnavailable: 1 (not 0) — unlike the singleton Postgres/redis-coord
+# PDBs (postgres/pdb.yaml, redis-coord/pdb.yaml), this service runs 2+
+# replicas and is stateless, so losing one pod during a voluntary
+# disruption is fine as long as at least one stays up to keep consuming
+# the notification-workers Kafka group.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: notification-service-pdb
+  namespace: urbannest
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: notification-service

@@ -1,0 +1,53 @@
+<div>
+  <a class="back-link" routerLink="/">&larr; Back to events</a>
+  <h1>Pick your seats</h1>
+
+  <div *ngIf="error" class="error-banner">{{ error }}</div>
+
+  <div class="seat-map-layout">
+    <div class="card">
+      <div *ngIf="loading" class="seat-grid">
+        <div class="skeleton seat-skeleton" *ngFor="let _ of [1,2,3,4,5,6,7,8,9,10,11,12]"></div>
+      </div>
+      <div *ngIf="!loading" class="seat-grid">
+        <div
+          *ngFor="let seat of seatMap?.seats"
+          class="seat"
+          [ngClass]="seatClasses(seat)"
+          (click)="toggleSeat(seat)"
+          [title]="seat.rowLabel + seat.seatNumber + ' — ' + seat.tier"
+        >
+          {{ seat.rowLabel }}{{ seat.seatNumber }}
+        </div>
+      </div>
+      <div class="seat-legend">
+        <span><span class="seat-swatch AVAILABLE"></span> Available</span>
+        <span><span class="seat-swatch SELECTED"></span> Selected</span>
+        <span><span class="seat-swatch LOCKED"></span> Held</span>
+        <span><span class="seat-swatch BOOKED"></span> Booked</span>
+      </div>
+    </div>
+
+    <div class="card selection-panel">
+      <h3>Your selection</h3>
+      <div class="empty-state selection-empty" *ngIf="selected.size === 0">
+        <div class="icon">💺</div>
+        <p class="muted">No seats selected yet.</p>
+      </div>
+      <ul class="selection-list" *ngIf="selected.size > 0">
+        <li *ngFor="let seatId of selected" class="muted">{{ seatLabel(seatId) }}</li>
+      </ul>
+
+      <div *ngIf="!activeBooking">
+        <button class="full-width" [disabled]="selected.size === 0 || booking" (click)="createBooking()">
+          {{ booking ? 'Booking…' : 'Book selected seats' }}
+        </button>
+      </div>
+
+      <div *ngIf="activeBooking" class="booking-confirmation">
+        <span class="badge ok">{{ activeBooking.status }}</span>
+        <p class="muted">{{ activeBooking.message }}</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: booking-worker
+  namespace: urbannest
+  annotations:
+    urbannest.io/note: >-
+      No Service object for this Deployment — booking-worker is a pure
+      Kafka consumer, never receives inbound HTTP/WS traffic. Its "load
+      balancing" is Kafka's own consumer-group partition assignment:
+      scaling replicas (see hpa.yaml in this same directory) makes Kafka
+      spread booking.requests partitions across however many pods are
+      running, automatically, with no Service or coordination code
+      involved.
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: booking-worker
+  template:
+    metadata:
+      labels:
+        app: booking-worker
+    spec:
+      # Spreads replicas across different nodes — see booking-api/deployment.yaml's
+      # topologySpreadConstraints comment for the full explanation.
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: booking-worker
+      containers:
+      - name: booking-worker
+        image: urbannest/booking-worker:latest
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - configMapRef: {name: urbannest-config}
+        env:
+        - name: PGUSER
+          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: PGUSER}}
+        - name: PGPASSWORD
+          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: PGPASSWORD}}
+        resources:
+          requests: {cpu: "150m", memory: "192Mi"}
+          limits: {cpu: "750m", memory: "512Mi"}

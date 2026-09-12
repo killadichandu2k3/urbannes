@@ -1,0 +1,42 @@
+# ============================================================================
+# StorageClass — explicit, not implicit.
+# ----------------------------------------------------------------------------
+# Before this file, every volumeClaimTemplate in the StatefulSets omitted
+# `storageClassName`, which means Kubernetes silently used whatever
+# StorageClass is marked "default" in the cluster.
+#
+# Declaring it explicitly here means every StatefulSet's storage request is
+# self-documenting — you can read the manifest and know exactly what backs
+# its volumes.
+#
+# PROVISIONER: Kind ships with a built-in `local-path` provisioner
+# (`rancher.io/local-path`, from Rancher's local-path-provisioner project)
+# enabled by default on every node. It maps each PVC to a directory on
+# that node's filesystem — no cloud disk, no separate install step.
+#
+# WHY TWO CLASSES: Postgres and Redis have different durability needs.
+# `urbannest-db-storage` uses `reclaimPolicy: Retain` (a Postgres PVC
+# surviving StatefulSet deletion is usually what you want — losing a
+# database because someone ran `kubectl delete statefulset` would be a
+# bad day). `urbannest-cache-storage` uses `reclaimPolicy: Delete` since
+# Redis Cluster data is a cache the app already treats as reconstructable,
+# so there's no reason to keep orphaned volumes around.
+# ============================================================================
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: urbannest-db-storage
+provisioner: rancher.io/local-path
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+allowVolumeExpansion: false
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: urbannest-cache-storage
+provisioner: rancher.io/local-path
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete
+allowVolumeExpansion: false

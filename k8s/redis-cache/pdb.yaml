@@ -1,0 +1,17 @@
+# Deliberately more permissive than redis-coord's PDB: this instance holds
+# only cache-aside data (GET results with a TTL) — every reader already
+# falls back to Postgres on a cache miss (see each service's cache module),
+# so a brief eviction during a node drain costs some latency, not
+# correctness. maxUnavailable: 1 (i.e. allow this singleton to be drained)
+# reflects that it's genuinely disposable, unlike redis-coord's locks/
+# Pub/Sub channels or Postgres's durable data.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: redis-cache-pdb
+  namespace: urbannest
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: redis-cache

@@ -1,0 +1,62 @@
+<div class="auth-page">
+  <div class="card auth-card">
+    <h1>Create your account</h1>
+    <p class="muted">Book events, save your seats, and pick up where you left off.</p>
+
+    <div *ngIf="error" class="error-banner">{{ error }}</div>
+
+    <form (ngSubmit)="submit()" #form="ngForm">
+      <label class="faint" for="register-name">Display name</label>
+      <input
+        id="register-name"
+        name="displayName"
+        type="text"
+        autocomplete="name"
+        [(ngModel)]="displayName"
+        required
+        placeholder="Jordan Rivera"
+      />
+
+      <label class="faint" for="register-email">Email</label>
+      <input
+        id="register-email"
+        name="email"
+        type="email"
+        autocomplete="email"
+        [(ngModel)]="email"
+        required
+        placeholder="you@example.com"
+      />
+
+      <label class="faint" for="register-password">Password</label>
+      <input
+        id="register-password"
+        name="password"
+        type="password"
+        autocomplete="new-password"
+        [(ngModel)]="password"
+        required
+        placeholder="At least 8 characters"
+      />
+
+      <label class="faint" for="register-confirm">Confirm password</label>
+      <input
+        id="register-confirm"
+        name="confirmPassword"
+        type="password"
+        autocomplete="new-password"
+        [(ngModel)]="confirmPassword"
+        required
+        placeholder="Retype your password"
+      />
+
+      <button type="submit" [disabled]="submitting">
+        {{ submitting ? 'Creating account…' : 'Create account' }}
+      </button>
+    </form>
+
+    <p class="muted auth-switch">
+      Already have an account? <a routerLink="/auth/login">Sign in</a>
+    </p>
+  </div>
+</div>

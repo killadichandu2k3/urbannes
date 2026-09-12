@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: auth-api-pdb
+  namespace: urbannest
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: auth-api
