@@ -16,7 +16,7 @@ jobs:
       run:
         shell: bash
     env:
-      CLUSTER_NAME: urbannest
+      CLUSTER_NAME: urbannes
     steps:
       - uses: actions/checkout@v4
 
@@ -40,7 +40,7 @@ jobs:
             echo "ArgoCD active — refreshing in-cluster git repository & triggering sync"
             kubectl delete pod git-server -n argocd --ignore-not-found
             kubectl apply -f k8s-argocd/git-server.yaml
-            kubectl patch application urbannest -n argocd --type merge \
+            kubectl patch application urbannes -n argocd --type merge \
               -p '{"operation":{"sync":{"revision":"HEAD"}}}' >/dev/null 2>&1 || true
           fi
 
@@ -59,25 +59,25 @@ jobs:
           # per IfNotPresent (present now, so used) — this is the
           # standard fix for exactly this local-cluster + :latest-tag
           # combination, not a workaround specific to this repo.
-          kubectl rollout restart deployment/auth-api -n urbannest
-          kubectl rollout restart deployment/booking-api -n urbannest
-          kubectl rollout restart deployment/booking-worker -n urbannest
-          kubectl rollout restart deployment/analytics-api -n urbannest
-          kubectl rollout restart deployment/gateway-graphql -n urbannest
-          kubectl rollout restart deployment/notification-service -n urbannest
-          kubectl rollout restart deployment/chat-service -n urbannest
-          kubectl rollout restart deployment/gateway -n urbannest
+          kubectl rollout restart deployment/auth-api -n urbannes
+          kubectl rollout restart deployment/booking-api -n urbannes
+          kubectl rollout restart deployment/booking-worker -n urbannes
+          kubectl rollout restart deployment/analytics-api -n urbannes
+          kubectl rollout restart deployment/gateway-graphql -n urbannes
+          kubectl rollout restart deployment/notification-service -n urbannes
+          kubectl rollout restart deployment/chat-service -n urbannes
+          kubectl rollout restart deployment/gateway -n urbannes
 
       - name: Wait for rollout
         run: |
-          kubectl rollout status deployment/auth-api -n urbannest --timeout=180s
-          kubectl rollout status deployment/booking-api -n urbannest --timeout=180s
-          kubectl rollout status deployment/booking-worker -n urbannest --timeout=180s
-          kubectl rollout status deployment/analytics-api -n urbannest --timeout=180s
-          kubectl rollout status deployment/gateway-graphql -n urbannest --timeout=180s
-          kubectl rollout status deployment/notification-service -n urbannest --timeout=180s
-          kubectl rollout status deployment/chat-service -n urbannest --timeout=180s
-          kubectl rollout status deployment/gateway -n urbannest --timeout=180s
+          kubectl rollout status deployment/auth-api -n urbannes --timeout=180s
+          kubectl rollout status deployment/booking-api -n urbannes --timeout=180s
+          kubectl rollout status deployment/booking-worker -n urbannes --timeout=180s
+          kubectl rollout status deployment/analytics-api -n urbannes --timeout=180s
+          kubectl rollout status deployment/gateway-graphql -n urbannes --timeout=180s
+          kubectl rollout status deployment/notification-service -n urbannes --timeout=180s
+          kubectl rollout status deployment/chat-service -n urbannes --timeout=180s
+          kubectl rollout status deployment/gateway -n urbannes --timeout=180s
 
       - name: Confirm pods are actually spread across nodes
         run: |
@@ -86,7 +86,7 @@ jobs:
           # nodes — this step confirms the scheduler actually honored it
           # on this real 3-worker-node Kind cluster (see kind-config.yaml),
           # rather than trusting the manifest and hoping.
-          kubectl get pods -n urbannest -o wide
+          kubectl get pods -n urbannes -o wide
 
       - name: Post-deploy smoke test
         run: |
@@ -100,4 +100,4 @@ jobs:
             -d '{"query":"{ events { id } }"}' | grep -q '"events"'
 
       - name: Report deployed image tags
-        run: kubectl get deployments -n urbannest -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.template.spec.containers[0].image}{"\n"}{end}'
+        run: kubectl get deployments -n urbannes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.template.spec.containers[0].image}{"\n"}{end}'

@@ -5,7 +5,7 @@
 # =============================================================================
 #
 # Usage (in CI):
-#   REGISTRY=ghcr.io IMAGE_NAMESPACE=<owner>/urbannest \
+#   REGISTRY=ghcr.io IMAGE_NAMESPACE=<owner>/urbannes \
 #     docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d
 #
 # How it works: when both `build` and `image` are set on a service, Docker

@@ -10,16 +10,16 @@
 // ============================================================================
 
 import { Pool } from 'pg';
-import { createLogger } from '@urbannest/shared';
+import { createLogger } from '@urbannes/shared';
 
 const logger = createLogger('analytics-api:db');
 
 export const pool = new Pool({
   host: process.env.PGHOST || 'postgres',
   port: Number(process.env.PGPORT || 5432),
-  user: process.env.PGUSER || 'urbannest',
-  password: process.env.PGPASSWORD || 'urbannest',
-  database: process.env.PGDATABASE || 'urbannest',
+  user: process.env.PGUSER || 'urbannes',
+  password: process.env.PGPASSWORD || 'urbannes',
+  database: process.env.PGDATABASE || 'urbannes',
   max: 10,
   // Analytics queries can be slower (aggregates/scans) than the OLTP path
   // in booking-worker, so this pool gets a longer statement timeout.

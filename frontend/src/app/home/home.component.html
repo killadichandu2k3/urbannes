@@ -1,0 +1,65 @@
+<div class="flex flex-col gap-8">
+
+  <!-- Greeting header -->
+  <div>
+    <p class="text-sm text-app-muted mb-1">Welcome back</p>
+    <h1 class="text-3xl font-extrabold tracking-tight">{{ firstName ? 'Hey ' + firstName + ',' : 'Hey,' }} good to see you.</h1>
+  </div>
+
+  <!-- Quick nav — the three real destinations in the app, always one tap away -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <a routerLink="/events" class="group rounded-app-lg border border-app-border bg-app-surface p-5 flex items-center justify-between transition-all hover:border-app-border-strong hover:-translate-y-0.5">
+      <div>
+        <h3 class="m-0 mb-1">Browse events</h3>
+        <p class="text-sm text-app-muted m-0">Find your next night out</p>
+      </div>
+      <span class="text-app-accent text-xl transition-transform group-hover:translate-x-1">→</span>
+    </a>
+    <a routerLink="/my-bookings" class="group rounded-app-lg border border-app-border bg-app-surface p-5 flex items-center justify-between transition-all hover:border-app-border-strong hover:-translate-y-0.5">
+      <div>
+        <h3 class="m-0 mb-1">My bookings</h3>
+        <p class="text-sm text-app-muted m-0">Tickets, receipts, history</p>
+      </div>
+      <span class="text-app-accent text-xl transition-transform group-hover:translate-x-1">→</span>
+    </a>
+    <a routerLink="/profile" class="group rounded-app-lg border border-app-border bg-app-surface p-5 flex items-center justify-between transition-all hover:border-app-border-strong hover:-translate-y-0.5">
+      <div>
+        <h3 class="m-0 mb-1">Account</h3>
+        <p class="text-sm text-app-muted m-0">{{ (auth.user$ | async)?.email }}</p>
+      </div>
+      <span class="text-app-accent text-xl transition-transform group-hover:translate-x-1">→</span>
+    </a>
+  </div>
+
+  <!-- Next booking spotlight — the single most useful thing a returning,
+       signed-in user wants to see, so it earns a bigger, dedicated card
+       rather than being buried in a list. -->
+  <div *ngIf="!loading && nextBooking && nextBookingEvent" class="rounded-app-lg border border-app-border bg-app-bg-elevated p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-wide text-app-accent mb-2">Coming up</p>
+      <h2 class="m-0 mb-1">{{ nextBookingEvent.title }}</h2>
+      <p class="text-app-muted m-0">{{ formatDate(nextBookingEvent.startsAt) }} · {{ nextBooking.seatIds.length }} seat{{ nextBooking.seatIds.length === 1 ? '' : 's' }}</p>
+    </div>
+    <a routerLink="/my-bookings" class="btn whitespace-nowrap">View ticket</a>
+  </div>
+
+  <!-- Featured events -->
+  <div *ngIf="!loading && featuredEvents.length > 0">
+    <div class="flex items-baseline justify-between mb-4">
+      <h2 class="m-0">Happening soon</h2>
+      <a routerLink="/events" class="text-sm font-semibold">See all</a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <a
+        *ngFor="let e of featuredEvents"
+        [routerLink]="['/events', e.id, 'seats']"
+        class="card interactive flex flex-col gap-2"
+      >
+        <span class="text-xs font-bold uppercase tracking-wide text-app-accent">{{ formatDate(e.startsAt) }}</span>
+        <h3 class="m-0">{{ e.title }}</h3>
+        <span class="price">From ₹{{ e.basePrice }}</span>
+      </a>
+    </div>
+  </div>
+
+</div>

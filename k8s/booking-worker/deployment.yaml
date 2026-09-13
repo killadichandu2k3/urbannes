@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: booking-worker
-  namespace: urbannest
+  namespace: urbannes
   annotations:
-    urbannest.io/note: >-
+    urbannes.io/note: >-
       No Service object for this Deployment — booking-worker is a pure
       Kafka consumer, never receives inbound HTTP/WS traffic. Its "load
       balancing" is Kafka's own consumer-group partition assignment:
@@ -33,19 +33,19 @@ spec:
             app: booking-worker
       containers:
       - name: booking-worker
-        image: urbannest/booking-worker:latest
+        image: urbannes/booking-worker:latest
         imagePullPolicy: IfNotPresent
         envFrom:
-        - configMapRef: {name: urbannest-config}
+        - configMapRef: {name: urbannes-config}
         env:
         - name: PGUSER
-          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: PGUSER}}
+          valueFrom: {secretKeyRef: {name: urbannes-secrets, key: PGUSER}}
         - name: PGPASSWORD
-          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: PGPASSWORD}}
+          valueFrom: {secretKeyRef: {name: urbannes-secrets, key: PGPASSWORD}}
         - name: RAZORPAY_KEY_ID
-          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: RAZORPAY_KEY_ID, optional: true}}
+          valueFrom: {secretKeyRef: {name: urbannes-secrets, key: RAZORPAY_KEY_ID, optional: true}}
         - name: RAZORPAY_KEY_SECRET
-          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: RAZORPAY_KEY_SECRET, optional: true}}
+          valueFrom: {secretKeyRef: {name: urbannes-secrets, key: RAZORPAY_KEY_SECRET, optional: true}}
         resources:
           requests: {cpu: "150m", memory: "192Mi"}
           limits: {cpu: "750m", memory: "512Mi"}

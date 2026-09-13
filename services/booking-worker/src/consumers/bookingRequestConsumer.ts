@@ -14,7 +14,7 @@
 
 import { Kafka, logLevel } from 'kafkajs';
 import { v4 as uuidv4 } from 'uuid';
-import { createLogger, KAFKA_TOPICS } from '@urbannest/shared';
+import { createLogger, KAFKA_TOPICS } from '@urbannes/shared';
 import { pool, withTransaction, checkDbHealth } from '../db/pool';
 import { getCachedSeatMap, setCachedSeatMap, getCachedEvent, setCachedEvent, invalidateSeatMap, checkCacheHealth } from '../cache/cache';
 import { acquireAllOrNothing, releaseSeatLocks } from '../cache/seatLock';
@@ -139,16 +139,37 @@ async function handleGetBooking(payload: { bookingId: string; eventId: string })
 
 async function handleListMyBookings(payload: { userId: string }) {
   const { rows } = await pool.query('SELECT * FROM bookings WHERE user_id = $1 ORDER BY created_at DESC', [payload.userId]);
-  
+
+  // DIAGNOSTIC — remove once "my bookings empty despite real bookings"
+  // is confirmed fixed. Compare the userId below against the actual
+  // `user_id` values sitting in the `bookings` table: if this userId
+  // never appears there, the JWT's userId and the row owner disagree
+  // (stale token, or bookings created before the current auth model),
+  // which is a data issue, not a code bug.
+  logger.info('LIST_MY_BOOKINGS queried', { userId: payload.userId, rowsFound: rows.length });
+
   if (rows.length === 0) return { data: [] };
 
-  const bookingIds = rows.map(r => r.id);
-  const seatsRes = await pool.query('SELECT booking_id, seat_id FROM booking_seats WHERE booking_id = ANY($1::uuid[])', [bookingIds]);
-  
+  // Same seats/add-ons join handleGetBooking uses for a single booking,
+  // batched here across every row this user owns in one round trip each
+  // (two IN-queries total) rather than N+1 queries per booking.
+  const bookingIds = rows.map((b: any) => b.id);
+  const [seatsRes, addonsRes] = await Promise.all([
+    pool.query('SELECT booking_id, seat_id FROM booking_seats WHERE booking_id = ANY($1::uuid[])', [bookingIds]),
+    pool.query('SELECT booking_id, addon_code FROM booking_addons WHERE booking_id = ANY($1::uuid[])', [bookingIds]),
+  ]);
+
   const seatsByBooking = new Map<string, string[]>();
-  for (const row of seatsRes.rows) {
-    if (!seatsByBooking.has(row.booking_id)) seatsByBooking.set(row.booking_id, []);
-    seatsByBooking.get(row.booking_id)!.push(row.seat_id);
+  for (const r of seatsRes.rows as any[]) {
+    const list = seatsByBooking.get(r.booking_id) ?? [];
+    list.push(r.seat_id);
+    seatsByBooking.set(r.booking_id, list);
+  }
+  const addonsByBooking = new Map<string, string[]>();
+  for (const r of addonsRes.rows as any[]) {
+    const list = addonsByBooking.get(r.booking_id) ?? [];
+    list.push(r.addon_code);
+    addonsByBooking.set(r.booking_id, list);
   }
 
   const data = rows.map((b: any) => ({
@@ -158,8 +179,8 @@ async function handleListMyBookings(payload: { userId: string }) {
     status: b.status,
     basePrice: Number(b.base_price),
     finalPrice: Number(b.final_price),
-    seatIds: seatsByBooking.get(b.id) || [],
-    addOnCodes: [] as string[],
+    seatIds: seatsByBooking.get(b.id) ?? [],
+    addOnCodes: addonsByBooking.get(b.id) ?? [],
     createdAt: b.created_at,
     updatedAt: b.updated_at,
   }));

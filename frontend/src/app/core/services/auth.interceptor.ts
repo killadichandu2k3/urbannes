@@ -3,7 +3,7 @@
 // (Apollo's HttpLink runs its POSTs through Angular's HttpClient, so a
 // standard HttpInterceptor is the right place for this — no changes needed
 // inside graphql.module.ts's link config itself). Replaces the old
-// hardcoded `apikey: 'urbannest-frontend-dev-key'` header that graphql.
+// hardcoded `apikey: 'urbannes-frontend-dev-key'` header that graphql.
 // module.ts sent unconditionally before real auth existed.
 //
 // Requests before login (register/login themselves, and any public query

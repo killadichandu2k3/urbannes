@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installs ArgoCD into the Kind cluster, then registers UrbanNest as an
+# Installs ArgoCD into the Kind cluster, then registers UrbanNes as an
 # ArgoCD Application with automated sync (prune + self-heal) turned on —
 # see k8s-argocd/README-argocd.md and application.yaml's syncPolicy.
 # ArgoCD is now the real deploy path: it applies k8s/ to the cluster and
@@ -11,11 +11,11 @@
 #
 # This is still separate from deploy-kind.sh on purpose: ArgoCD is
 # cluster tooling (like metrics-server was), installed once, that then
-# takes over continuous reconciliation of the urbannest namespace.
+# takes over continuous reconciliation of the urbannes namespace.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-CLUSTER_NAME="${CLUSTER_NAME:-urbannest}"
+CLUSTER_NAME="${CLUSTER_NAME:-urbannes}"
 
 if ! kind get clusters 2>/dev/null | grep -qx "${CLUSTER_NAME}"; then
   echo "ERROR: Kind cluster '${CLUSTER_NAME}' doesn't exist yet."
@@ -38,12 +38,12 @@ echo "==> Starting the in-cluster git-server (ArgoCD's Git source — see k8s-ar
 kubectl apply -f k8s-argocd/git-server.yaml
 kubectl wait --for=condition=ready pod/git-server -n argocd --timeout=120s
 
-echo "==> Registering UrbanNest as an ArgoCD Application (automated sync: prune + self-heal)"
+echo "==> Registering UrbanNes as an ArgoCD Application (automated sync: prune + self-heal)"
 kubectl apply -f k8s-argocd/application.yaml
 
-echo "==> Waiting for the first sync to apply k8s/ to the urbannest namespace"
-kubectl wait --for=jsonpath='{.status.sync.status}'=Synced application/urbannest -n argocd --timeout=180s || \
-  echo "    (still syncing — check with: kubectl get application urbannest -n argocd)"
+echo "==> Waiting for the first sync to apply k8s/ to the urbannes namespace"
+kubectl wait --for=jsonpath='{.status.sync.status}'=Synced application/urbannes -n argocd --timeout=180s || \
+  echo "    (still syncing — check with: kubectl get application urbannes -n argocd)"
 
 echo "==> Exposing the ArgoCD UI on https://localhost:8090"
 # ArgoCD's server Service defaults to ClusterIP — kubectl port-forward is
@@ -82,7 +82,7 @@ echo "    (default ~3 minutes), or hit Refresh + Sync in the UI for an"
 echo "    immediate apply — no more manual kubectl apply -k needed."
 echo ""
 echo "==> Try it: delete a pod and watch ArgoCD bring it back"
-echo "    kubectl delete pod -n urbannest -l app=auth-api --field-selector=status.phase=Running -o name | head -1 | xargs kubectl delete -n urbannest"
+echo "    kubectl delete pod -n urbannes -l app=auth-api --field-selector=status.phase=Running -o name | head -1 | xargs kubectl delete -n urbannes"
 echo "    (or just click the pod in the ArgoCD UI and hit Delete)"
 echo "    Self-heal notices the drift and recreates it from the Deployment's"
 echo "    desired replica count, usually within a few seconds."

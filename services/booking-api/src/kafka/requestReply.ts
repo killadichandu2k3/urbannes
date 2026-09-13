@@ -30,7 +30,7 @@
 import { Kafka, Producer, logLevel } from 'kafkajs';
 import Redis from 'ioredis';
 import { v4 as uuidv4 } from 'uuid';
-import { createLogger } from '@urbannest/shared';
+import { createLogger } from '@urbannes/shared';
 
 const logger = createLogger('booking-api:request-reply');
 

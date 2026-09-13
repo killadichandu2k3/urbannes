@@ -12,7 +12,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: postgres
-  namespace: urbannest
+  namespace: urbannes
 spec:
   serviceName: postgres
   replicas: 1
@@ -31,16 +31,16 @@ spec:
         - containerPort: 5432
         env:
         - name: POSTGRES_USER
-          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: PGUSER}}
+          valueFrom: {secretKeyRef: {name: urbannes-secrets, key: PGUSER}}
         - name: POSTGRES_PASSWORD
-          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: PGPASSWORD}}
+          valueFrom: {secretKeyRef: {name: urbannes-secrets, key: PGPASSWORD}}
         - name: POSTGRES_DB
-          value: urbannest
+          value: urbannes
         volumeMounts:
         - name: data
           mountPath: /var/lib/postgresql/data
         readinessProbe:
-          exec: {command: ["pg_isready", "-U", "urbannest"]}
+          exec: {command: ["pg_isready", "-U", "urbannes"]}
           initialDelaySeconds: 5
           periodSeconds: 5
         livenessProbe:
@@ -49,7 +49,7 @@ spec:
             # process actually being dead. A liveness probe that's as
             # trigger-happy as readiness risks Kubernetes killing a healthy-
             # but-busy Postgres, which is worse than doing nothing.
-          exec: {command: ["pg_isready", "-U", "urbannest"]}
+          exec: {command: ["pg_isready", "-U", "urbannes"]}
           initialDelaySeconds: 30
           periodSeconds: 15
           failureThreshold: 5
@@ -61,7 +61,7 @@ spec:
       name: data
     spec:
       accessModes: ["ReadWriteOnce"]
-      storageClassName: urbannest-db-storage
+      storageClassName: urbannes-db-storage
       resources:
         requests:
           storage: 2Gi

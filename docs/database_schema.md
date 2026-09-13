@@ -36,6 +36,8 @@ erDiagram
 
 ### 2. The User Flow
 - A **`user`** logically connects to their **`bookings`**, their **`notifications`**, and their **`payment_orders`**. 
+  - *New:* Users now support Google Authentication via the `google_id` column. The `password_hash` column is now nullable to support Google-only accounts.
+  - *Note:* The `auth-api` service (which manages `users`, `email_otps`, and `notifications`) now uses TypeORM instead of raw SQL. The single source of truth for the schema remains `schema.sql`.
 - *(Fun fact: The connection between `bookings` and `users` is just a soft link rather than a strict database constraint. This is because your Auth service and Booking service are built as independent microservices!)*
 
 ### 3. The Booking Web
@@ -48,4 +50,5 @@ When a user buys a ticket, it creates a spiderweb of connected records:
 ### 4. Standalone Tables
 - **`email_otps`**: Just temporary codes that are checked against an email address.
 - **`short_links`**: completely independent table used for URL shortening, not connected to anything else.
+
 

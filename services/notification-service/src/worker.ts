@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
-import { createLogger } from '@urbannest/shared';
+import { createLogger } from '@urbannes/shared';
 import { startNotificationConsumer } from './kafka/consumer';
 
 const logger = createLogger('notification-service:bootstrap');

@@ -12,7 +12,7 @@
 
 import Redis from 'ioredis';
 import { PubSub } from 'graphql-subscriptions';
-import { createLogger } from '@urbannest/shared';
+import { createLogger } from '@urbannes/shared';
 
 const logger = createLogger('booking-api:ws-push');
 

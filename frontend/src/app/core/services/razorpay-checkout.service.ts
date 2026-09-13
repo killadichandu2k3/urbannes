@@ -54,7 +54,7 @@ export class RazorpayCheckoutService {
         amount: order.amount,
         currency: order.currency,
         order_id: order.orderId,
-        name: 'UrbanNest',
+        name: 'UrbanNes',
         description: opts.description,
         theme: { color: '#d9622b' },
         prefill: { name: opts.userName, email: opts.userEmail },

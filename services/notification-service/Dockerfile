@@ -10,8 +10,8 @@ RUN npm install --workspaces --include-workspace-root --ignore-scripts
 COPY services/shared services/shared
 COPY services/notification-service services/notification-service
 
-RUN npm run build --workspace=@urbannest/shared
-RUN npm run build --workspace=@urbannest/notification-service
+RUN npm run build --workspace=@urbannes/shared
+RUN npm run build --workspace=@urbannes/notification-service
 
 FROM node:20-alpine AS runtime
 WORKDIR /app

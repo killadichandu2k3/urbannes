@@ -17,7 +17,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-CLUSTER_NAME="${CLUSTER_NAME:-urbannest}"
+CLUSTER_NAME="${CLUSTER_NAME:-urbannes}"
 
 echo "==> Checking Kind cluster status"
 if ! kind get clusters 2>/dev/null | grep -qx "${CLUSTER_NAME}"; then
@@ -31,7 +31,7 @@ kubectl config use-context "kind-${CLUSTER_NAME}"
 
 ./scripts/build-images.sh
 
-echo "==> Ensuring the urbannest namespace + base cluster resources exist"
+echo "==> Ensuring the urbannes namespace + base cluster resources exist"
 # ArgoCD applies k8s/ (which includes base/namespace.yaml) once it syncs,
 # but the FIRST sync needs the argocd namespace/CRDs already installed —
 # so this bootstraps ArgoCD itself if it isn't running yet, then lets its
@@ -40,19 +40,19 @@ if ! kubectl get deployment argocd-server -n argocd >/dev/null 2>&1; then
   echo "==> ArgoCD not found — installing it now (see scripts/setup-argocd.sh)"
   ./scripts/setup-argocd.sh
 else
-  echo "==> ArgoCD already installed — triggering a sync of the urbannest Application"
-  kubectl patch application urbannest -n argocd --type merge \
+  echo "==> ArgoCD already installed — triggering a sync of the urbannes Application"
+  kubectl patch application urbannes -n argocd --type merge \
     -p '{"operation":{"sync":{"revision":"HEAD"}}}' >/dev/null 2>&1 || true
 fi
 
 echo "==> Waiting for Postgres to be ready (this can take a minute on first run)"
-kubectl wait --for=condition=ready pod -l app=postgres -n urbannest --timeout=180s
+kubectl wait --for=condition=ready pod -l app=postgres -n urbannes --timeout=180s
 
 echo "==> Waiting for the cache Redis to be ready"
-kubectl wait --for=condition=ready pod -l app=redis-cache -n urbannest --timeout=180s
+kubectl wait --for=condition=ready pod -l app=redis-cache -n urbannes --timeout=180s
 
 echo "==> Waiting for Kafka to be ready"
-kubectl wait --for=condition=available deployment/kafka -n urbannest --timeout=180s
+kubectl wait --for=condition=available deployment/kafka -n urbannes --timeout=180s
 
 # Every app Deployment uses `image: ...:latest` + `imagePullPolicy:
 # IfNotPresent` — on a re-run of this script (not a fresh cluster), the
@@ -66,23 +66,23 @@ kubectl wait --for=condition=available deployment/kafka -n urbannest --timeout=1
 # self-heal reverts unwanted DRIFT from what git says, and a rollout
 # restart doesn't change any pod's desired spec.
 echo "==> Restarting app deployments to pick up freshly-loaded images"
-kubectl rollout restart deployment/auth-api -n urbannest
-kubectl rollout restart deployment/booking-api -n urbannest
-kubectl rollout restart deployment/booking-worker -n urbannest
-kubectl rollout restart deployment/analytics-api -n urbannest
-kubectl rollout restart deployment/gateway-graphql -n urbannest
-kubectl rollout restart deployment/notification-service -n urbannest
-kubectl rollout restart deployment/chat-service -n urbannest
-kubectl rollout restart deployment/gateway -n urbannest
+kubectl rollout restart deployment/auth-api -n urbannes
+kubectl rollout restart deployment/booking-api -n urbannes
+kubectl rollout restart deployment/booking-worker -n urbannes
+kubectl rollout restart deployment/analytics-api -n urbannes
+kubectl rollout restart deployment/gateway-graphql -n urbannes
+kubectl rollout restart deployment/notification-service -n urbannes
+kubectl rollout restart deployment/chat-service -n urbannes
+kubectl rollout restart deployment/gateway -n urbannes
 
 echo "==> Waiting for application services to be ready"
-kubectl wait --for=condition=available deployment/auth-api -n urbannest --timeout=180s
-kubectl wait --for=condition=available deployment/booking-api -n urbannest --timeout=180s
-kubectl wait --for=condition=available deployment/analytics-api -n urbannest --timeout=180s
-kubectl wait --for=condition=available deployment/gateway-graphql -n urbannest --timeout=180s
-kubectl wait --for=condition=available deployment/notification-service -n urbannest --timeout=180s
-kubectl wait --for=condition=available deployment/chat-service -n urbannest --timeout=180s
-kubectl wait --for=condition=available deployment/gateway -n urbannest --timeout=180s
+kubectl wait --for=condition=available deployment/auth-api -n urbannes --timeout=180s
+kubectl wait --for=condition=available deployment/booking-api -n urbannes --timeout=180s
+kubectl wait --for=condition=available deployment/analytics-api -n urbannes --timeout=180s
+kubectl wait --for=condition=available deployment/gateway-graphql -n urbannes --timeout=180s
+kubectl wait --for=condition=available deployment/notification-service -n urbannes --timeout=180s
+kubectl wait --for=condition=available deployment/chat-service -n urbannes --timeout=180s
+kubectl wait --for=condition=available deployment/gateway -n urbannes --timeout=180s
 
 echo ""
 echo "==> Deployed. The NGINX gateway's NodePort (30000) is the public"
@@ -94,5 +94,5 @@ echo ""
 echo "==> Node spread — confirm pods actually landed on different nodes"
 echo "    (this cluster runs 1 control-plane + 2 workers, see kind-config.yaml):"
 echo ""
-kubectl get pods -n urbannest -o wide | awk '{printf "%-28s %-18s %s\n", $1, $7, $3}'
+kubectl get pods -n urbannes -o wide | awk '{printf "%-28s %-18s %s\n", $1, $7, $3}'
 echo ""

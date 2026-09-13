@@ -1,5 +1,5 @@
 {
-  "name": "@urbannest/booking-worker",
+  "name": "@urbannes/booking-worker",
   "version": "1.0.0",
   "main": "dist/worker.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/worker.ts"
   },
   "dependencies": {
-    "@urbannest/shared": "^1.0.0",
+    "@urbannes/shared": "^1.0.0",
     "pg": "^8.11.5",
     "ioredis": "^5.4.1",
     "kafkajs": "^2.2.4",

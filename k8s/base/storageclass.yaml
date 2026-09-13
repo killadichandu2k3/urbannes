@@ -15,10 +15,10 @@
 # that node's filesystem — no cloud disk, no separate install step.
 #
 # WHY TWO CLASSES: Postgres and Redis have different durability needs.
-# `urbannest-db-storage` uses `reclaimPolicy: Retain` (a Postgres PVC
+# `urbannes-db-storage` uses `reclaimPolicy: Retain` (a Postgres PVC
 # surviving StatefulSet deletion is usually what you want — losing a
 # database because someone ran `kubectl delete statefulset` would be a
-# bad day). `urbannest-cache-storage` uses `reclaimPolicy: Delete` since
+# bad day). `urbannes-cache-storage` uses `reclaimPolicy: Delete` since
 # Redis Cluster data is a cache the app already treats as reconstructable,
 # so there's no reason to keep orphaned volumes around.
 # ============================================================================
@@ -26,7 +26,7 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: urbannest-db-storage
+  name: urbannes-db-storage
 provisioner: rancher.io/local-path
 volumeBindingMode: WaitForFirstConsumer
 reclaimPolicy: Retain
@@ -35,7 +35,7 @@ allowVolumeExpansion: false
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: urbannest-cache-storage
+  name: urbannes-cache-storage
 provisioner: rancher.io/local-path
 volumeBindingMode: WaitForFirstConsumer
 reclaimPolicy: Delete

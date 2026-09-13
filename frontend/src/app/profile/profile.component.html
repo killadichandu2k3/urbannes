@@ -1,0 +1,115 @@
+<div class="flex flex-col gap-8 max-w-2xl">
+
+  <div>
+    <p class="text-sm text-app-muted mb-1">Account</p>
+    <h1 class="text-3xl font-extrabold tracking-tight">Your profile</h1>
+  </div>
+
+  <!-- Identity summary -->
+  <div class="rounded-app-lg border border-app-border bg-app-surface p-6 flex items-center gap-4">
+    <div class="user-avatar" style="width: 56px; height: 56px; font-size: 1.25rem;">
+      {{ ((auth.user$ | async)?.displayName || 'U')[0].toUpperCase() }}
+    </div>
+    <div>
+      <h3 class="m-0">{{ (auth.user$ | async)?.displayName }}</h3>
+      <p class="text-sm text-app-muted m-0">{{ (auth.user$ | async)?.email }}</p>
+    </div>
+  </div>
+
+  <!-- Display name -->
+  <div class="rounded-app-lg border border-app-border bg-app-surface p-6">
+    <h3 class="m-0 mb-1">Display name</h3>
+    <p class="text-sm text-app-muted mb-4">This is the name shown on your bookings and in the navbar.</p>
+
+    <div *ngIf="nameError" class="error-banner mb-4">
+      <span>⚠️</span>
+      <span>{{ nameError }}</span>
+    </div>
+    <div *ngIf="nameSaved" class="mb-4 text-sm font-medium" style="color: var(--ok);">
+      Saved — your display name has been updated.
+    </div>
+
+    <form (ngSubmit)="saveDisplayName()" #nameForm="ngForm" class="flex flex-col sm:flex-row gap-3">
+      <input
+        name="displayName"
+        type="text"
+        [(ngModel)]="displayName"
+        required
+        maxlength="80"
+        placeholder="Your name"
+        class="flex-1"
+      />
+      <button type="submit" [disabled]="nameSaving" class="whitespace-nowrap">
+        {{ nameSaving ? 'Saving…' : 'Save name' }}
+      </button>
+    </form>
+  </div>
+
+  <!-- Password — only shown when the account actually has one; a
+       Google-only account has nothing to change here (see hasPassword on
+       the User type, set server-side in auth-api's toUser()). -->
+  <div *ngIf="(auth.user$ | async)?.hasPassword" class="rounded-app-lg border border-app-border bg-app-surface p-6">
+    <h3 class="m-0 mb-1">Password</h3>
+    <p class="text-sm text-app-muted mb-4">Enter your current password to set a new one.</p>
+
+    <div *ngIf="passwordError" class="error-banner mb-4">
+      <span>⚠️</span>
+      <span>{{ passwordError }}</span>
+    </div>
+    <div *ngIf="passwordSaved" class="mb-4 text-sm font-medium" style="color: var(--ok);">
+      Your password has been changed.
+    </div>
+
+    <form (ngSubmit)="changePassword()" #passwordForm="ngForm" class="flex flex-col gap-3">
+      <div>
+        <label class="muted font-semibold mb-1.5 block" for="current-password">Current password</label>
+        <input
+          id="current-password"
+          name="currentPassword"
+          type="password"
+          autocomplete="current-password"
+          [(ngModel)]="currentPassword"
+          required
+          class="w-full"
+        />
+      </div>
+      <div>
+        <label class="muted font-semibold mb-1.5 block" for="new-password">New password</label>
+        <input
+          id="new-password"
+          name="newPassword"
+          type="password"
+          autocomplete="new-password"
+          [(ngModel)]="newPassword"
+          required
+          placeholder="At least 8 characters, one upper, one lower, one number"
+          class="w-full"
+        />
+      </div>
+      <div>
+        <label class="muted font-semibold mb-1.5 block" for="confirm-password">Confirm new password</label>
+        <input
+          id="confirm-password"
+          name="confirmPassword"
+          type="password"
+          autocomplete="new-password"
+          [(ngModel)]="confirmPassword"
+          required
+          class="w-full"
+        />
+      </div>
+      <button type="submit" [disabled]="passwordSaving" class="mt-1 self-start">
+        {{ passwordSaving ? 'Updating…' : 'Change password' }}
+      </button>
+    </form>
+  </div>
+
+  <!-- Shown instead of the password card for a Google-only account, so
+       the absence of a password form is explained rather than just
+       silently missing. -->
+  <div *ngIf="(auth.user$ | async)?.hasPassword === false" class="rounded-app-lg border border-app-border bg-app-surface p-6">
+    <h3 class="m-0 mb-1">Password</h3>
+    <p class="text-sm text-app-muted m-0">You sign in with Google, so there's no password to manage here.</p>
+  </div>
+
+</div>

@@ -11,8 +11,8 @@ RUN npm install --workspaces --include-workspace-root --ignore-scripts
 COPY services/shared services/shared
 COPY services/auth-api services/auth-api
 
-RUN npm run build --workspace=@urbannest/shared
-RUN npm run build --workspace=@urbannest/auth-api
+RUN npm run build --workspace=@urbannes/shared
+RUN npm run build --workspace=@urbannes/auth-api
 RUN cp services/auth-api/src/graphql/schema.graphql services/auth-api/dist/graphql/schema.graphql
 
 FROM node:20-alpine AS runtime

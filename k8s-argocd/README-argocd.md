@@ -20,7 +20,7 @@ Kind `extraMounts` hostPath (see `kind-config.yaml`).
   read-only over the Git protocol (port 9418) — no auth, no HTTP, no
   extra server software, since this never leaves the cluster network.
 - **`application.yaml`** — the ArgoCD `Application` object pointing at
-  `git://git-server.argocd.svc.cluster.local/urbannest.git`, path `k8s`,
+  `git://git-server.argocd.svc.cluster.local/urbannes.git`, path `k8s`,
   with `syncPolicy.automated` turned on: `prune: true` and
   `selfHeal: true`.
 

@@ -20,7 +20,7 @@
 
 import { pool } from '../db/pool';
 import { getOrCompute } from '../cache/statsCache';
-import { createLogger } from '@urbannest/shared';
+import { createLogger } from '@urbannes/shared';
 
 const logger = createLogger('analytics-api:resolvers');
 

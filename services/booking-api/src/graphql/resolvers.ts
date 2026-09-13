@@ -9,7 +9,7 @@
 import { GraphQLError } from 'graphql';
 import { requestReply } from '../kafka/requestReply';
 import { pubsub, BOOKING_UPDATED, SEAT_MAP_UPDATED } from '../ws/pushBridge';
-import { createLogger, extractBearerToken, verifyAuthToken } from '@urbannest/shared';
+import { createLogger, extractBearerToken, verifyAuthToken } from '@urbannes/shared';
 
 const logger = createLogger('booking-api:resolvers');
 

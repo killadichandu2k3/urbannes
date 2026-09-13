@@ -1,4 +1,4 @@
-# UrbanNest — setup guide
+# UrbanNes — setup guide
 
 Event booking platform: Angular frontend, GraphQL microservices, Kafka,
 Postgres, Redis. This guide is steps only — what to install, what to run,
@@ -29,7 +29,7 @@ Both must print a version number.
 
 ### 2. Set up Razorpay + Resend (both free, no card required)
 
-UrbanNest uses two third-party services, both with permanently-free tiers:
+UrbanNes uses two third-party services, both with permanently-free tiers:
 
 - **Razorpay** (payments, TEST MODE) — sign up at
   https://dashboard.razorpay.com/signup, then go to **Settings → API
@@ -168,7 +168,7 @@ self-signed certificate — expected, click through), log in as `admin`
 with that password.
 
 **To delete a pod and watch it come back:** click any pod in the
-`urbannest` Application → **Delete**. ArgoCD's self-heal recreates it
+`urbannes` Application → **Delete**. ArgoCD's self-heal recreates it
 within seconds, because the Deployment in `k8s/` still says how many
 replicas should exist. This is the point of turning on automated sync —
 see `k8s-argocd/README-argocd.md` if you want the one-paragraph why.
@@ -185,7 +185,7 @@ automatic poll.
 ### 8. Changed application code (not `k8s/`)?
 ```bash
 ./scripts/build-images.sh
-kubectl rollout restart deployment/<service-name> -n urbannest
+kubectl rollout restart deployment/<service-name> -n urbannes
 ```
 *(Why the restart: every Deployment uses `image: ...:latest`, so
 Kubernetes doesn't know a new image was loaded unless you force a
@@ -194,7 +194,7 @@ rollout.)*
 ### 9. Tear down
 ```bash
 ./scripts/teardown-kind.sh          # removes the app, keeps the cluster
-kind delete cluster --name urbannest # removes the cluster entirely
+kind delete cluster --name urbannes # removes the cluster entirely
 ```
 
 ---
@@ -277,7 +277,7 @@ Approve** to let it deploy to your Kind cluster.
   `docker compose logs notification-service` for what it would have sent.
 - **Kind runs out of memory** — raise Docker Desktop's memory limit
   (Settings → Resources), aim for 8GB+.
-- **The `urbannest` Application doesn't show up in ArgoCD** — confirm the
+- **The `urbannes` Application doesn't show up in ArgoCD** — confirm the
   `git-server` pod reached `Running`: `kubectl get pod git-server -n
   argocd`. If not, re-apply it: `kubectl apply -f
   k8s-argocd/git-server.yaml`.

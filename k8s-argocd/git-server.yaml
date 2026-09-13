@@ -21,7 +21,7 @@ metadata:
     app: git-server
 spec:
   nodeSelector:
-    kubernetes.io/hostname: urbannest-control-plane
+    kubernetes.io/hostname: urbannes-control-plane
   tolerations:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
@@ -35,7 +35,7 @@ spec:
     args:
       - |
         set -e
-        REPO=/srv/git/urbannest.git
+        REPO=/srv/git/urbannes.git
         if [ ! -d "$REPO" ]; then
           echo "==> First run: initializing bare repo"
           mkdir -p "$REPO"
@@ -52,8 +52,8 @@ spec:
         rm -rf /tmp/work/k8s
         cp -r /source/k8s /tmp/work/k8s
         cd /tmp/work
-        git config user.email "git-server@urbannest.local"
-        git config user.name "UrbanNest Git Server"
+        git config user.email "git-server@urbannes.local"
+        git config user.name "UrbanNes Git Server"
         git checkout -B main --quiet
         git add -A
         # --allow-empty: a restart with no actual k8s/ changes since last
@@ -100,9 +100,9 @@ spec:
   - name: source
     hostPath:
       # Matches kind-config.yaml's extraMounts containerPath — this is
-      # the whole urbannest project folder as it exists on your host
+      # the whole urbannes project folder as it exists on your host
       # disk, read-only.
-      path: /urbannest-repo
+      path: /urbannes-repo
       type: Directory
   - name: repo-data
     # The bare repo itself lives in an emptyDir, not back on the host —

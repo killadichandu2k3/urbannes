@@ -14,7 +14,7 @@ import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 import { Pool } from 'pg';
-import { createLogger } from '@urbannest/shared';
+import { createLogger } from '@urbannes/shared';
 import { startConsumer } from './consumers/bookingRequestConsumer';
 
 const logger = createLogger('booking-worker:bootstrap');
@@ -26,9 +26,9 @@ async function applySchema(): Promise<void> {
   const pool = new Pool({
     host: PG_HOST,
     port: PG_PORT,
-    user: process.env.PGUSER || 'urbannest',
-    password: process.env.PGPASSWORD || 'urbannest',
-    database: process.env.PGDATABASE || 'urbannest',
+    user: process.env.PGUSER || 'urbannes',
+    password: process.env.PGPASSWORD || 'urbannes',
+    database: process.env.PGDATABASE || 'urbannes',
   });
 
   const schema = fs.readFileSync(path.join(__dirname, 'db/schema.sql'), 'utf-8');

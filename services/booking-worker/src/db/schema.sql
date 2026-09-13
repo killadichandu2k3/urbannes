@@ -1,5 +1,5 @@
 -- ============================================================================
--- UrbanNest schema — applied to a single Postgres instance.
+-- UrbanNes schema — applied to a single Postgres instance.
 -- ----------------------------------------------------------------------------
 -- This project used to shard bookings across two independent Postgres
 -- instances via a consistent hash ring (see git history for the removed
@@ -25,6 +25,16 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified_at TIMESTAMPTZ;
+-- Google-authenticated accounts have no password of their own (Google IS
+-- the credential check) and are identified by Google's stable per-account
+-- subject id, not email alone — a user could change their Google email,
+-- and two different providers could theoretically claim the same email.
+-- password_hash is relaxed to nullable for exactly this case: a
+-- Google-only account has NULL here, and login() (see resolvers.ts)
+-- already refuses any account with no password hash before it would ever
+-- call bcrypt.compare against null.
+ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT UNIQUE;
 CREATE INDEX IF NOT EXISTS idx_users_email ON users (lower(email));
 
 -- One-time codes for email verification at signup. Short-lived and

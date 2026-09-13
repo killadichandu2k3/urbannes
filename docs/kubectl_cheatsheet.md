@@ -155,3 +155,25 @@ kubectl config get-contexts
 kubectl config use-context <context-name>
 ```
 *Example:* `kubectl config use-context kind-urbannest`
+
+---
+
+## ArgoCD & GitOps
+
+**Get ArgoCD admin password**
+```bash
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d
+```
+
+**Port-forward ArgoCD UI to localhost:8090**
+```bash
+kubectl port-forward svc/argocd-server -n argocd 8090:443
+```
+
+**Restart local Git server for ArgoCD**
+*(Needed if you made changes to the `k8s/` folder locally and want ArgoCD to sync them)*
+```bash
+kubectl delete pod git-server -n argocd
+kubectl apply -f k8s-argocd/git-server.yaml
+```
+

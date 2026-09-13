@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAMESPACE: ${{ github.repository_owner }}/urbannest
+  IMAGE_NAMESPACE: ${{ github.repository_owner }}/urbannes
 
 jobs:
   typecheck:
@@ -35,9 +35,9 @@ jobs:
         run: npm install --workspaces --include-workspace-root --no-audit --no-fund
       - name: Build shared first (dependency of every other workspace)
         if: matrix.workspace != 'shared'
-        run: npm run build --workspace=@urbannest/shared
+        run: npm run build --workspace=@urbannes/shared
       - name: Typecheck / build ${{ matrix.workspace }}
-        run: npm run build --workspace=@urbannest/${{ matrix.workspace }}
+        run: npm run build --workspace=@urbannes/${{ matrix.workspace }}
 
   frontend-build:
     name: Frontend build + typecheck

@@ -1,13 +1,14 @@
 # Asset Licenses
 
-Images used in the UrbanNest frontend, sourced from Unsplash and hotlinked
+Images used in the UrbanNes frontend, sourced from Unsplash and hotlinked
 via Unsplash's CDN (`images.unsplash.com`) rather than vendored into the
 repo — this matches how Unsplash's own API guidelines expect images to be
 served, and keeps the repo free of binary image weight.
 
 | Image | Source | Source URL | License | Author | Usage |
 |---|---|---|---|---|---|
-| Hero / auth panel background | Unsplash | https://unsplash.com/photos/concert-crowd-with-hands-raised-under-stage-lights-oqT3wEEu3ds | [Unsplash License](https://unsplash.com/license) (free for commercial & non-commercial use, no permission needed) | Joshua Hoehne (@joshua_hoehne) | Reused in three places under the same license: full-bleed background on the Events (home) page hero, and the photo side-panel on the login/register/verify-email pages — all under a dark gradient overlay for text legibility. Attribution is not legally required by the Unsplash License but is credited in-app (a small credit line) on every page it appears. |
+| Hero / auth panel background | Unsplash | https://unsplash.com/photos/concert-crowd-with-hands-raised-under-stage-lights-oqT3wEEu3ds | [Unsplash License](https://unsplash.com/license) (free for commercial & non-commercial use, no permission needed) | Joshua Hoehne (@joshua_hoehne) | Reused in four places under the same license: full-bleed background on the public landing page hero, the Events (home) page hero, and the photo side-panel on the login/register/verify-email pages — all under a dark gradient overlay for text legibility. Attribution is not legally required by the Unsplash License but is credited in-app (a small credit line) on every page it appears. |
+| Brand icons (payment marks, app-store badges, social marks) | [Simple Icons](https://simpleicons.org) | https://github.com/simple-icons/simple-icons | [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/) (public domain — no attribution required) | Simple Icons contributors | SVGs vendored directly into `frontend/src/assets/brand-icons/` (Razorpay, Visa, Mastercard, American Express, Google Pay, Paytm, App Store, Google Play, Instagram, Facebook, X, WhatsApp) and rendered inline via `<app-brand-icon>` on the landing page (payment trust row, footer social/app links). Each mark is trademarked by its respective owner; Simple Icons' CC0 grant covers the icon artwork itself, not the underlying trademark — these are used descriptively (e.g. "we accept Visa," "download on the App Store"), not as an endorsement claim. |
 
 ## Notes
 

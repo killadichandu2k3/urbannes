@@ -13,7 +13,7 @@
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { Resend } from 'resend';
-import { createLogger } from '@urbannest/shared';
+import { createLogger } from '@urbannes/shared';
 import { pool } from './db/pool';
 
 const logger = createLogger('auth-api:otp');
@@ -23,7 +23,7 @@ const OTP_HASH_ROUNDS = 10;
 const MAX_VERIFY_ATTEMPTS = 5;
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
-const FROM_ADDRESS = process.env.NOTIFICATIONS_FROM_EMAIL || 'Chandu <onboarding@resend.dev>';
+const FROM_ADDRESS = process.env.NOTIFICATIONS_FROM_EMAIL || 'UrbanNes <onboarding@resend.dev>';
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 function generateCode(): string {
@@ -53,11 +53,11 @@ export async function issueOtp(email: string): Promise<void> {
   const { error } = await resend.emails.send({
     from: FROM_ADDRESS,
     to: email,
-    subject: 'Your UrbanNest verification code',
+    subject: 'Your UrbanNes verification code',
     html:
       '<div style="font-family: sans-serif; padding: 24px;">' +
       '<h2 style="margin: 0 0 12px;">Verify your email</h2>' +
-      '<p style="color: #444;">Your UrbanNest verification code is:</p>' +
+      '<p style="color: #444;">Your UrbanNes verification code is:</p>' +
       '<p style="font-size: 32px; font-weight: 700; letter-spacing: 4px;">' + code + '</p>' +
       '<p style="color: #888; font-size: 13px;">This code expires in ' + OTP_TTL_MINUTES + ' minutes.</p>' +
       '</div>',

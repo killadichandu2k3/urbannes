@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: notification-service
-  namespace: urbannest
+  namespace: urbannes
 spec:
   replicas: 2
   selector:
@@ -24,17 +24,17 @@ spec:
             app: notification-service
       containers:
       - name: notification-service
-        image: urbannest/notification-service:latest
+        image: urbannes/notification-service:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 4100
         envFrom:
-        - configMapRef: {name: urbannest-config}
+        - configMapRef: {name: urbannes-config}
         env:
         - name: PORT
           value: "4100"
         - name: RESEND_API_KEY
-          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: RESEND_API_KEY, optional: true}}
+          valueFrom: {secretKeyRef: {name: urbannes-secrets, key: RESEND_API_KEY, optional: true}}
         readinessProbe:
           httpGet: {path: /health, port: 4100}
           initialDelaySeconds: 5

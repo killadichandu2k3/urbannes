@@ -37,7 +37,7 @@ import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { ApolloGateway, IntrospectAndCompose, RemoteGraphQLDataSource } from '@apollo/gateway';
-import { createLogger } from '@urbannest/shared';
+import { createLogger } from '@urbannes/shared';
 
 const logger = createLogger('gateway-graphql');
 const PORT = Number(process.env.PORT || 4500);

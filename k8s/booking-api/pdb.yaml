@@ -2,7 +2,7 @@ apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: booking-api-pdb
-  namespace: urbannest
+  namespace: urbannes
 spec:
   maxUnavailable: 1
   selector:

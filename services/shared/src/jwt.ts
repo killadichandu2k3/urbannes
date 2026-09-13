@@ -11,7 +11,7 @@
 
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'urbannest-dev-jwt-secret-change-me';
+const JWT_SECRET = process.env.JWT_SECRET || 'urbannes-dev-jwt-secret-change-me';
 
 export interface AuthTokenPayload {
   userId: string;

@@ -18,7 +18,7 @@ import express from 'express';
 import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import { v4 as uuidv4 } from 'uuid';
-import { createLogger } from '@urbannest/shared';
+import { createLogger } from '@urbannes/shared';
 import { chatRoomMediator, ChatMessage, ChatParticipant } from './patterns/mediator/ChatRoomMediator';
 import { startFanOutBridge, publishToAllPods } from './redis/fanOutBridge';
 import { appendToHistory, getHistory } from './redis/chatHistory';

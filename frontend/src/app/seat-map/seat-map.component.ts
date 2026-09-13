@@ -136,7 +136,7 @@ export class SeatMapComponent implements OnInit, OnDestroy {
       next: (order) => {
         this.razorpay
           .open(order, {
-            description: `UrbanNest booking ${bookingId}`,
+            description: `UrbanNes booking ${bookingId}`,
             userEmail: this.auth.currentUser?.email,
             userName: this.auth.currentUser?.displayName,
           })

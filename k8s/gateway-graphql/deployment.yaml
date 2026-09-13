@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gateway-graphql
-  namespace: urbannest
+  namespace: urbannes
   annotations:
-    urbannest.io/note: >-
+    urbannes.io/note: >-
       This is the Apollo Gateway (GraphQL schema composition), distinct
       from the NGINX `gateway` Deployment in k8s/gateway/ (reverse proxy,
       load balancing, and rate limiting — the actual public edge, now that
@@ -32,7 +32,7 @@ spec:
             app: gateway-graphql
       containers:
       - name: gateway-graphql
-        image: urbannest/gateway-graphql:latest
+        image: urbannes/gateway-graphql:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 4500

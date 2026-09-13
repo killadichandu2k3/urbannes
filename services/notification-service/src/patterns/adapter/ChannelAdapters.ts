@@ -16,7 +16,7 @@
 // ============================================================================
 
 import { Resend } from 'resend';
-import { createLogger } from '@urbannest/shared';
+import { createLogger } from '@urbannes/shared';
 import { pool } from '../../db/pool';
 
 const logger = createLogger('notification-service:channels');
@@ -34,7 +34,7 @@ export interface NotificationChannel {
 }
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
-const FROM_ADDRESS = process.env.NOTIFICATIONS_FROM_EMAIL || 'Chandu <onboarding@resend.dev>';
+const FROM_ADDRESS = process.env.NOTIFICATIONS_FROM_EMAIL || 'UrbanNes <onboarding@resend.dev>';
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 export class EmailChannelAdapter implements NotificationChannel {

@@ -1,4 +1,4 @@
-// Shared domain-agnostic types used across UrbanNest microservices.
+// Shared domain-agnostic types used across UrbanNes microservices.
 // This is the contract layer — services should not depend on each other's
 // internal models, only on these shared shapes when communicating over
 // HTTP or Kafka.

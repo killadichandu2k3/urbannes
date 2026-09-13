@@ -10,16 +10,16 @@
 // its cache/cache.ts), kept separate from the REDIS_HOST/REDIS_PORT
 // coordination instance that booking-api/chat-service use for locks and
 // Pub/Sub, since this is a shared Kubernetes ConfigMap and the two
-// instances must not collide under the same env var name. Cache invalidation is a plain
-// `del()` on the rare write that changes a user row (there is currently no
-// "edit profile" mutation; register only ever creates a brand-new id, so
-// there's nothing stale to invalidate on write today — the del() helper
-// exists so the next mutation that changes a user row has an obvious place
-// to call it from).
+// instances must not collide under the same env var name. Cache
+// invalidation is a plain `del()` on the rare write that changes a user
+// row — updateProfile() (see graphql/resolvers.ts) calls
+// invalidateCachedUser() right after saving a new displayName, so the
+// next `me` read misses the cache once and refetches the fresh row
+// instead of serving a stale cached name.
 // ============================================================================
 
 import Redis from 'ioredis';
-import { createLogger } from '@urbannest/shared';
+import { createLogger } from '@urbannes/shared';
 
 const logger = createLogger('auth-api:user-cache');
 

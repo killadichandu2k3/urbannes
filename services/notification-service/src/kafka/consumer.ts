@@ -15,7 +15,7 @@
 // ============================================================================
 
 import { Kafka, logLevel } from 'kafkajs';
-import { EventEnvelope, createLogger } from '@urbannest/shared';
+import { EventEnvelope, createLogger } from '@urbannes/shared';
 import { dispatch } from '../patterns/facade/NotificationDispatcher';
 
 const logger = createLogger('notification-service:consumer');

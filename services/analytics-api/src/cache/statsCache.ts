@@ -15,7 +15,7 @@
 // ============================================================================
 
 import Redis from 'ioredis';
-import { createLogger } from '@urbannest/shared';
+import { createLogger } from '@urbannes/shared';
 
 const logger = createLogger('analytics-api:stats-cache');
 

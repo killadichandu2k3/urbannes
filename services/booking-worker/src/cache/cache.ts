@@ -10,7 +10,7 @@
 // ============================================================================
 
 import Redis from 'ioredis';
-import { createLogger } from '@urbannest/shared';
+import { createLogger } from '@urbannes/shared';
 
 const logger = createLogger('booking-worker:cache');
 

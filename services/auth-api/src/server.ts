@@ -5,6 +5,7 @@
 // ============================================================================
 
 import 'dotenv/config';
+import 'reflect-metadata';
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
@@ -16,13 +17,22 @@ import { buildSubgraphSchema } from '@apollo/subgraph';
 import gql from 'graphql-tag';
 import fs from 'fs';
 import path from 'path';
-import { createLogger } from '@urbannest/shared';
+import { createLogger } from '@urbannes/shared';
 import { resolvers } from './graphql/resolvers';
+import { initDataSource } from './orm/data-source';
 
 const logger = createLogger('auth-api');
 const PORT = Number(process.env.PORT || 4600);
 
 async function main() {
+  // TypeORM connects and validates entity metadata before the server
+  // accepts traffic — the same "fail fast on a bad connection at startup,
+  // not on the first request" posture the raw `pool` (db/pool.ts) already
+  // has, just for the ORM-backed resolvers (register/login/me/
+  // notifications) rather than the pg Pool ones.
+  await initDataSource();
+  logger.info('TypeORM data source initialized');
+
   const typeDefsRaw = fs.readFileSync(path.join(__dirname, 'graphql/schema.graphql'), 'utf-8');
   const schema = buildSubgraphSchema({ typeDefs: gql(typeDefsRaw), resolvers: resolvers as any });
 

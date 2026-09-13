@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Installs metrics-server into the Kind cluster.
 #
-# This is cluster-wide infrastructure, not part of the urbannest app itself
+# This is cluster-wide infrastructure, not part of the urbannes app itself
 # — it's what feeds CPU/memory numbers to `kubectl top` and the HPAs in
 # k8s/. Without it, `kubectl top` errors out and HPA has no CPU metric to
 # scale on.
@@ -14,7 +14,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-CLUSTER_NAME="${CLUSTER_NAME:-urbannest}"
+CLUSTER_NAME="${CLUSTER_NAME:-urbannes}"
 
 if ! kind get clusters 2>/dev/null | grep -qx "${CLUSTER_NAME}"; then
   echo "ERROR: Kind cluster '${CLUSTER_NAME}' doesn't exist yet."
@@ -38,5 +38,5 @@ echo ""
 echo "==> Done. Metrics take ~30-60s to start flowing. Check with:"
 echo ""
 echo "    kubectl top nodes"
-echo "    kubectl top pods -n urbannest"
+echo "    kubectl top pods -n urbannes"
 echo ""

@@ -3,21 +3,19 @@ import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 
 // Lazy-loaded feature modules — the NgModule-era equivalent of code
-// splitting per route. The original Vue app imported every view eagerly
-// in router/index.ts; loadChildren here is the more idiomatic Angular
-// pattern for the same four-route shape, and ships less JS on first load.
+// splitting per route.
 //
-// The optional `:roomId?` param from the original Vue route
-// (`/chat/:roomId?`) has no direct Angular equivalent — Angular's router
-// doesn't support optional path segments the same way. Two route entries
-// covering both cases (with and without the param) achieves the same
-// behavior; ChatComponent already treats the param as possibly absent.
+// / is the public landing page (no guard) — a first-time visitor's
+// entry point, with its own CTAs to sign up or browse events. Everything
+// under it that touches real user/event data still requires sign-in via
+// AuthGuard, same as before; only the root path itself became public.
 //
-// /auth/login and /auth/register are the only routes WITHOUT
-// canActivate: [AuthGuard] — everything else now requires a signed-in
-// user, replacing the old "anyone gets a random anonymous id" model (see
-// the removed SessionService and AuthService's header comment).
+// /auth/login and /auth/register are also public. Every other route
+// requires a signed-in user, replacing the old "anyone gets a random
+// anonymous id" model (see the removed SessionService and AuthService's
+// header comment).
 const routes: Routes = [
+  { path: '', loadChildren: () => import('./landing/landing.module').then((m) => m.LandingModule) },
   // Single top-level path prefix, loaded once — AuthModule's own routes
   // (see auth.module.ts) supply 'login' and 'register' underneath it.
   { path: 'auth', loadChildren: () => import('./auth/auth.module').then((m) => m.AuthModule) },
@@ -25,7 +23,8 @@ const routes: Routes = [
     path: '',
     canActivate: [AuthGuard],
     children: [
-      { path: '', loadChildren: () => import('./events/events.module').then((m) => m.EventsModule) },
+      { path: 'home', loadChildren: () => import('./home/home.module').then((m) => m.HomeModule) },
+      { path: 'events', loadChildren: () => import('./events/events.module').then((m) => m.EventsModule) },
       {
         path: 'events/:eventId/seats',
         loadChildren: () => import('./seat-map/seat-map.module').then((m) => m.SeatMapModule),
@@ -34,8 +33,7 @@ const routes: Routes = [
         path: 'my-bookings',
         loadChildren: () => import('./my-bookings/my-bookings.module').then((m) => m.MyBookingsModule),
       },
-      { path: 'chat', loadChildren: () => import('./chat/chat.module').then((m) => m.ChatModule) },
-      { path: 'chat/:roomId', loadChildren: () => import('./chat/chat.module').then((m) => m.ChatModule) },
+      { path: 'profile', loadChildren: () => import('./profile/profile.module').then((m) => m.ProfileModule) },
     ],
   },
 ];

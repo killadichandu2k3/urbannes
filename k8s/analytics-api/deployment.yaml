@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: analytics-api
-  namespace: urbannest
+  namespace: urbannes
 spec:
   replicas: 2
   selector:
@@ -24,19 +24,19 @@ spec:
             app: analytics-api
       containers:
       - name: analytics-api
-        image: urbannest/analytics-api:latest
+        image: urbannes/analytics-api:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 4300
         envFrom:
-        - configMapRef: {name: urbannest-config}
+        - configMapRef: {name: urbannes-config}
         env:
         - name: PORT
           value: "4300"
         - name: PGUSER
-          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: PGUSER}}
+          valueFrom: {secretKeyRef: {name: urbannes-secrets, key: PGUSER}}
         - name: PGPASSWORD
-          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: PGPASSWORD}}
+          valueFrom: {secretKeyRef: {name: urbannes-secrets, key: PGPASSWORD}}
         readinessProbe:
           httpGet: {path: /health, port: 4300}
           initialDelaySeconds: 5

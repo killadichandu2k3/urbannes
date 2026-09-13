@@ -19,7 +19,7 @@ import { buildSubgraphSchema } from '@apollo/subgraph';
 import gql from 'graphql-tag';
 import fs from 'fs';
 import path from 'path';
-import { createLogger } from '@urbannest/shared';
+import { createLogger } from '@urbannes/shared';
 import { resolvers } from './graphql/resolvers';
 
 const logger = createLogger('analytics-api');

@@ -1,5 +1,5 @@
 # ============================================================================
-# UrbanNest booking-api GraphQL schema — Apollo Federation SUBGRAPH.
+# UrbanNes booking-api GraphQL schema — Apollo Federation SUBGRAPH.
 # ----------------------------------------------------------------------------
 # Every Query and Mutation here is a REQUEST/REPLY over Kafka, not a direct
 # DB call (see src/graphql/resolvers.ts and src/kafka/requestReply.ts).

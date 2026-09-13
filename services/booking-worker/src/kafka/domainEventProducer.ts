@@ -6,7 +6,7 @@
 // ============================================================================
 
 import { Kafka, Producer, logLevel } from 'kafkajs';
-import { EventEnvelope, KAFKA_TOPICS, createLogger } from '@urbannest/shared';
+import { EventEnvelope, KAFKA_TOPICS, createLogger } from '@urbannes/shared';
 import { v4 as uuidv4 } from 'uuid';
 
 const logger = createLogger('booking-worker:kafka-producer');

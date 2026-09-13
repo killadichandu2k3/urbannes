@@ -1,5 +1,5 @@
 # =============================================================================
-# UrbanNest — full local stack.
+# UrbanNes — full local stack.
 # -----------------------------------------------------------------------------
 # Topology (see README.md for the diagram):
 #   frontend (Angular dev server, port 5173, optional) OR served via gateway :8080
@@ -81,22 +81,22 @@ services:
     ports:
       - "8081:8080"
     environment:
-      KAFKA_CLUSTERS_0_NAME: urbannest
+      KAFKA_CLUSTERS_0_NAME: urbannes
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
 
   postgres:
     container_name: postgres # single Postgres instance — sharding has been removed (see header comment). booking-worker applies schema.sql + seed.sql here on boot; auth-api and analytics-api connect directly for their own reads/writes.
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: urbannest
-      POSTGRES_PASSWORD: urbannest
-      POSTGRES_DB: urbannest
+      POSTGRES_USER: urbannes
+      POSTGRES_PASSWORD: urbannes
+      POSTGRES_DB: urbannes
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U urbannest"]
+      test: ["CMD-SHELL", "pg_isready -U urbannes"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -137,14 +137,15 @@ services:
       PORT: 4600
       PGHOST: postgres
       PGPORT: 5432
-      PGUSER: urbannest
-      PGPASSWORD: urbannest
-      PGDATABASE: urbannest
+      PGUSER: urbannes
+      PGPASSWORD: urbannes
+      PGDATABASE: urbannes
       REDIS_CACHE_HOST: redis-cache
       REDIS_CACHE_PORT: 6379
-      JWT_SECRET: urbannest-dev-jwt-secret-change-me
+      JWT_SECRET: urbannes-dev-jwt-secret-change-me
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
-      NOTIFICATIONS_FROM_EMAIL: ${NOTIFICATIONS_FROM_EMAIL:-Chandu <onboarding@resend.dev>}
+      NOTIFICATIONS_FROM_EMAIL: ${NOTIFICATIONS_FROM_EMAIL:-UrbanNes <onboarding@resend.dev>}
     expose:
       - "4600"
 
@@ -163,7 +164,7 @@ services:
       REDIS_PORT: 6379
       REPLY_TIMEOUT_MS: 5000
       PUBLIC_SHORT_URL_BASE: http://localhost:8080/s
-      JWT_SECRET: urbannest-dev-jwt-secret-change-me
+      JWT_SECRET: urbannes-dev-jwt-secret-change-me
     expose:
       - "4000"
 
@@ -181,9 +182,9 @@ services:
       KAFKA_BROKERS: kafka:29092
       PGHOST: postgres
       PGPORT: 5432
-      PGUSER: urbannest
-      PGPASSWORD: urbannest
-      PGDATABASE: urbannest
+      PGUSER: urbannes
+      PGPASSWORD: urbannes
+      PGDATABASE: urbannes
       REDIS_CACHE_HOST: redis-cache
       REDIS_CACHE_PORT: 6379
       REDIS_LOCK_HOST: redis-coord
@@ -209,11 +210,11 @@ services:
       KAFKA_BROKERS: kafka:29092
       PGHOST: postgres
       PGPORT: 5432
-      PGUSER: urbannest
-      PGPASSWORD: urbannest
-      PGDATABASE: urbannest
+      PGUSER: urbannes
+      PGPASSWORD: urbannes
+      PGDATABASE: urbannes
       RESEND_API_KEY: ${RESEND_API_KEY:-}
-      NOTIFICATIONS_FROM_EMAIL: ${NOTIFICATIONS_FROM_EMAIL:-Chandu <onboarding@resend.dev>}
+      NOTIFICATIONS_FROM_EMAIL: ${NOTIFICATIONS_FROM_EMAIL:-UrbanNes <onboarding@resend.dev>}
     ports:
       - "4100:4100"
 
@@ -243,9 +244,9 @@ services:
       PORT: 4300
       PGHOST: postgres
       PGPORT: 5432
-      PGUSER: urbannest
-      PGPASSWORD: urbannest
-      PGDATABASE: urbannest
+      PGUSER: urbannes
+      PGPASSWORD: urbannes
+      PGDATABASE: urbannes
       REDIS_CACHE_HOST: redis-cache
       REDIS_CACHE_PORT: 6379
     expose:
@@ -310,7 +311,7 @@ volumes:
 #   docker swarm init --advertise-addr <manager-ip>
 #   # copy the `docker swarm join --token ...` command it prints, run it
 #   # on each other machine to have them join as workers
-#   docker stack deploy -c docker-compose.yml urbannest
+#   docker stack deploy -c docker-compose.yml urbannes
 #   docker service ls                      # see every service's replicas
 #   docker node ps <node-id>                # see which containers landed on a given node
 # `build:` sections need each node to either build the image locally or

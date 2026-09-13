@@ -41,7 +41,7 @@ echo "==> Step 3: add your GitHub remote"
 if git remote get-url origin >/dev/null 2>&1; then
   echo "    origin already set to: $(git remote get-url origin)"
 else
-  read -rp "    Paste your GitHub repo URL (e.g. https://github.com/you/urbannest.git): " REMOTE_URL
+  read -rp "    Paste your GitHub repo URL (e.g. https://github.com/you/urbannes.git): " REMOTE_URL
   git remote add origin "$REMOTE_URL"
   echo "    origin set. Push whenever you're ready with:"
   echo "      git push -u origin main"

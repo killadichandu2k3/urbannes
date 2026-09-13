@@ -51,7 +51,7 @@ exposing any inbound port, so this is safe to leave running.
 The runner executes on your actual machine, using your actual installed
 tools — make sure these are on PATH for the user the runner service runs as:
 - `docker` (with the daemon running)
-- `kind` (with a cluster already created — `kind create cluster --config kind-config.yaml --name urbannest`)
+- `kind` (with a cluster already created — `kind create cluster --config kind-config.yaml --name urbannes`)
 - `kubectl`
 
 ## 4. Add the manual-approval gate

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>UrbanNest</title>
+  <title>UrbanNes</title>
   <base href="/" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" type="image/x-icon" href="data:," />
@@ -11,6 +11,10 @@
        global script tag avoids any SSR/lazy-module timing complexity
        around injecting a third-party <script> at runtime. -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <!-- Google Identity Services — renders the "Sign in with Google" button
+       and hands back a signed ID token client-side; same "load once
+       globally" rationale as Razorpay above. -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
   <app-root></app-root>

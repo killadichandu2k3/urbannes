@@ -5,7 +5,7 @@
 // simple `dispatch(event)` call for the Kafka consumer to use.
 // ============================================================================
 
-import { EventEnvelope, KAFKA_TOPICS, createLogger } from '@urbannest/shared';
+import { EventEnvelope, KAFKA_TOPICS, createLogger } from '@urbannes/shared';
 import {
   EmailChannelAdapter,
   SmsChannelAdapter,

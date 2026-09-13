@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: chat-service
-  namespace: urbannest
+  namespace: urbannes
 spec:
   replicas: 2
   selector:
@@ -24,12 +24,12 @@ spec:
             app: chat-service
       containers:
       - name: chat-service
-        image: urbannest/chat-service:latest
+        image: urbannes/chat-service:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 4200
         envFrom:
-        - configMapRef: {name: urbannest-config}
+        - configMapRef: {name: urbannes-config}
         env:
         - name: PORT
           value: "4200"

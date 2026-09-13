@@ -15,7 +15,7 @@
 // ============================================================================
 
 import Redis from 'ioredis';
-import { createLogger } from '@urbannest/shared';
+import { createLogger } from '@urbannes/shared';
 import { ChatMessage, chatRoomMediator } from '../patterns/mediator/ChatRoomMediator';
 
 const logger = createLogger('chat-service:pubsub');

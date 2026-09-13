@@ -1,12 +1,15 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../core/services/auth.service';
+import { GoogleAuthService } from '../core/services/google-auth.service';
 
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
 })
-export class RegisterComponent {
+export class RegisterComponent implements AfterViewInit {
+  @ViewChild('googleBtn') googleBtn?: ElementRef<HTMLElement>;
+
   displayName = '';
   email = '';
   password = '';
@@ -14,7 +17,17 @@ export class RegisterComponent {
   submitting = false;
   error = '';
 
-  constructor(private readonly auth: AuthService, private readonly router: Router) {}
+  constructor(
+    private readonly auth: AuthService,
+    private readonly router: Router,
+    private readonly googleAuth: GoogleAuthService,
+  ) {}
+
+  ngAfterViewInit(): void {
+    if (this.googleBtn) {
+      this.googleAuth.renderButton(this.googleBtn.nativeElement, (idToken) => this.onGoogleToken(idToken));
+    }
+  }
 
   submit(): void {
     this.error = '';
@@ -49,5 +62,19 @@ export class RegisterComponent {
           this.submitting = false;
         },
       });
+  }
+
+  private onGoogleToken(idToken: string): void {
+    this.error = '';
+    // A Google account is verified and usable immediately — unlike
+    // email/password registration, there is no OTP step to route through
+    // first, so this goes straight to the same signed-in destination
+    // login() and loginWithGoogle() both use.
+    this.auth.loginWithGoogle(idToken).subscribe({
+      next: () => this.router.navigateByUrl('/home'),
+      error: (err) => {
+        this.error = err.message || 'Google sign-in failed. Please try again.';
+      },
+    });
   }
 }

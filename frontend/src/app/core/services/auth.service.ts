@@ -17,8 +17,8 @@ import { Apollo, gql } from 'apollo-angular';
 import { BehaviorSubject, Observable, map, tap } from 'rxjs';
 import { AuthUser } from '../models';
 
-const TOKEN_KEY = 'urbannest_auth_token';
-const USER_KEY = 'urbannest_auth_user';
+const TOKEN_KEY = 'urbannes_auth_token';
+const USER_KEY = 'urbannes_auth_user';
 
 const REGISTER_MUTATION = gql`
   mutation Register($input: RegisterInput!) {
@@ -28,7 +28,7 @@ const REGISTER_MUTATION = gql`
 
 const VERIFY_EMAIL_MUTATION = gql`
   mutation VerifyEmail($email: String!, $code: String!) {
-    verifyEmail(email: $email, code: $code) { token user { id email displayName } }
+    verifyEmail(email: $email, code: $code) { token user { id email displayName hasPassword } }
   }
 `;
 
@@ -40,12 +40,30 @@ const RESEND_CODE_MUTATION = gql`
 
 const LOGIN_MUTATION = gql`
   mutation Login($input: LoginInput!) {
-    login(input: $input) { token user { id email displayName } }
+    login(input: $input) { token user { id email displayName hasPassword } }
+  }
+`;
+
+const LOGIN_WITH_GOOGLE_MUTATION = gql`
+  mutation LoginWithGoogle($idToken: String!) {
+    loginWithGoogle(idToken: $idToken) { token user { id email displayName hasPassword } }
+  }
+`;
+
+const UPDATE_PROFILE_MUTATION = gql`
+  mutation UpdateProfile($input: UpdateProfileInput!) {
+    updateProfile(input: $input) { id email displayName hasPassword }
+  }
+`;
+
+const CHANGE_PASSWORD_MUTATION = gql`
+  mutation ChangePassword($input: ChangePasswordInput!) {
+    changePassword(input: $input)
   }
 `;
 
 const ME_QUERY = gql`
-  query Me { me { id email displayName } }
+  query Me { me { id email displayName hasPassword } }
 `;
 
 interface AuthPayload {
@@ -111,6 +129,17 @@ export class AuthService {
       );
   }
 
+  /** Same login shape as login(), just credentialed by a Google ID token instead of email+password — see GoogleAuthService for how idToken is obtained. */
+  loginWithGoogle(idToken: string): Observable<AuthUser> {
+    return this.apollo
+      .mutate<{ loginWithGoogle: AuthPayload }>({ mutation: LOGIN_WITH_GOOGLE_MUTATION, variables: { idToken } })
+      .pipe(
+        map((result) => result.data!.loginWithGoogle),
+        tap((payload) => this.persistSession(payload)),
+        map((payload) => payload.user),
+      );
+  }
+
   /** Re-validates the stored token against auth-api on app boot — see APP_INITIALIZER in app.module.ts. */
   restoreSession(): Observable<AuthUser | null> {
     if (!this.token) return new Observable((sub) => { sub.next(null); sub.complete(); });
@@ -127,6 +156,25 @@ export class AuthService {
 
   logout(): void {
     this.clearSession();
+  }
+
+  /** Updates displayName and refreshes the locally cached session so the navbar/profile reflect it immediately, without waiting for the next restoreSession(). */
+  updateProfile(input: { displayName: string }): Observable<AuthUser> {
+    return this.apollo
+      .mutate<{ updateProfile: AuthUser }>({ mutation: UPDATE_PROFILE_MUTATION, variables: { input } })
+      .pipe(
+        map((result) => result.data!.updateProfile),
+        tap((user) => {
+          localStorage.setItem(USER_KEY, JSON.stringify(user));
+          this.userSubject.next(user);
+        }),
+      );
+  }
+
+  changePassword(input: { currentPassword: string; newPassword: string }): Observable<boolean> {
+    return this.apollo
+      .mutate<{ changePassword: boolean }>({ mutation: CHANGE_PASSWORD_MUTATION, variables: { input } })
+      .pipe(map((result) => result.data!.changePassword));
   }
 
   private persistSession(payload: AuthPayload): void {

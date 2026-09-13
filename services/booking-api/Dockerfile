@@ -12,8 +12,8 @@ RUN npm install --workspaces --include-workspace-root --ignore-scripts
 COPY services/shared services/shared
 COPY services/booking-api services/booking-api
 
-RUN npm run build --workspace=@urbannest/shared
-RUN npm run build --workspace=@urbannest/booking-api
+RUN npm run build --workspace=@urbannes/shared
+RUN npm run build --workspace=@urbannes/booking-api
 # Copy the .graphql SDL file into dist (tsc doesn't copy non-.ts assets)
 RUN cp services/booking-api/src/graphql/schema.graphql services/booking-api/dist/graphql/schema.graphql
 

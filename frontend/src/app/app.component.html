@@ -1,33 +1,36 @@
 <div class="app-shell">
-  <nav class="nav">
-    <div class="brand">
-      <div class="brand-logo">🎟️</div>
-      <span>UrbanNest</span>
-    </div>
-    <div class="nav-links">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">Events</a>
-      <ng-container *ngIf="auth.isLoggedIn">
-        <a routerLink="/my-bookings" routerLinkActive="active" class="nav-item">My Bookings</a>
-        <a routerLink="/chat" routerLinkActive="active" class="nav-item">Community Chat</a>
-      </ng-container>
-    </div>
-    <span class="spacer"></span>
-    
-    <app-notification-bell></app-notification-bell>
-    <button class="theme-toggle" (click)="toggleTheme()" [title]="'Switch to ' + (currentTheme === 'dark' ? 'Light' : 'Dark') + ' mode'">
-      {{ currentTheme === 'dark' ? '☀️ Light' : '🌙 Dark' }}
-    </button>
+  <header class="nav">
+    <a [routerLink]="auth.isLoggedIn ? '/home' : '/'" class="brand">
+      <svg class="brand-mark" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M14 2.5c1.4 0 2.6.86 3.1 2.16.34.87 1.2 1.44 2.13 1.34a3.33 3.33 0 0 1 3.67 3.67c-.1.93.47 1.79 1.34 2.13a3.33 3.33 0 0 1 0 6.2c-.87.34-1.44 1.2-1.34 2.13a3.33 3.33 0 0 1-3.67 3.67c-.93-.1-1.79.47-2.13 1.34a3.33 3.33 0 0 1-6.2 0c-.34-.87-1.2-1.44-2.13-1.34a3.33 3.33 0 0 1-3.67-3.67c.1-.93-.47-1.79-1.34-2.13a3.33 3.33 0 0 1 0-6.2c.87-.34 1.44-1.2 1.34-2.13a3.33 3.33 0 0 1 3.67-3.67c.93.1 1.79-.47 2.13-1.34A3.35 3.35 0 0 1 14 2.5Z" fill="var(--accent)"/>
+        <path d="M10.5 14.2 12.9 16.6 17.5 11" stroke="var(--on-accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="brand-word">UrbanNes</span>
+    </a>
 
-    <ng-container *ngIf="auth.isLoggedIn; else loggedOut">
-      <div class="user-badge">
-        <div class="user-avatar">{{ ((auth.user$ | async)?.displayName || 'U')[0].toUpperCase() }}</div>
-        <span class="muted" style="font-weight: 600;">{{ (auth.user$ | async)?.displayName }}</span>
-      </div>
-      <button class="secondary" (click)="logout()">Sign out</button>
-    </ng-container>
-    <ng-template #loggedOut>
-      <a routerLink="/auth/login" class="btn">Sign in</a>
-    </ng-template>
-  </nav>
+    <nav class="nav-links" aria-label="Primary">
+      <a *ngIf="auth.isLoggedIn" routerLink="/home" routerLinkActive="active" class="nav-item">Home</a>
+      <a routerLink="/events" routerLinkActive="active" class="nav-item">Events</a>
+      <a *ngIf="auth.isLoggedIn" routerLink="/my-bookings" routerLinkActive="active" class="nav-item">My Bookings</a>
+    </nav>
+
+    <span class="spacer"></span>
+
+    <div class="nav-actions">
+      <app-notification-bell></app-notification-bell>
+
+      <ng-container *ngIf="auth.isLoggedIn; else loggedOut">
+        <a routerLink="/profile" class="user-badge" style="text-decoration: none;">
+          <div class="user-avatar">{{ ((auth.user$ | async)?.displayName || 'U')[0].toUpperCase() }}</div>
+          <span class="user-name">{{ (auth.user$ | async)?.displayName }}</span>
+        </a>
+        <button class="secondary" (click)="logout()">Sign out</button>
+      </ng-container>
+      <ng-template #loggedOut>
+        <a routerLink="/auth/login" class="secondary">Sign in</a>
+        <a routerLink="/auth/register" class="btn">Get started</a>
+      </ng-template>
+    </div>
+  </header>
   <router-outlet></router-outlet>
 </div>

@@ -11,8 +11,8 @@ RUN npm install --workspaces --include-workspace-root --ignore-scripts
 COPY services/shared services/shared
 COPY services/gateway-graphql services/gateway-graphql
 
-RUN npm run build --workspace=@urbannest/shared
-RUN npm run build --workspace=@urbannest/gateway-graphql
+RUN npm run build --workspace=@urbannes/shared
+RUN npm run build --workspace=@urbannes/gateway-graphql
 
 FROM node:20-alpine AS runtime
 WORKDIR /app

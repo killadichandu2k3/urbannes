@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: booking-api
-  namespace: urbannest
+  namespace: urbannes
 spec:
   replicas: 2
   selector:
@@ -32,12 +32,12 @@ spec:
             app: booking-api
       containers:
       - name: booking-api
-        image: urbannest/booking-api:latest
+        image: urbannes/booking-api:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 4000
         envFrom:
-        - configMapRef: {name: urbannest-config}
+        - configMapRef: {name: urbannes-config}
         env:
         - name: PORT
           value: "4000"

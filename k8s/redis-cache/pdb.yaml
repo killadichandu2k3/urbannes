@@ -9,7 +9,7 @@ apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: redis-cache-pdb
-  namespace: urbannest
+  namespace: urbannes
 spec:
   maxUnavailable: 1
   selector:

@@ -1,26 +1,26 @@
-# Registers UrbanNest with ArgoCD as the real deploy path — see
+# Registers UrbanNes with ArgoCD as the real deploy path — see
 # README-argocd.md in this same folder for the full reasoning behind
 # switching to automated sync (this used to be read-only observability
 # only; see git history for the old syncPolicy-less version).
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: urbannest
+  name: urbannes
   namespace: argocd
   # Protects this Application object itself from being swept up if this
   # namespace is ever deleted as part of a broader ArgoCD cleanup —
-  # unrelated to the urbannest app namespace's own resources.
+  # unrelated to the urbannes app namespace's own resources.
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
-    repoURL: git://git-server.argocd.svc.cluster.local/urbannest.git
+    repoURL: git://git-server.argocd.svc.cluster.local/urbannes.git
     targetRevision: main
     path: k8s
   destination:
     server: https://kubernetes.default.svc
-    namespace: urbannest
+    namespace: urbannes
   syncPolicy:
     automated:
       # prune: true means ArgoCD deletes any live resource that's no

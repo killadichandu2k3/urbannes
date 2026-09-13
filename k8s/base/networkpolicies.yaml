@@ -29,7 +29,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: default-deny-ingress
-  namespace: urbannest
+  namespace: urbannes
 spec:
   podSelector: {} # empty selector = matches ALL pods in this namespace
   policyTypes:
@@ -47,7 +47,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-ingress-to-gateway
-  namespace: urbannest
+  namespace: urbannes
 spec:
   podSelector:
     matchLabels: { app: gateway }
@@ -61,7 +61,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-gateway-to-graphql-gateway
-  namespace: urbannest
+  namespace: urbannes
 spec:
   podSelector:
     matchLabels: { app: gateway-graphql }
@@ -82,7 +82,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-ingress-to-booking-api
-  namespace: urbannest
+  namespace: urbannes
 spec:
   podSelector:
     matchLabels: { app: booking-api }
@@ -100,7 +100,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-graphql-gateway-to-analytics-api
-  namespace: urbannest
+  namespace: urbannes
 spec:
   podSelector:
     matchLabels: { app: analytics-api }
@@ -119,7 +119,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-graphql-gateway-to-auth-api
-  namespace: urbannest
+  namespace: urbannes
 spec:
   podSelector:
     matchLabels: { app: auth-api }
@@ -136,7 +136,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-gateway-to-chat-service
-  namespace: urbannest
+  namespace: urbannes
 spec:
   podSelector:
     matchLabels: { app: chat-service }
@@ -158,7 +158,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-workers-to-postgres
-  namespace: urbannest
+  namespace: urbannes
 spec:
   podSelector:
     matchLabels: { app: postgres }
@@ -180,7 +180,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-workers-to-redis-cache
-  namespace: urbannest
+  namespace: urbannes
 spec:
   podSelector:
     matchLabels: { app: redis-cache }
@@ -200,7 +200,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-ingress-to-redis-coord
-  namespace: urbannest
+  namespace: urbannes
 spec:
   podSelector:
     matchLabels: { app: redis-coord }
@@ -220,7 +220,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-ingress-to-kafka
-  namespace: urbannest
+  namespace: urbannes
 spec:
   podSelector:
     matchLabels: { app: kafka }
@@ -241,7 +241,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-kafka-to-zookeeper
-  namespace: urbannest
+  namespace: urbannes
 spec:
   podSelector:
     matchLabels: { app: zookeeper }

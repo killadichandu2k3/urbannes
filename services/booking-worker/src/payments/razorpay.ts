@@ -9,7 +9,7 @@
 
 import crypto from 'crypto';
 import Razorpay from 'razorpay';
-import { createLogger } from '@urbannest/shared';
+import { createLogger } from '@urbannes/shared';
 
 const logger = createLogger('booking-worker:razorpay');
 
@@ -36,7 +36,7 @@ export async function createOrder(amountRupees: number, receipt: string): Promis
     amount: Math.round(amountRupees * 100),
     currency: 'INR',
     receipt,
-    notes: { source: 'urbannest' },
+    notes: { source: 'urbannes' },
   });
   return { id: order.id, amount: Number(order.amount), currency: order.currency };
 }

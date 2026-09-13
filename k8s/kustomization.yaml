@@ -1,6 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: urbannest
+namespace: urbannes
 # Each entry below is a DIRECTORY, not a single file — Kustomize
 # auto-discovers every .yaml in it. This is the split, enterprise-style
 # layout: one folder per service/component, one file per Kubernetes

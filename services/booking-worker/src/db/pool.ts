@@ -11,16 +11,16 @@
 // ============================================================================
 
 import { Pool, PoolClient } from 'pg';
-import { createLogger } from '@urbannest/shared';
+import { createLogger } from '@urbannes/shared';
 
 const logger = createLogger('booking-worker:db');
 
 export const pool = new Pool({
   host: process.env.PGHOST || 'postgres',
   port: Number(process.env.PGPORT || 5432),
-  user: process.env.PGUSER || 'urbannest',
-  password: process.env.PGPASSWORD || 'urbannest',
-  database: process.env.PGDATABASE || 'urbannest',
+  user: process.env.PGUSER || 'urbannes',
+  password: process.env.PGPASSWORD || 'urbannes',
+  database: process.env.PGDATABASE || 'urbannes',
   max: Number(process.env.PG_POOL_MAX || 20),
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,

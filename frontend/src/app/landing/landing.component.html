@@ -1,0 +1,138 @@
+<div class="landing">
+
+  <!-- Hero: reuses the same licensed Unsplash concert photo + gradient
+       scrim as the events page (see docs/ASSET_LICENSES.md) so the two
+       pages read as one product, not two different tools bolted together. -->
+  <section class="landing-hero">
+    <div class="landing-hero-content">
+      <p class="landing-eyebrow">Live events, real seats</p>
+      <h1>Find your next night out, and walk in with a seat that's actually yours.</h1>
+      <p class="landing-hero-sub">
+        Browse concerts, comedy, and festivals near you. Pick your exact seat on a live map,
+        pay securely, and get your ticket on your phone — no printing, no guesswork.
+      </p>
+      <div class="landing-hero-actions">
+        <a *ngIf="!auth.isLoggedIn" routerLink="/auth/register" class="btn btn-lg">Create your account</a>
+        <a *ngIf="!auth.isLoggedIn" routerLink="/events" class="secondary btn-lg">Browse events</a>
+        <a *ngIf="auth.isLoggedIn" routerLink="/events" class="btn btn-lg">Browse events</a>
+        <a *ngIf="auth.isLoggedIn" routerLink="/my-bookings" class="secondary btn-lg">View my bookings</a>
+      </div>
+    </div>
+    <p class="hero-banner-credit">
+      Photo by <a href="https://unsplash.com/@joshua_hoehne" target="_blank" rel="noopener">Joshua Hoehne</a> on
+      <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a>
+    </p>
+  </section>
+
+  <!-- Concrete numbers, not decoration — a real sequence of facts about
+       the platform, so a plain three-up stat row earns its place here. -->
+  <section class="landing-stats">
+    <div class="landing-stat">
+      <span class="landing-stat-value">Live seat maps</span>
+      <span class="landing-stat-label">See exactly which seats are open before you pay</span>
+    </div>
+    <div class="landing-stat">
+      <span class="landing-stat-value">Instant confirmation</span>
+      <span class="landing-stat-label">Razorpay checkout, ticket issued the moment payment clears</span>
+    </div>
+    <div class="landing-stat">
+      <span class="landing-stat-value">One place, every booking</span>
+      <span class="landing-stat-label">Your tickets, receipts, and event details all in one dashboard</span>
+    </div>
+  </section>
+
+  <!-- Payment trust row — real accepted-payment marks, not decoration.
+       Sits right after the "instant confirmation" stat above so the claim
+       ("Razorpay checkout") has visual backup immediately below it. -->
+  <div class="flex flex-wrap items-center gap-x-8 gap-y-3 py-2 opacity-80">
+    <span class="text-xs font-semibold uppercase tracking-wide text-app-faint">Secure payments via</span>
+    <div class="flex items-center gap-6 text-app-muted">
+      <app-brand-icon name="razorpay" class="h-5 w-auto block"></app-brand-icon>
+      <app-brand-icon name="visa" class="h-5 w-auto block"></app-brand-icon>
+      <app-brand-icon name="mastercard" class="h-6 w-auto block"></app-brand-icon>
+      <app-brand-icon name="americanexpress" class="h-5 w-auto block"></app-brand-icon>
+      <app-brand-icon name="googlepay" class="h-5 w-auto block"></app-brand-icon>
+      <app-brand-icon name="paytm" class="h-5 w-auto block"></app-brand-icon>
+    </div>
+  </div>
+
+  <!-- Real inventory, not placeholder cards. -->
+  <section class="landing-section" *ngIf="!loadingEvents && featuredEvents.length > 0">
+    <div class="landing-section-head">
+      <h2>Happening soon</h2>
+      <a routerLink="/events" class="landing-see-all">See all events</a>
+    </div>
+    <div class="grid grid-2">
+      <a
+        *ngFor="let e of featuredEvents"
+        [routerLink]="['/events', e.id, 'seats']"
+        class="card interactive landing-event-card"
+      >
+        <span class="landing-event-date">{{ formatDate(e.startsAt) }}</span>
+        <h3>{{ e.title }}</h3>
+        <span class="price">From ₹{{ e.basePrice }}</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Genuinely sequential (three ordered steps) — numbering earns its
+       place here, unlike a decorative 01/02/03 on non-sequential content. -->
+  <section class="landing-section">
+    <h2>How it works</h2>
+    <div class="landing-steps">
+      <div class="landing-step">
+        <span class="landing-step-num">1</span>
+        <h3>Find an event</h3>
+        <p class="muted">Search by name, venue, or city and open the one you want.</p>
+      </div>
+      <div class="landing-step">
+        <span class="landing-step-num">2</span>
+        <h3>Pick your seat</h3>
+        <p class="muted">The seat map updates live, so you never pick a seat someone else just took.</p>
+      </div>
+      <div class="landing-step">
+        <span class="landing-step-num">3</span>
+        <h3>Pay and go</h3>
+        <p class="muted">Checkout with Razorpay, get your ticket by email, and you're set.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-cta">
+    <h2>Your seat is waiting.</h2>
+    <a *ngIf="!auth.isLoggedIn" routerLink="/auth/register" class="btn btn-lg">Create your account</a>
+    <a *ngIf="auth.isLoggedIn" routerLink="/events" class="btn btn-lg">Browse events</a>
+  </section>
+
+  <!-- Footer: app-store badges + social — the "classic brand icon"
+       destinations a ticketing brand is expected to show, kept quiet and
+       secondary so the CTA above stays the loudest thing on the page. -->
+  <footer class="flex flex-col sm:flex-row items-center justify-between gap-6 pt-8 border-t border-app-border">
+    <div class="flex items-center gap-3">
+      <a href="#" aria-label="Download on the App Store" class="flex items-center gap-2 rounded-app-sm border border-app-border px-3 py-2 text-app-text hover:border-app-border-strong transition-colors">
+        <app-brand-icon name="appstore" class="h-5 w-5 block"></app-brand-icon>
+        <span class="text-sm font-medium">App Store</span>
+      </a>
+      <a href="#" aria-label="Get it on Google Play" class="flex items-center gap-2 rounded-app-sm border border-app-border px-3 py-2 text-app-text hover:border-app-border-strong transition-colors">
+        <app-brand-icon name="googleplay" class="h-5 w-5 block"></app-brand-icon>
+        <span class="text-sm font-medium">Google Play</span>
+      </a>
+    </div>
+
+    <div class="flex items-center gap-4 text-app-muted">
+      <a href="#" aria-label="UrbanNes on Instagram" class="hover:text-app-text transition-colors">
+        <app-brand-icon name="instagram" class="h-5 w-5 block"></app-brand-icon>
+      </a>
+      <a href="#" aria-label="UrbanNes on X" class="hover:text-app-text transition-colors">
+        <app-brand-icon name="x" class="h-5 w-5 block"></app-brand-icon>
+      </a>
+      <a href="#" aria-label="UrbanNes on Facebook" class="hover:text-app-text transition-colors">
+        <app-brand-icon name="facebook" class="h-5 w-5 block"></app-brand-icon>
+      </a>
+      <a href="#" aria-label="UrbanNes on WhatsApp" class="hover:text-app-text transition-colors">
+        <app-brand-icon name="whatsapp" class="h-5 w-5 block"></app-brand-icon>
+      </a>
+    </div>
+  </footer>
+
+</div>

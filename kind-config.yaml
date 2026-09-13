@@ -1,4 +1,4 @@
-# Kind cluster config for UrbanNest.
+# Kind cluster config for UrbanNes.
 # -----------------------------------------------------------------------------
 # TWO WORKER NODES, NOT ONE — this is what makes "services run on different
 # nodes and talk to each other" a real, observable thing instead of a
@@ -22,9 +22,9 @@
 # it just makes the node list a little longer to look at.
 #
 # Verify the spread after `kubectl apply -k k8s/`:
-#   kubectl get pods -n urbannest -o wide
+#   kubectl get pods -n urbannes -o wide
 # The NODE column should show pods for the same app split across
-# urbannest-worker / urbannest-worker2, not both on one.
+# urbannes-worker / urbannes-worker2, not both on one.
 #
 # Kind has no built-in equivalent of `minikube service` (which opens a
 # tunnel on demand). Instead, Kind maps a container port on the
@@ -35,7 +35,7 @@
 # of it (Kong has been removed — see the top-level README).
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
-name: urbannest
+name: urbannes
 nodes:
   - role: control-plane
     extraPortMappings:
@@ -43,7 +43,7 @@ nodes:
         hostPort: 30000
         protocol: TCP
     # Mounts this whole project folder into the control-plane node at
-    # /urbannest-repo, read-only. This exists solely so the in-cluster
+    # /urbannes-repo, read-only. This exists solely so the in-cluster
     # git-server (k8s-argocd/git-server.yaml) can serve k8s/ as a real,
     # always-current Git repo for ArgoCD to read — see
     # k8s-argocd/README-argocd.md for why ArgoCD needs a Git source at
@@ -53,7 +53,7 @@ nodes:
     # this block entirely.
     extraMounts:
       - hostPath: .
-        containerPath: /urbannest-repo
+        containerPath: /urbannes-repo
         readOnly: true
   - role: worker
   - role: worker

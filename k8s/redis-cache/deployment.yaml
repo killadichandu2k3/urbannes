@@ -14,7 +14,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis-cache
-  namespace: urbannest
+  namespace: urbannes
 spec:
   replicas: 1
   selector:

@@ -1,5 +1,5 @@
 /* ============================================================================
-   UrbanNest -- Design System
+   UrbanNes -- Design System
    Premium editorial-minimal: ink-black stage + warm paper, one rust accent.
    Restraint over decoration: hairlines instead of glow, weight/size instead
    of color for hierarchy. One family (Inter) carries both display and body
@@ -7,6 +7,15 @@
    ============================================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* Tailwind, layered in for the newer visual work (landing, post-login
+   home, brand-icon strips) — Preflight is disabled in tailwind.config.js
+   so it only ever adds utilities, never resets anything this file already
+   owns. Existing hand-rolled classes below are untouched and still win
+   naturally since Tailwind's utilities carry no !important. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   /* ---- Surfaces (dark, default theme) ---- */
@@ -61,35 +70,6 @@
   --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.35);
-}
-
-/* ---- Light theme override ---- */
-[data-theme="light"] {
-  --bg: #fafaf8;
-  --bg-elevated: #ffffff;
-  --bg-elevated-2: #f0efeb;
-  --surface: #ffffff;
-
-  --border: #e4e3df;
-  --border-strong: #d3d1cb;
-
-  --text: #16161a;
-  --text-muted: #5c5b60;
-  --text-faint: #8a8891;
-
-  --accent: #c4491d;
-  --accent-strong: #a83c17;
-  --on-accent: #fafaf8;
-
-  --ok: #2f7d54;
-  --ok-container: rgba(47, 125, 84, 0.1);
-  --warn: #a5750f;
-  --warn-container: rgba(165, 117, 15, 0.1);
-  --danger: #b8402f;
-  --danger-container: rgba(184, 64, 47, 0.1);
-
-  --shadow-1: 0 1px 2px rgba(20, 16, 8, 0.06);
-  --shadow-2: 0 8px 24px rgba(20, 16, 8, 0.08);
 }
 
 /* ============================================================================
@@ -188,16 +168,6 @@ button.secondary:hover:not(:disabled), .btn-secondary:hover:not(:disabled) {
   background: var(--bg-elevated);
 }
 
-button.theme-toggle {
-  background: transparent;
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  padding: 7px 16px;
-  font-weight: 500;
-}
-button.theme-toggle:hover { color: var(--text); border-color: var(--border-strong); background: transparent; }
-
 .full-width { width: 100%; }
 
 /* A link styled as .btn but not a real <button> — [class.disabled] on an
@@ -234,34 +204,35 @@ button.theme-toggle:hover { color: var(--text); border-color: var(--border-stron
 .app-shell { max-width: 1200px; margin: 0 auto; padding: 0 var(--sp-5) var(--sp-8); }
 
 .nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
-  gap: var(--sp-4);
+  gap: var(--sp-5);
   padding: var(--sp-4) 0;
-  margin-bottom: var(--sp-7);
+  margin: 0 calc(-1 * var(--sp-5)) var(--sp-7);
+  padding-left: var(--sp-5);
+  padding-right: var(--sp-5);
   border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 .nav .brand {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
+  color: var(--text);
+  flex-shrink: 0;
+}
+.brand-mark { width: 26px; height: 26px; flex-shrink: 0; }
+.brand-word {
   font-weight: 800;
   font-size: var(--fs-lg);
   letter-spacing: -0.02em;
-  color: var(--text);
-  margin-right: var(--sp-4);
 }
-.nav .brand-logo {
-  width: 32px;
-  height: 32px;
-  background: var(--accent);
-  color: var(--on-accent);
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-}
+
 .nav-links { display: flex; align-items: center; gap: var(--sp-1); }
 .nav a.nav-item {
   color: var(--text-muted);
@@ -274,6 +245,9 @@ button.theme-toggle:hover { color: var(--text); border-color: var(--border-stron
 .nav a.nav-item:hover { color: var(--text); background: var(--bg-elevated); }
 .nav a.nav-item.active { color: var(--text); font-weight: 700; }
 .nav .spacer { flex: 1; }
+
+.nav-actions { display: flex; align-items: center; gap: var(--sp-3); }
+.nav-actions a.secondary { text-decoration: none; }
 
 .user-badge {
   display: flex;
@@ -294,6 +268,13 @@ button.theme-toggle:hover { color: var(--text); border-color: var(--border-stron
   justify-content: center;
   font-weight: 700;
   font-size: var(--fs-xs);
+  flex-shrink: 0;
+}
+.user-name { font-weight: 600; color: var(--text-muted); font-size: var(--fs-sm); }
+
+@media (max-width: 720px) {
+  .nav-links { display: none; }
+  .user-name { display: none; }
 }
 
 /* ============================================================================
@@ -382,11 +363,6 @@ button.theme-toggle:hover { color: var(--text); border-color: var(--border-stron
     url('https://images.unsplash.com/photo-1755152825416-a7b660d3bf1c?fm=jpg&q=80&w=2400&auto=format&fit=crop');
   background-size: cover;
   background-position: center 30%;
-}
-[data-theme="light"] .hero-banner--photo {
-  background-image:
-    linear-gradient(180deg, rgba(11, 11, 13, 0.6) 0%, rgba(11, 11, 13, 0.8) 55%, var(--bg) 100%),
-    url('https://images.unsplash.com/photo-1755152825416-a7b660d3bf1c?fm=jpg&q=80&w=2400&auto=format&fit=crop');
 }
 .hero-banner--photo .hero-banner-content {
   position: relative;
@@ -594,7 +570,6 @@ label { color: var(--text-muted); }
 .empty-state .icon { font-size: 32px; margin-bottom: var(--sp-3); opacity: 0.6; }
 .empty-state h3 { color: var(--text); margin-bottom: var(--sp-1); }
 .selection-empty { padding: var(--sp-6) var(--sp-3); }
-.chat-empty { padding: var(--sp-6); }
 
 @keyframes skeleton-pulse {
   0%, 100% { opacity: 0.5; }
@@ -688,7 +663,7 @@ label { color: var(--text-muted); }
 }
 
 /* ============================================================================
-   Page header / intro (shared across seat-map, bookings, chat)
+   Page header / intro (shared across seat-map, bookings)
    ============================================================================ */
 
 .page-header {
@@ -720,31 +695,112 @@ label { color: var(--text-muted); }
 .booking-summary-value { font-weight: 700; color: var(--text); }
 
 /* ============================================================================
-   Chat
+   Landing page
    ============================================================================ */
 
-.chat-toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); flex-wrap: wrap; }
-.chat-toolbar-room { display: flex; align-items: center; gap: var(--sp-2); flex: 1; }
-.chat-toolbar-label { font-weight: 600; }
-.chat-toolbar-status { display: flex; align-items: center; gap: var(--sp-2); }
-.chat-panel { margin-top: var(--sp-4); }
-.room-input { width: auto; flex: 1; min-width: 160px; max-width: 240px; }
-.compose-input { flex: 1; }
+.landing { display: flex; flex-direction: column; gap: var(--sp-8); }
 
-.chat-log {
-  height: 420px; overflow-y: auto;
+.landing-hero {
+  position: relative;
+  isolation: isolate;
+  margin: 0 calc(-1 * var(--sp-5));
+  padding: var(--sp-8) var(--sp-5) var(--sp-8);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  overflow: hidden;
+  background-image:
+    linear-gradient(180deg, rgba(11, 11, 13, 0.55) 0%, rgba(11, 11, 13, 0.8) 60%, var(--bg) 100%),
+    url('https://images.unsplash.com/photo-1755152825416-a7b660d3bf1c?fm=jpg&q=80&w=2400&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center 30%;
+}
+.landing-hero-content { position: relative; z-index: 1; max-width: 620px; }
+.landing-eyebrow {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  margin: 0 0 var(--sp-3);
+}
+.landing-hero h1 {
+  font-size: var(--fs-3xl);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--sp-4);
+  color: #f2f1ee;
+}
+.landing-hero-sub {
+  font-size: var(--fs-lg);
+  line-height: 1.5;
+  color: #cfcecb;
+  max-width: 520px;
+  margin: 0 0 var(--sp-6);
+}
+.landing-hero-actions { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
+.btn-lg { padding: 13px 26px; font-size: var(--fs-base); }
+
+.landing-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--sp-6);
+  padding: var(--sp-6) 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.landing-stat { display: flex; flex-direction: column; gap: var(--sp-1); }
+.landing-stat-value { font-size: var(--fs-lg); font-weight: 700; color: var(--text); }
+.landing-stat-label { font-size: var(--fs-sm); color: var(--text-muted); }
+
+.landing-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--sp-5);
+}
+.landing-see-all { font-size: var(--fs-sm); font-weight: 600; }
+
+.landing-event-card { display: flex; flex-direction: column; gap: var(--sp-2); }
+.landing-event-date {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.landing-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--sp-6);
+  margin-top: var(--sp-5);
+}
+.landing-step { display: flex; flex-direction: column; gap: var(--sp-2); }
+.landing-step-num {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: var(--sp-2);
+}
+.landing-step h3 { margin: 0; }
+
+.landing-cta {
+  text-align: center;
+  padding: var(--sp-8) var(--sp-5);
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--sp-5);
-  display: flex; flex-direction: column; gap: var(--sp-3);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-5);
 }
-.chat-bubble {
-  max-width: 80%; padding: var(--sp-3) var(--sp-4); border-radius: var(--radius-md);
-  background: var(--bg-elevated-2); border: 1px solid var(--border); align-self: flex-start;
-}
-.chat-bubble.mine { align-self: flex-end; background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-.chat-bubble .who { font-size: var(--fs-xs); font-weight: 700; color: var(--text-muted); margin-bottom: var(--sp-1); }
-.chat-bubble.mine .who { color: rgba(11, 11, 13, 0.7); }
+.landing-cta h2 { margin: 0; }
 
-.chat-compose { display: flex; gap: var(--sp-3); margin-top: var(--sp-4); }
+@media (max-width: 640px) {
+  .landing-hero h1 { font-size: var(--fs-2xl); }
+  .landing-hero-actions { flex-direction: column; align-items: stretch; }
+}

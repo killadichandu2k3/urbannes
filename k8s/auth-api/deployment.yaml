@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: auth-api
-  namespace: urbannest
+  namespace: urbannes
 spec:
   replicas: 2
   selector:
@@ -24,23 +24,25 @@ spec:
             app: auth-api
       containers:
       - name: auth-api
-        image: urbannest/auth-api:latest
+        image: urbannes/auth-api:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 4600
         envFrom:
-        - configMapRef: {name: urbannest-config}
+        - configMapRef: {name: urbannes-config}
         env:
         - name: PORT
           value: "4600"
         - name: PGUSER
-          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: PGUSER}}
+          valueFrom: {secretKeyRef: {name: urbannes-secrets, key: PGUSER}}
         - name: PGPASSWORD
-          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: PGPASSWORD}}
+          valueFrom: {secretKeyRef: {name: urbannes-secrets, key: PGPASSWORD}}
         - name: JWT_SECRET
-          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: JWT_SECRET}}
+          valueFrom: {secretKeyRef: {name: urbannes-secrets, key: JWT_SECRET}}
+        - name: GOOGLE_CLIENT_ID
+          valueFrom: {secretKeyRef: {name: urbannes-secrets, key: GOOGLE_CLIENT_ID, optional: true}}
         - name: RESEND_API_KEY
-          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: RESEND_API_KEY, optional: true}}
+          valueFrom: {secretKeyRef: {name: urbannes-secrets, key: RESEND_API_KEY, optional: true}}
         readinessProbe:
           httpGet: {path: /health, port: 4600}
           initialDelaySeconds: 5
