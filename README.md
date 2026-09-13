@@ -40,26 +40,19 @@ UrbanNes uses two third-party services, both with permanently-free tiers:
   https://resend.com, then **API Keys → Create API Key**. Free tier:
   3,000 emails/month, 100/day, no card required.
 
-Copy `.env.example` to `.env` in the project root and fill in the values it asks for (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RESEND_API_KEY`, `NOTIFICATIONS_FROM_EMAIL`, `GOOGLE_CLIENT_ID`):
+Copy `.env.example` to `.env` in the project root and fill in the four
+values it asks for (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`,
+`RESEND_API_KEY`, `NOTIFICATIONS_FROM_EMAIL`):
 ```bash
 cp .env.example .env
 ```
-`docker-compose.yml` reads `.env` automatically - no extra flag needed.
+`docker-compose.yml` reads `.env` automatically — no extra flag needed.
 
-*(You can skip this step and run without it: `auth-api` and `notification-service` both log the OTP code / email content to their container logs instead of failing when these keys are unset, so local dev works without either account. Run `docker compose logs auth-api` and look for `[OTP]` if you register without Resend configured. `GOOGLE_CLIENT_ID` is the same story - leave it unset and the app just doesn't show a "Sign in with Google" button; email/password sign-in is unaffected either way. See "Setting up Google Sign-In" below if you want that button working.)*
-
-### Setting up Google Sign-In (optional)
-Google Sign-In lets people create an account and log in with one click instead of email/password. It's optional - skip this and the app works fine without the Google button.
-
-1. Go to https://console.cloud.google.com/apis/credentials, create a project if you don't have one, then **Create Credentials -> OAuth client ID**.
-2. Application type: **Web application**.
-3. Under **Authorized JavaScript origins**, add the URL you'll open the app at (e.g. `http://localhost:8080` for Docker Compose, or `http://localhost:5173` if running the frontend directly with `ng serve`).
-4. Copy the generated **Client ID** (looks like `xxxxx.apps.googleusercontent.com`) - you don't need the secret for this flow, only the Client ID.
-5. Put it in two places:
-   - `.env` in the project root: `GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com`
-   - `frontend/src/environments/environment.ts` (and `environment.prod.ts` for a production build): set `googleClientId: 'your-client-id.apps.googleusercontent.com'`
-
-Both need the same value - the frontend needs it to render Google's button, auth-api needs it to verify the token that button produces.
+*(You can skip this step and run without it: `auth-api` and
+`notification-service` both log the OTP code / email content to their
+container logs instead of failing when these keys are unset, so local
+dev works without either account. Run `docker compose logs auth-api` and
+look for `[OTP]` if you register without Resend configured.)*
 
 ### 3. Start everything
 From the project root:
@@ -161,7 +154,7 @@ Create an account the same way as Path A, step 5.
 > all, so payments/OTP-email/booking-email will run in their
 > log-instead-of-send fallback mode under Kind regardless of what's in
 > `.env` — wiring real Kubernetes Secrets for them is a separate piece of
-> work this setup guide doesn't cover yet. The same applies to `GOOGLE_CLIENT_ID` - it isn't wired into the `k8s/auth-api` manifest's Secret yet by default, so Google Sign-In won't work under Kind until that's added.
+> work this setup guide doesn't cover yet.
 
 ### 6. Open ArgoCD (optional, to see/manage pods visually)
 The deploy script prints a URL, username, and password — or get them any
@@ -254,7 +247,6 @@ Approve** to let it deploy to your Kind cluster.
 
 ## Troubleshooting
 
-- **No "Sign in with Google" button appears on the login/register page** — expected if `GOOGLE_CLIENT_ID` isn't set in both `.env` and `frontend/src/environments/environment.ts` (see "Setting up Google Sign-In" above). Email/password sign-in still works either way.
 - **`docker: command not found`** — Docker Desktop isn't installed or
   isn't running.
 - **A service keeps restarting on first boot** — normal for the first
