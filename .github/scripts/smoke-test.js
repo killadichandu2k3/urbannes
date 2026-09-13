@@ -37,3 +37,4 @@ async function gql(query, variables, token) {
 
   console.log('✅  Smoke test passed!');
 })().catch(err => { console.error('❌', err); process.exit(1); });
+
