@@ -139,6 +139,18 @@ async function handleGetBooking(payload: { bookingId: string; eventId: string })
 
 async function handleListMyBookings(payload: { userId: string }) {
   const { rows } = await pool.query('SELECT * FROM bookings WHERE user_id = $1 ORDER BY created_at DESC', [payload.userId]);
+  
+  if (rows.length === 0) return { data: [] };
+
+  const bookingIds = rows.map(r => r.id);
+  const seatsRes = await pool.query('SELECT booking_id, seat_id FROM booking_seats WHERE booking_id = ANY($1::uuid[])', [bookingIds]);
+  
+  const seatsByBooking = new Map<string, string[]>();
+  for (const row of seatsRes.rows) {
+    if (!seatsByBooking.has(row.booking_id)) seatsByBooking.set(row.booking_id, []);
+    seatsByBooking.get(row.booking_id)!.push(row.seat_id);
+  }
+
   const data = rows.map((b: any) => ({
     id: b.id,
     userId: b.user_id,
@@ -146,7 +158,7 @@ async function handleListMyBookings(payload: { userId: string }) {
     status: b.status,
     basePrice: Number(b.base_price),
     finalPrice: Number(b.final_price),
-    seatIds: [] as string[],
+    seatIds: seatsByBooking.get(b.id) || [],
     addOnCodes: [] as string[],
     createdAt: b.created_at,
     updatedAt: b.updated_at,
