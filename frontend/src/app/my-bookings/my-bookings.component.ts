@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { combineLatest } from 'rxjs';
 import { GraphqlService } from '../core/services/graphql.service';
 import { Booking, EventItem } from '../core/models';
 
@@ -18,7 +18,7 @@ export class MyBookingsComponent implements OnInit {
   ngOnInit(): void {
     // Bookings only carry an eventId — fetch events once and join
     // client-side so the list can show a title instead of a raw id.
-    forkJoin({
+    combineLatest({
       bookings: this.graphql.myBookings(),
       events: this.graphql.events(),
     }).subscribe({
