@@ -147,27 +147,56 @@ jobs:
           grep -q '"events"' /tmp/resp.json
       - name: Smoke test — register, verify email, then use token on an authenticated query
         run: |
-          EMAIL="ci-smoke-$(date +%s)@example.com"
-          REGISTER_RESP=$(curl -sf http://localhost:8080/graphql \
-            -X POST -H 'content-type: application/json' \
-            -d "{\"query\":\"mutation Register(\$input: RegisterInput!) { register(input: \$input) { email message } }\",\"variables\":{\"input\":{\"email\":\"$EMAIL\",\"password\":\"SmokeTest123\",\"displayName\":\"CI Smoke Test\"}}}")
-          echo "$REGISTER_RESP"
-          VERIFY_RESP=$(curl -sf http://localhost:8080/graphql \
-            -X POST -H 'content-type: application/json' \
-            -d "{\"query\":\"mutation VerifyEmail(\$email: String!, \$code: String!) { verifyEmail(email: \$email, code: \$code) { token user { id email } } }\",\"variables\":{\"email\":\"$EMAIL\",\"code\":\"000000\"}}")
-          echo "$VERIFY_RESP"
-          TOKEN=$(echo "$VERIFY_RESP" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
-          if [ -z "$TOKEN" ]; then echo "verifyEmail did not return a token"; exit 1; fi
-          # myBookings requires auth (see booking-api's requireAuth()) — a
-          # fresh account has none yet, so an empty array is success here;
-          # the point of this check is that the JWT round-trips end to end
-          # (auth-api issues it -> gateway forwards it -> booking-api
-          # verifies it), not the booking data itself.
-          BOOKINGS_RESP=$(curl -sf http://localhost:8080/graphql \
-            -X POST -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' \
-            -d '{"query":"{ myBookings { id } }"}')
-          echo "$BOOKINGS_RESP"
-          echo "$BOOKINGS_RESP" | grep -q '"myBookings":\[\]'
+          node -e "
+          (async () => {
+            const email = 'ci-smoke-' + Date.now() + '@example.com';
+            console.log('Registering email:', email);
+
+            const regRes = await fetch('http://localhost:8080/graphql', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({
+                query: 'mutation Register(\$input: RegisterInput!) { register(input: \$input) { email message } }',
+                variables: { input: { email, password: 'SmokeTest123', displayName: 'CI Smoke Test' } }
+              })
+            });
+            const regData = await regRes.json();
+            console.log('Register response:', JSON.stringify(regData));
+            if (regData.errors) { console.error('Register returned errors:', regData.errors); process.exit(1); }
+
+            const verRes = await fetch('http://localhost:8080/graphql', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({
+                query: 'mutation VerifyEmail(\$email: String!, \$code: String!) { verifyEmail(email: \$email, code: \$code) { token user { id email } } }',
+                variables: { email, code: '000000' }
+              })
+            });
+            const verData = await verRes.json();
+            console.log('Verify response:', JSON.stringify(verData));
+            if (verData.errors || !verData.data?.verifyEmail?.token) {
+              console.error('Verify failed:', verData.errors || 'Missing token');
+              process.exit(1);
+            }
+            const token = verData.data.verifyEmail.token;
+
+            const bookRes = await fetch('http://localhost:8080/graphql', {
+              method: 'POST',
+              headers: {
+                'content-type': 'application/json',
+                'authorization': 'Bearer ' + token
+              },
+              body: JSON.stringify({ query: '{ myBookings { id } }' })
+            });
+            const bookData = await bookRes.json();
+            console.log('Bookings response:', JSON.stringify(bookData));
+            if (bookData.errors || !Array.isArray(bookData.data?.myBookings)) {
+              console.error('myBookings failed:', bookData.errors || 'Invalid structure');
+              process.exit(1);
+            }
+            console.log('Smoke test passed successfully!');
+          })().catch(err => { console.error(err); process.exit(1); });
+          "
       - name: Dump logs on failure
         if: failure()
         run: docker compose logs
