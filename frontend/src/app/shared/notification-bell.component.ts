@@ -35,7 +35,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     // poll would otherwise still fire in the background and hit
     // myNotifications' auth check every 20s for no reason — this guard
     // stops that at the source instead of relying only on the template.
-    this.pollSub = interval(20_000)
+    this.pollSub = interval(5_000)
       .pipe(
         startWith(0),
         filter(() => this.auth.isLoggedIn),
@@ -61,6 +61,12 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     if (n.readAt) return;
     this.graphql.markNotificationRead(n.id).subscribe(() => {
       n.readAt = new Date().toISOString();
+    });
+  }
+
+  deleteNotification(id: string): void {
+    this.graphql.deleteNotification(id).subscribe(() => {
+      this.notifications = this.notifications.filter((n) => n.id !== id);
     });
   }
 

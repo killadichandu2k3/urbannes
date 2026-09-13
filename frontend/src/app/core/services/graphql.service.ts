@@ -95,6 +95,12 @@ const MARK_ALL_NOTIFICATIONS_READ_MUTATION = gql`
   }
 `;
 
+const DELETE_NOTIFICATION_MUTATION = gql`
+  mutation DeleteNotification($id: ID!) {
+    deleteNotification(id: $id)
+  }
+`;
+
 @Injectable({ providedIn: 'root' })
 export class GraphqlService {
   constructor(private readonly apollo: Apollo) {}
@@ -192,5 +198,11 @@ export class GraphqlService {
     return this.apollo
       .mutate<{ markAllNotificationsRead: boolean }>({ mutation: MARK_ALL_NOTIFICATIONS_READ_MUTATION })
       .pipe(map((result) => result.data!.markAllNotificationsRead));
+  }
+
+  deleteNotification(id: string): Observable<boolean> {
+    return this.apollo
+      .mutate<{ deleteNotification: boolean }>({ mutation: DELETE_NOTIFICATION_MUTATION, variables: { id } })
+      .pipe(map((result) => result.data!.deleteNotification));
   }
 }

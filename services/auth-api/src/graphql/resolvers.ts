@@ -334,6 +334,12 @@ export const resolvers = {
       return true;
     },
 
+    deleteNotification: async (_: unknown, args: { id: string }, context: any) => {
+      const { userId } = requireAuth(context);
+      const result = await notificationRepo().delete({ id: args.id, userId });
+      return (result.affected ?? 0) > 0;
+    },
+
     updateProfile: async (_: unknown, args: { input: { displayName: string } }, context: any) => {
       const { userId } = requireAuth(context);
       const displayName = args.input.displayName.trim();
