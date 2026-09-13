@@ -156,7 +156,7 @@ jobs:
               method: 'POST',
               headers: { 'content-type': 'application/json' },
               body: JSON.stringify({
-                query: 'mutation Register(\$input: RegisterInput!) { register(input: \$input) { email message } }',
+                query: 'mutation Register($input: RegisterInput!) { register(input: $input) { email message } }',
                 variables: { input: { email, password: 'SmokeTest123', displayName: 'CI Smoke Test' } }
               })
             });
@@ -168,7 +168,7 @@ jobs:
               method: 'POST',
               headers: { 'content-type': 'application/json' },
               body: JSON.stringify({
-                query: 'mutation VerifyEmail(\$email: String!, \$code: String!) { verifyEmail(email: \$email, code: \$code) { token user { id email } } }',
+                query: 'mutation VerifyEmail($email: String!, $code: String!) { verifyEmail(email: $email, code: $code) { token user { id email } } }',
                 variables: { email, code: '000000' }
               })
             });
