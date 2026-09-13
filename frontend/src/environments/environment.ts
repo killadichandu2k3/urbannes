@@ -6,5 +6,5 @@
 // the root .env.example for the matching auth-api-side GOOGLE_CLIENT_ID.
 export const environment = {
   production: false,
-  googleClientId: 'your-client-id.apps.googleusercontent.com',
+  googleClientId: '1012503975895-6p4lpgtrnla45k0tja32t0fsthjdingg.apps.googleusercontent.com',
 };
