@@ -48,8 +48,18 @@ let initialized = false;
 /** Call once at server startup — see server.ts. Safe to call more than once (no-ops after the first). */
 export async function initDataSource(): Promise<DataSource> {
   if (!initialized) {
-    await AppDataSource.initialize();
-    initialized = true;
+    const maxRetries = 10;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        await AppDataSource.initialize();
+        initialized = true;
+        return AppDataSource;
+      } catch (err: any) {
+        if (attempt === maxRetries) throw err;
+        console.log(`[TypeORM] Postgres not ready, retrying (${attempt}/${maxRetries})...`);
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    }
   }
   return AppDataSource;
 }
