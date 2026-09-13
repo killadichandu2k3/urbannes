@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
     email_verified_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified_at TIMESTAMPTZ;
 CREATE INDEX IF NOT EXISTS idx_users_email ON users (lower(email));
 
 -- One-time codes for email verification at signup. Short-lived and
