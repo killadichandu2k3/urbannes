@@ -27,7 +27,7 @@
   </div>
 
   <div class="grid grid-2" *ngIf="!loading && events.length > 0">
-    <div class="card interactive event-card" *ngFor="let event of events">
+    <div class="card interactive event-card" *ngFor="let event of events; let i = index" style="opacity: 0; animation: fadeIn 0.5s ease-out forwards;" [style.animation-delay]="(i * 0.1) + 's'">
       <div class="event-card-head">
         <div>
           <h3 style="font-size: var(--fs-lg); margin-bottom: 4px;">{{ event.title }}</h3>

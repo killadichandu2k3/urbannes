@@ -63,9 +63,12 @@ export class SeatMapComponent implements OnInit, OnDestroy {
   }
 
   toggleSeat(seat: Seat): void {
-    if (seat.status !== 'AVAILABLE') return;
-    if (this.selected.has(seat.id)) this.selected.delete(seat.id);
-    else this.selected.add(seat.id);
+    if (this.selected.has(seat.id)) {
+      this.selected.delete(seat.id);
+    } else {
+      if (seat.status !== 'AVAILABLE') return;
+      this.selected.add(seat.id);
+    }
     this.selected = new Set(this.selected);
   }
 
