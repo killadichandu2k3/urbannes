@@ -135,12 +135,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Bring up the full stack
-        run: docker compose up --build -d
+        run: docker compose up -d
       - name: Wait for gateway health
         run: |
-          for i in $(seq 1 30); do
+          for i in $(seq 1 60); do
             if curl -sf http://localhost:8080/graphql -X POST -H 'content-type: application/json' -d '{"query":"{ __typename }"}'; then echo "gateway healthy"; exit 0; fi
-            echo "waiting for stack... ($i/30)"; sleep 10
+            echo "waiting for stack... ($i/60)"; sleep 5
           done
           echo "stack never became healthy"; docker compose logs; exit 1
       - name: Smoke test — list events via GraphQL (public query, no auth needed)
