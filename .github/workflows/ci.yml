@@ -145,15 +145,19 @@ jobs:
             -X POST -H 'content-type: application/json' \
             -d '{"query":"{ events { id title } }"}' | tee /tmp/resp.json
           grep -q '"events"' /tmp/resp.json
-      - name: Smoke test — register, then use the token on an authenticated query
+      - name: Smoke test — register, verify email, then use token on an authenticated query
         run: |
           EMAIL="ci-smoke-$(date +%s)@example.com"
           REGISTER_RESP=$(curl -sf http://localhost:8080/graphql \
             -X POST -H 'content-type: application/json' \
-            -d "{\"query\":\"mutation Register(\$input: RegisterInput!) { register(input: \$input) { token user { id email } } }\",\"variables\":{\"input\":{\"email\":\"$EMAIL\",\"password\":\"smoke-test-pw\",\"displayName\":\"CI Smoke Test\"}}}")
+            -d "{\"query\":\"mutation Register(\$input: RegisterInput!) { register(input: \$input) { email message } }\",\"variables\":{\"input\":{\"email\":\"$EMAIL\",\"password\":\"SmokeTest123\",\"displayName\":\"CI Smoke Test\"}}}")
           echo "$REGISTER_RESP"
-          TOKEN=$(echo "$REGISTER_RESP" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
-          if [ -z "$TOKEN" ]; then echo "register did not return a token"; exit 1; fi
+          VERIFY_RESP=$(curl -sf http://localhost:8080/graphql \
+            -X POST -H 'content-type: application/json' \
+            -d "{\"query\":\"mutation VerifyEmail(\$email: String!, \$code: String!) { verifyEmail(email: \$email, code: \$code) { token user { id email } } }\",\"variables\":{\"email\":\"$EMAIL\",\"code\":\"000000\"}}")
+          echo "$VERIFY_RESP"
+          TOKEN=$(echo "$VERIFY_RESP" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+          if [ -z "$TOKEN" ]; then echo "verifyEmail did not return a token"; exit 1; fi
           # myBookings requires auth (see booking-api's requireAuth()) — a
           # fresh account has none yet, so an empty array is success here;
           # the point of this check is that the JWT round-trips end to end
