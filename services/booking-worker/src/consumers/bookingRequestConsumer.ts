@@ -119,13 +119,23 @@ async function handleGetBooking(payload: { bookingId: string; eventId: string })
     const bRes = await client.query('SELECT * FROM bookings WHERE id = $1 AND event_id = $2', [payload.bookingId, payload.eventId]);
     if (bRes.rows.length === 0) return null;
     const booking = bRes.rows[0];
+
+    let status = booking.status;
+    if (status === 'SEATS_LOCKED') {
+      const ageMs = Date.now() - new Date(booking.created_at).getTime();
+      if (ageMs > 5 * 60 * 1000) {
+        status = 'EXPIRED';
+        await client.query('UPDATE bookings SET status = $1 WHERE id = $2', [status, booking.id]);
+      }
+    }
+
     const seatsRes = await client.query('SELECT seat_id FROM booking_seats WHERE booking_id = $1', [booking.id]);
     const addonsRes = await client.query('SELECT addon_code FROM booking_addons WHERE booking_id = $1', [booking.id]);
     return {
       id: booking.id,
       userId: booking.user_id,
       eventId: booking.event_id,
-      status: booking.status,
+      status,
       basePrice: Number(booking.base_price),
       finalPrice: Number(booking.final_price),
       seatIds: seatsRes.rows.map((r: any) => r.seat_id),
@@ -172,17 +182,30 @@ async function handleListMyBookings(payload: { userId: string }) {
     addonsByBooking.set(r.booking_id, list);
   }
 
-  const data = rows.map((b: any) => ({
-    id: b.id,
-    userId: b.user_id,
-    eventId: b.event_id,
-    status: b.status,
-    basePrice: Number(b.base_price),
-    finalPrice: Number(b.final_price),
-    seatIds: seatsByBooking.get(b.id) ?? [],
-    addOnCodes: addonsByBooking.get(b.id) ?? [],
-    createdAt: b.created_at,
-    updatedAt: b.updated_at,
+  const data = await Promise.all(rows.map(async (b: any) => {
+    let status = b.status;
+    // Auto-expire stale locks if they've been sitting in SEATS_LOCKED for >5 mins.
+    // This avoids needing a dedicated sweeping cron job just for UI accuracy.
+    if (status === 'SEATS_LOCKED') {
+      const ageMs = Date.now() - new Date(b.created_at).getTime();
+      if (ageMs > 5 * 60 * 1000) {
+        status = 'EXPIRED';
+        await pool.query('UPDATE bookings SET status = $1 WHERE id = $2', [status, b.id]);
+      }
+    }
+
+    return {
+      id: b.id,
+      userId: b.user_id,
+      eventId: b.event_id,
+      status,
+      basePrice: Number(b.base_price),
+      finalPrice: Number(b.final_price),
+      seatIds: seatsByBooking.get(b.id) ?? [],
+      addOnCodes: addonsByBooking.get(b.id) ?? [],
+      createdAt: b.created_at,
+      updatedAt: b.updated_at,
+    };
   }));
   return { data };
 }
