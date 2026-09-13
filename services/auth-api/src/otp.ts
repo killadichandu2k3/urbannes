@@ -23,7 +23,7 @@ const OTP_HASH_ROUNDS = 10;
 const MAX_VERIFY_ATTEMPTS = 5;
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
-const FROM_ADDRESS = process.env.NOTIFICATIONS_FROM_EMAIL || 'UrbanNest <onboarding@resend.dev>';
+const FROM_ADDRESS = process.env.NOTIFICATIONS_FROM_EMAIL || 'Chandu <onboarding@resend.dev>';
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 function generateCode(): string {

@@ -144,7 +144,7 @@ services:
       REDIS_CACHE_PORT: 6379
       JWT_SECRET: urbannest-dev-jwt-secret-change-me
       RESEND_API_KEY: ${RESEND_API_KEY:-}
-      NOTIFICATIONS_FROM_EMAIL: ${NOTIFICATIONS_FROM_EMAIL:-UrbanNest <onboarding@resend.dev>}
+      NOTIFICATIONS_FROM_EMAIL: ${NOTIFICATIONS_FROM_EMAIL:-Chandu <onboarding@resend.dev>}
     expose:
       - "4600"
 
@@ -213,7 +213,7 @@ services:
       PGPASSWORD: urbannest
       PGDATABASE: urbannest
       RESEND_API_KEY: ${RESEND_API_KEY:-}
-      NOTIFICATIONS_FROM_EMAIL: ${NOTIFICATIONS_FROM_EMAIL:-UrbanNest <onboarding@resend.dev>}
+      NOTIFICATIONS_FROM_EMAIL: ${NOTIFICATIONS_FROM_EMAIL:-Chandu <onboarding@resend.dev>}
     ports:
       - "4100:4100"
 

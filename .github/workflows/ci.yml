@@ -122,6 +122,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [docker-build-push]
     if: github.event_name == 'push'
+    env:
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
+      RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_KEY_SECRET }}
     steps:
       - uses: actions/checkout@v4
       - name: Log in to GHCR
