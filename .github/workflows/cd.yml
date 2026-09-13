@@ -43,7 +43,6 @@ jobs:
             kubectl patch application urbannest -n argocd --type merge \
               -p '{"operation":{"sync":{"revision":"HEAD"}}}' >/dev/null 2>&1 || true
           fi
-          kubectl apply -k k8s/
 
       - name: Force rollout of updated images
         run: |
