@@ -42,6 +42,10 @@ spec:
           valueFrom: {secretKeyRef: {name: urbannest-secrets, key: PGUSER}}
         - name: PGPASSWORD
           valueFrom: {secretKeyRef: {name: urbannest-secrets, key: PGPASSWORD}}
+        - name: RAZORPAY_KEY_ID
+          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: RAZORPAY_KEY_ID, optional: true}}
+        - name: RAZORPAY_KEY_SECRET
+          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: RAZORPAY_KEY_SECRET, optional: true}}
         resources:
           requests: {cpu: "150m", memory: "192Mi"}
           limits: {cpu: "750m", memory: "512Mi"}

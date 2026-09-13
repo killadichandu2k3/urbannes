@@ -39,6 +39,8 @@ spec:
           valueFrom: {secretKeyRef: {name: urbannest-secrets, key: PGPASSWORD}}
         - name: JWT_SECRET
           valueFrom: {secretKeyRef: {name: urbannest-secrets, key: JWT_SECRET}}
+        - name: RESEND_API_KEY
+          valueFrom: {secretKeyRef: {name: urbannest-secrets, key: RESEND_API_KEY, optional: true}}
         readinessProbe:
           httpGet: {path: /health, port: 4600}
           initialDelaySeconds: 5
