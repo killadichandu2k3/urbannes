@@ -17,6 +17,8 @@ services:
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/auth-api:${IMAGE_TAG:-latest}
     environment:
       CI: "true"
+      # Clear API key during CI so we don't try to send real emails to @example.com
+      RESEND_API_KEY: ""
 
   booking-api:
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/booking-api:${IMAGE_TAG:-latest}
@@ -26,6 +28,9 @@ services:
 
   notification-service:
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/notification-service:${IMAGE_TAG:-latest}
+    environment:
+      # Clear API key during CI so we don't try to send real emails to @example.com
+      RESEND_API_KEY: ""
 
   chat-service:
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/chat-service:${IMAGE_TAG:-latest}
@@ -38,3 +43,4 @@ services:
 
   gateway:
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/gateway:${IMAGE_TAG:-latest}
+
