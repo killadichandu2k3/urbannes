@@ -75,21 +75,35 @@ export const resolvers = {
   Mutation: {
     createBooking: async (_: unknown, args: { input: any }, context: any) => {
       const { userId } = requireAuth(context);
-      const reply = await requestReply<any, { requestId: string; message: string }>('CREATE_BOOKING', {
+      const reply = await requestReply<any, { requestId: string; bookingId: string; message: string }>('CREATE_BOOKING', {
         ...args.input,
         userId, // from the verified token, never the client — see requireAuth() above
       });
       const data = unwrapOrThrow(reply);
-      logger.info('createBooking accepted', { requestId: data.requestId, userId });
-      return { requestId: data.requestId, status: 'ACCEPTED', message: data.message };
+      logger.info('createBooking accepted', { requestId: data.requestId, bookingId: data.bookingId, userId });
+      return { requestId: data.requestId, status: 'ACCEPTED', message: data.message, bookingId: data.bookingId };
     },
-    confirmPayment: async (_: unknown, args: { bookingId: string; eventId: string }, context: any) => {
+    createPaymentOrder: async (_: unknown, args: { bookingId: string; eventId: string }, context: any) => {
+      const { userId } = requireAuth(context);
+      const reply = await requestReply<typeof args & { userId: string }, { orderId: string; amount: number; currency: string; keyId: string }>(
+        'CREATE_PAYMENT_ORDER',
+        { ...args, userId },
+      );
+      return unwrapOrThrow(reply);
+    },
+    confirmPayment: async (
+      _: unknown,
+      args: { bookingId: string; eventId: string; razorpayOrderId: string; razorpayPaymentId: string; razorpaySignature: string },
+      context: any,
+    ) => {
       const { userId } = requireAuth(context);
       // userId travels alongside the booking/event ids so booking-worker can
       // verify THIS booking actually belongs to the caller before mutating
       // it (see handleConfirmPayment in bookingRequestConsumer.ts) — this
       // resolver only proves "someone is logged in," not "this booking is
-      // theirs," since that check needs the authoritative DB row.
+      // theirs," since that check needs the authoritative DB row. The
+      // Razorpay order/payment/signature fields are what let booking-worker
+      // verify a real payment happened at all, independent of ownership.
       const reply = await requestReply<typeof args & { userId: string }, { requestId: string; message: string }>(
         'CONFIRM_PAYMENT',
         { ...args, userId },

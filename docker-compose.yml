@@ -126,7 +126,7 @@ services:
       retries: 10
 
   auth-api:
-    container_name: auth-api # register/login/me — the ONLY service that reads/writes the `users` table; talks to Postgres directly (like analytics-api), not through Kafka, since bcrypt hashing + a login check is inherently synchronous request/response work. `me` is cache-aside through redis-cache.
+    container_name: auth-api # register/login/me — the ONLY service that reads/writes the `users` table; talks to Postgres directly (like analytics-api), not through Kafka, since bcrypt hashing + a login check is inherently synchronous request/response work. `me` is cache-aside through redis-cache. Also sends OTP verification emails via Resend on signup (see src/otp.ts) and exposes myNotifications/markNotificationRead for the frontend's bell icon.
     build:
       context: .
       dockerfile: services/auth-api/Dockerfile
@@ -143,6 +143,8 @@ services:
       REDIS_CACHE_HOST: redis-cache
       REDIS_CACHE_PORT: 6379
       JWT_SECRET: urbannest-dev-jwt-secret-change-me
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      NOTIFICATIONS_FROM_EMAIL: ${NOTIFICATIONS_FROM_EMAIL:-UrbanNest <onboarding@resend.dev>}
     expose:
       - "4600"
 
@@ -166,7 +168,7 @@ services:
       - "4000"
 
   booking-worker:
-    container_name: booking-worker # the actual booking business logic — consumes booking.requests from Kafka, does cache-aside against redis-cache, seat locking against redis-coord, and the Postgres transaction; the ONLY thing that talks to Postgres for bookings (also applies schema.sql + seed.sql on boot)
+    container_name: booking-worker # the actual booking business logic — consumes booking.requests from Kafka, does cache-aside against redis-cache, seat locking against redis-coord, and the Postgres transaction; the ONLY thing that talks to Postgres for bookings (also applies schema.sql + seed.sql on boot). Also creates/verifies Razorpay payment orders (test mode) — see src/payments/razorpay.ts.
     build:
       context: .
       dockerfile: services/booking-worker/Dockerfile
@@ -188,20 +190,30 @@ services:
       REDIS_LOCK_PORT: 6379
       SEAT_LOCK_TTL_MS: 300000
       PUBLIC_SHORT_URL_BASE: http://localhost:8080/s
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
     # Scale horizontally with: docker compose up -d --scale booking-worker=3
     # (the `deploy.replicas` key only takes effect under `docker stack
     # deploy`/Swarm, not plain Compose, so real local scaling uses --scale)
 
   notification-service:
-    container_name: notification-service # pure Kafka consumer — reacts to booking.confirmed/booking.cancelled events to (in a real system) send emails/push notifications; exposes only a health endpoint, nothing else calls into it
+    container_name: notification-service # Kafka consumer — reacts to booking.created/confirmed/cancelled/payment.processed to actually send email (Resend) and write in-app notification rows to Postgres (see src/patterns/adapter/ChannelAdapters.ts); exposes only a health endpoint, nothing else calls into it
     build:
       context: .
       dockerfile: services/notification-service/Dockerfile
     depends_on:
       - kafka
+      - postgres
     environment:
       PORT: 4100
       KAFKA_BROKERS: kafka:29092
+      PGHOST: postgres
+      PGPORT: 5432
+      PGUSER: urbannest
+      PGPASSWORD: urbannest
+      PGDATABASE: urbannest
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      NOTIFICATIONS_FROM_EMAIL: ${NOTIFICATIONS_FROM_EMAIL:-UrbanNest <onboarding@resend.dev>}
     ports:
       - "4100:4100"
 

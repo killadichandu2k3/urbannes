@@ -6,6 +6,11 @@
   <base href="/" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" type="image/x-icon" href="data:," />
+  <!-- Razorpay Checkout widget — loaded once globally rather than per-page,
+       since the seat-map page is the only place that opens it but a
+       global script tag avoids any SSR/lazy-module timing complexity
+       around injecting a third-party <script> at runtime. -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
   <app-root></app-root>

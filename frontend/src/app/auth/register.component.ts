@@ -27,6 +27,10 @@ export class RegisterComponent {
       this.error = 'Password must be at least 8 characters.';
       return;
     }
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(this.password)) {
+      this.error = 'Password must include an uppercase letter, a lowercase letter, and a number.';
+      return;
+    }
     if (this.password !== this.confirmPassword) {
       this.error = 'Passwords do not match.';
       return;
@@ -36,7 +40,10 @@ export class RegisterComponent {
     this.auth
       .register({ email: this.email, password: this.password, displayName: this.displayName.trim() })
       .subscribe({
-        next: () => this.router.navigateByUrl('/events'),
+        // register() no longer returns a session — it only creates the
+        // account and emails a code. The verify screen is where a session
+        // actually gets created (see VerifyEmailComponent).
+        next: (result) => this.router.navigate(['/auth/verify'], { queryParams: { email: result.email } }),
         error: (err) => {
           this.error = err.message || 'Registration failed';
           this.submitting = false;

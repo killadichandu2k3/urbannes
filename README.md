@@ -27,7 +27,34 @@ docker compose version
 ```
 Both must print a version number.
 
-### 2. Start everything
+### 2. Set up Razorpay + Resend (both free, no card required)
+
+UrbanNest uses two third-party services, both with permanently-free tiers:
+
+- **Razorpay** (payments, TEST MODE) — sign up at
+  https://dashboard.razorpay.com/signup, then go to **Settings → API
+  Keys**, toggle to **Test Mode** (top bar), and generate a key pair.
+  Test mode never touches real money and needs no business verification —
+  it's free indefinitely, not a trial.
+- **Resend** (email — OTP codes + booking confirmations) — sign up at
+  https://resend.com, then **API Keys → Create API Key**. Free tier:
+  3,000 emails/month, 100/day, no card required.
+
+Copy `.env.example` to `.env` in the project root and fill in the four
+values it asks for (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`,
+`RESEND_API_KEY`, `NOTIFICATIONS_FROM_EMAIL`):
+```bash
+cp .env.example .env
+```
+`docker-compose.yml` reads `.env` automatically — no extra flag needed.
+
+*(You can skip this step and run without it: `auth-api` and
+`notification-service` both log the OTP code / email content to their
+container logs instead of failing when these keys are unset, so local
+dev works without either account. Run `docker compose logs auth-api` and
+look for `[OTP]` if you register without Resend configured.)*
+
+### 3. Start everything
 From the project root:
 ```bash
 docker compose up --build
@@ -44,17 +71,23 @@ docker compose ps
 ```
 Every row should say `Up` or `Up (healthy)`.
 
-### 3. Open the app
+### 4. Open the app
 ```
 http://localhost:8080
 ```
 
-### 4. Create an account
+### 5. Create an account
 There's no pre-seeded login — click **Create an account**, fill in a
-name/email/password (8+ characters), submit. You're logged in
-immediately after.
+name/email/password. Passwords need 8+ characters with an uppercase
+letter, a lowercase letter, and a number.
 
-### 5. Shut down
+Submitting sends a 6-digit verification code to your email (via Resend —
+or check `docker compose logs auth-api` for a `[OTP]` line if you skipped
+step 2) and takes you to a **Verify your email** screen. Enter the code
+to actually sign in — an account isn't usable until it's verified, so
+"Create an account" no longer logs you in immediately the way it used to.
+
+### 6. Shut down
 ```bash
 docker compose down
 ```
@@ -113,7 +146,15 @@ just bootstraps it and waits.
 ```
 http://localhost:30000
 ```
-Create an account the same way as Path A, step 4.
+Create an account the same way as Path A, step 5.
+
+> **Razorpay/Resend keys under Kind:** Path A's `.env` file only feeds
+> `docker compose`. The `k8s/auth-api`, `k8s/booking-worker`, and
+> `k8s/notification-service` manifests don't currently read these keys at
+> all, so payments/OTP-email/booking-email will run in their
+> log-instead-of-send fallback mode under Kind regardless of what's in
+> `.env` — wiring real Kubernetes Secrets for them is a separate piece of
+> work this setup guide doesn't cover yet.
 
 ### 6. Open ArgoCD (optional, to see/manage pods visually)
 The deploy script prints a URL, username, and password — or get them any
@@ -215,9 +256,25 @@ Approve** to let it deploy to your Kind cluster.
   connected to Kafka (`docker compose logs booking-worker`, or Kafka UI
   at `http://localhost:8081`).
 - **"An account with this email already exists" but you don't remember
-  registering** — an old session's data is still in the Postgres volume.
-  Run `docker compose down -v` for a clean slate, or just use a different
-  email.
+  registering** — this now only appears for an already-*verified* account
+  (see step 5 above); an unverified duplicate silently resends a new code
+  instead. Either way, an old session's data is still in the Postgres
+  volume — run `docker compose down -v` for a clean slate, or just use a
+  different email.
+- **Never received the OTP email** — check `docker compose logs auth-api`
+  for a `[OTP]` line (this is expected if `RESEND_API_KEY` isn't set — see
+  step 2 above); if a key is set, check the Resend dashboard's
+  **Logs** tab for delivery status, and check spam.
+- **"Payment verification failed" or the Razorpay widget won't open** —
+  confirm `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET` are set in `.env` and
+  that you restarted with `docker compose up --build` after adding them
+  (env vars are read at container start, not live). Use one of
+  [Razorpay's published test cards](https://razorpay.com/docs/payments/payments/test-card-upi-details/)
+  to actually complete a test payment — a real card will be declined in
+  test mode.
+- **Booking confirmed but no confirmation email** — same root cause as
+  the OTP entry above (`RESEND_API_KEY` unset); check
+  `docker compose logs notification-service` for what it would have sent.
 - **Kind runs out of memory** — raise Docker Desktop's memory limit
   (Settings → Resources), aim for 8GB+.
 - **The `urbannest` Application doesn't show up in ArgoCD** — confirm the

@@ -13,7 +13,8 @@
     "ioredis": "^5.4.1",
     "kafkajs": "^2.2.4",
     "uuid": "^9.0.1",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "razorpay": "^2.9.4"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",

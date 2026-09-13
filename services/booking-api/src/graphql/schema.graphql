@@ -72,6 +72,14 @@ type BookingAccepted {
   requestId: ID!
   status: String! # ACCEPTED
   message: String!
+  bookingId: ID # populated by createBooking; null for mutations that don't create a new booking
+}
+
+type PaymentOrder {
+  orderId: String!
+  amount: Int! # paise, as Razorpay returns it — frontend divides by 100 for display
+  currency: String!
+  keyId: String! # Razorpay's public key id, safe to expose to the client Checkout widget
 }
 
 type ShortLink {
@@ -109,7 +117,14 @@ input CreateBookingInput {
 
 type Mutation {
   createBooking(input: CreateBookingInput!): BookingAccepted!
-  confirmPayment(bookingId: String!, eventId: String!): BookingAccepted!
+  createPaymentOrder(bookingId: String!, eventId: String!): PaymentOrder!
+  confirmPayment(
+    bookingId: String!
+    eventId: String!
+    razorpayOrderId: String!
+    razorpayPaymentId: String!
+    razorpaySignature: String!
+  ): BookingAccepted!
   cancelBooking(bookingId: String!, eventId: String!): BookingAccepted!
   createShortLink(targetUrl: String!): ShortLink!
 }

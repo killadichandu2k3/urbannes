@@ -22,6 +22,7 @@
     "@apollo/client": "3.10.4",
     "graphql": "^16.8.1",
     "graphql-ws": "^5.16.0",
+    "qrcode": "^1.5.4",
     "rxjs": "~7.8.1",
     "tslib": "^2.6.2",
     "zone.js": "~0.14.4"
@@ -30,6 +31,7 @@
     "@angular-devkit/build-angular": "^17.3.0",
     "@angular/cli": "^17.3.0",
     "@angular/compiler-cli": "^17.3.0",
+    "@types/qrcode": "^1.5.5",
     "typescript": "~5.4.5"
   }
 }

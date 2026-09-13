@@ -1,12 +1,12 @@
 <div>
-  <div style="margin-bottom: var(--sp-5);">
+  <div class="page-intro">
     <h1>Community Chat Lobby</h1>
     <p class="muted">Connect with attendees in real-time. Join lobbies or switch rooms below.</p>
   </div>
 
   <div class="card chat-toolbar">
-    <div style="display: flex; align-items: center; gap: var(--sp-2); flex: 1;">
-      <span class="muted" style="font-weight: 600;">Room:</span>
+    <div class="chat-toolbar-room">
+      <span class="muted chat-toolbar-label">Room:</span>
       <input
         class="room-input"
         type="text"
@@ -16,12 +16,12 @@
       />
       <button class="secondary" (click)="joinRoom()">Join Room</button>
     </div>
-    <div style="display: flex; align-items: center; gap: var(--sp-2);">
+    <div class="chat-toolbar-status">
       <span class="badge ok">● {{ participantCount }} Active Online</span>
     </div>
   </div>
 
-  <div class="card" style="margin-top: var(--sp-4);">
+  <div class="card chat-panel">
     <div class="chat-log" #logEl>
       <div class="empty-state chat-empty" *ngIf="messages.length === 0">
         <div class="icon">💬</div>

@@ -1,5 +1,5 @@
 <div>
-  <div style="margin-bottom: var(--sp-6);">
+  <div class="page-intro">
     <h1>My Booking Dashboard</h1>
     <p class="muted">Manage your seat reservations, tickets, and booking history.</p>
   </div>
@@ -34,14 +34,14 @@
         }">● {{ b.status | titlecase }}</span>
       </div>
 
-      <div style="margin: var(--sp-3) 0; padding: var(--sp-3); background: var(--bg-elevated-2); border-radius: var(--radius-sm); border: 1px solid var(--border);">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+      <div class="booking-summary-box">
+        <div class="booking-summary-row">
           <span class="muted">Reserved Seats:</span>
-          <span style="font-weight: 700; color: var(--text);">{{ b.seatIds.length }} Seat{{ b.seatIds.length === 1 ? '' : 's' }}</span>
+          <span class="booking-summary-value">{{ b.seatIds.length }} Seat{{ b.seatIds.length === 1 ? '' : 's' }}</span>
         </div>
-        <div style="display: flex; justify-content: space-between;">
+        <div class="booking-summary-row">
           <span class="muted">Total Paid / Due:</span>
-          <span class="price" style="color: var(--ok);">₹{{ b.finalPrice }}</span>
+          <span class="price">₹{{ b.finalPrice }}</span>
         </div>
       </div>
     </div>

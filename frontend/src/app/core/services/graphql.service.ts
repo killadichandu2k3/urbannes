@@ -10,7 +10,7 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { Observable, map } from 'rxjs';
-import { Booking, BookingAccepted, EventItem, SearchResult, SeatMap, Venue } from '../models';
+import { Booking, BookingAccepted, AppNotification, EventItem, PaymentOrder, SearchResult, SeatMap, Venue } from '../models';
 
 const SEARCH_QUERY = gql`
   query Search($query: String!, $limit: Int) {
@@ -49,7 +49,49 @@ const MY_BOOKINGS_QUERY = gql`
 
 const CREATE_BOOKING_MUTATION = gql`
   mutation CreateBooking($input: CreateBookingInput!) {
-    createBooking(input: $input) { requestId status message }
+    createBooking(input: $input) { requestId status message bookingId }
+  }
+`;
+
+const CREATE_PAYMENT_ORDER_MUTATION = gql`
+  mutation CreatePaymentOrder($bookingId: String!, $eventId: String!) {
+    createPaymentOrder(bookingId: $bookingId, eventId: $eventId) { orderId amount currency keyId }
+  }
+`;
+
+const CONFIRM_PAYMENT_MUTATION = gql`
+  mutation ConfirmPayment(
+    $bookingId: String!
+    $eventId: String!
+    $razorpayOrderId: String!
+    $razorpayPaymentId: String!
+    $razorpaySignature: String!
+  ) {
+    confirmPayment(
+      bookingId: $bookingId
+      eventId: $eventId
+      razorpayOrderId: $razorpayOrderId
+      razorpayPaymentId: $razorpayPaymentId
+      razorpaySignature: $razorpaySignature
+    ) { requestId status message }
+  }
+`;
+
+const MY_NOTIFICATIONS_QUERY = gql`
+  query MyNotifications {
+    myNotifications { id title body readAt createdAt }
+  }
+`;
+
+const MARK_NOTIFICATION_READ_MUTATION = gql`
+  mutation MarkNotificationRead($id: ID!) {
+    markNotificationRead(id: $id)
+  }
+`;
+
+const MARK_ALL_NOTIFICATIONS_READ_MUTATION = gql`
+  mutation MarkAllNotificationsRead {
+    markAllNotificationsRead
   }
 `;
 
@@ -108,5 +150,47 @@ export class GraphqlService {
         variables: { input },
       })
       .pipe(map((result) => result.data!.createBooking));
+  }
+
+  createPaymentOrder(bookingId: string, eventId: string): Observable<PaymentOrder> {
+    return this.apollo
+      .mutate<{ createPaymentOrder: PaymentOrder }>({
+        mutation: CREATE_PAYMENT_ORDER_MUTATION,
+        variables: { bookingId, eventId },
+      })
+      .pipe(map((result) => result.data!.createPaymentOrder));
+  }
+
+  confirmPayment(args: {
+    bookingId: string;
+    eventId: string;
+    razorpayOrderId: string;
+    razorpayPaymentId: string;
+    razorpaySignature: string;
+  }): Observable<BookingAccepted> {
+    return this.apollo
+      .mutate<{ confirmPayment: BookingAccepted }>({
+        mutation: CONFIRM_PAYMENT_MUTATION,
+        variables: args,
+      })
+      .pipe(map((result) => result.data!.confirmPayment));
+  }
+
+  myNotifications(): Observable<AppNotification[]> {
+    return this.apollo
+      .watchQuery<{ myNotifications: AppNotification[] }>({ query: MY_NOTIFICATIONS_QUERY, fetchPolicy: 'network-only' })
+      .valueChanges.pipe(map((result) => result.data.myNotifications));
+  }
+
+  markNotificationRead(id: string): Observable<boolean> {
+    return this.apollo
+      .mutate<{ markNotificationRead: boolean }>({ mutation: MARK_NOTIFICATION_READ_MUTATION, variables: { id } })
+      .pipe(map((result) => result.data!.markNotificationRead));
+  }
+
+  markAllNotificationsRead(): Observable<boolean> {
+    return this.apollo
+      .mutate<{ markAllNotificationsRead: boolean }>({ mutation: MARK_ALL_NOTIFICATIONS_READ_MUTATION })
+      .pipe(map((result) => result.data!.markAllNotificationsRead));
   }
 }

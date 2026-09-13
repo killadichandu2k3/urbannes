@@ -62,6 +62,7 @@ export interface BookingAccepted {
   requestId: string;
   status: string;
   message: string;
+  bookingId?: string | null;
 }
 
 export interface SeatMapUpdate {
@@ -83,6 +84,21 @@ export interface ChatMessage {
   userId: string;
   body: string;
   sentAt: string;
+}
+
+export interface PaymentOrder {
+  orderId: string;
+  amount: number;
+  currency: string;
+  keyId: string;
+}
+
+export interface AppNotification {
+  id: string;
+  title: string;
+  body: string;
+  readAt: string | null;
+  createdAt: string;
 }
 
 export interface AuthUser {

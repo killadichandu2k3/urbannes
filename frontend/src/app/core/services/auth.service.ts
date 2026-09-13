@@ -22,7 +22,19 @@ const USER_KEY = 'urbannest_auth_user';
 
 const REGISTER_MUTATION = gql`
   mutation Register($input: RegisterInput!) {
-    register(input: $input) { token user { id email displayName } }
+    register(input: $input) { email message }
+  }
+`;
+
+const VERIFY_EMAIL_MUTATION = gql`
+  mutation VerifyEmail($email: String!, $code: String!) {
+    verifyEmail(email: $email, code: $code) { token user { id email displayName } }
+  }
+`;
+
+const RESEND_CODE_MUTATION = gql`
+  mutation ResendVerificationCode($email: String!) {
+    resendVerificationCode(email: $email) { email message }
   }
 `;
 
@@ -39,6 +51,11 @@ const ME_QUERY = gql`
 interface AuthPayload {
   token: string;
   user: AuthUser;
+}
+
+interface RegistrationStarted {
+  email: string;
+  message: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -60,14 +77,28 @@ export class AuthService {
     return localStorage.getItem(TOKEN_KEY);
   }
 
-  register(input: { email: string; password: string; displayName: string }): Observable<AuthUser> {
+  /** Starts registration: creates the account (unverified) and emails a 6-digit code. No session is created yet — see verifyEmail(). */
+  register(input: { email: string; password: string; displayName: string }): Observable<RegistrationStarted> {
     return this.apollo
-      .mutate<{ register: AuthPayload }>({ mutation: REGISTER_MUTATION, variables: { input } })
+      .mutate<{ register: RegistrationStarted }>({ mutation: REGISTER_MUTATION, variables: { input } })
+      .pipe(map((result) => result.data!.register));
+  }
+
+  /** Completes registration: verifies the emailed code and, on success, signs the user in (persists the session same as login()). */
+  verifyEmail(input: { email: string; code: string }): Observable<AuthUser> {
+    return this.apollo
+      .mutate<{ verifyEmail: AuthPayload }>({ mutation: VERIFY_EMAIL_MUTATION, variables: input })
       .pipe(
-        map((result) => result.data!.register),
+        map((result) => result.data!.verifyEmail),
         tap((payload) => this.persistSession(payload)),
         map((payload) => payload.user),
       );
+  }
+
+  resendVerificationCode(email: string): Observable<RegistrationStarted> {
+    return this.apollo
+      .mutate<{ resendVerificationCode: RegistrationStarted }>({ mutation: RESEND_CODE_MUTATION, variables: { email } })
+      .pipe(map((result) => result.data!.resendVerificationCode));
   }
 
   login(input: { email: string; password: string }): Observable<AuthUser> {

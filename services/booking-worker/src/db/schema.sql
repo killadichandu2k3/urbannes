@@ -21,9 +21,28 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     display_name TEXT NOT NULL,
+    email_verified_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_users_email ON users (lower(email));
+
+-- One-time codes for email verification at signup. Short-lived and
+-- deliberately separate from `users` (rather than a couple of columns on
+-- it) so OTP churn — resend, expiry, attempt-count — never touches the
+-- users table's own write path, matching this project's existing pattern
+-- of small purpose-specific tables (see payment_orders below) instead of
+-- widening a core table for a narrow, temporary concern.
+CREATE TABLE IF NOT EXISTS email_otps (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email TEXT NOT NULL,
+    code_hash TEXT NOT NULL,
+    purpose TEXT NOT NULL DEFAULT 'SIGNUP_VERIFICATION' CHECK (purpose IN ('SIGNUP_VERIFICATION')),
+    attempts INT NOT NULL DEFAULT 0,
+    expires_at TIMESTAMPTZ NOT NULL,
+    consumed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_email_otps_email ON email_otps (lower(email), created_at DESC);
 
 CREATE TABLE IF NOT EXISTS venues (
     id UUID PRIMARY KEY,
@@ -181,3 +200,48 @@ CREATE TABLE IF NOT EXISTS short_links (
     hit_count BIGINT NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- ============================================================================
+-- Payments — one Razorpay order per booking attempt. `bookings` stays the
+-- source of truth for booking STATE (SEATS_LOCKED/PAYMENT_PENDING/CONFIRMED
+-- — see BookingState.ts); this table is the source of truth for the actual
+-- payment gateway interaction, kept separate because a booking can retry
+-- payment (a failed/abandoned Razorpay order shouldn't block a fresh one)
+-- and because gateway fields (order id, signature) are meaningless to any
+-- other part of the system.
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS payment_orders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    booking_id UUID NOT NULL,
+    booking_created_at TIMESTAMPTZ NOT NULL,
+    user_id UUID NOT NULL,
+    razorpay_order_id TEXT NOT NULL UNIQUE,
+    razorpay_payment_id TEXT,
+    amount NUMERIC(10, 2) NOT NULL,
+    currency TEXT NOT NULL DEFAULT 'INR',
+    status TEXT NOT NULL DEFAULT 'CREATED'
+        CHECK (status IN ('CREATED', 'PAID', 'VERIFICATION_FAILED', 'CANCELLED')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    FOREIGN KEY (booking_id, booking_created_at) REFERENCES bookings (id, created_at) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_payment_orders_booking ON payment_orders (booking_id);
+CREATE INDEX IF NOT EXISTS idx_payment_orders_user ON payment_orders (user_id);
+
+-- ============================================================================
+-- In-app notifications — the bell icon's data source. Written by
+-- notification-service's new InAppChannelAdapter (see
+-- services/notification-service/src/patterns/adapter/ChannelAdapters.ts)
+-- alongside the email send, not instead of it — the two channels are
+-- independent per the existing Adapter pattern, so one failing doesn't
+-- block the other.
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS notifications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL,
+    read_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_created ON notifications (user_id, created_at DESC);

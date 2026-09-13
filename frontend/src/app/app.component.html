@@ -13,6 +13,7 @@
     </div>
     <span class="spacer"></span>
     
+    <app-notification-bell></app-notification-bell>
     <button class="theme-toggle" (click)="toggleTheme()" [title]="'Switch to ' + (currentTheme === 'dark' ? 'Light' : 'Dark') + ' mode'">
       {{ currentTheme === 'dark' ? '☀️ Light' : '🌙 Dark' }}
     </button>

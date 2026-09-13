@@ -1,18 +1,23 @@
 // ============================================================================
-// PATTERN: ADAPTER — each notification channel (email, SMS, push) has a
-// different "native" API shape in the real world (an email SDK wants
-// {to, subject, html}, an SMS gateway wants {phone, text}, a push provider
-// wants {deviceToken, title, body}). The adapter normalizes all of them
-// behind one NotificationChannel interface so the dispatch logic doesn't
-// care which concrete provider it's talking to.
-//
-// These are STUB providers (they log instead of calling a real paid API —
-// no SendGrid/Twilio account needed to run this locally), but the adapter
-// boundary is real: swapping the stub for a real provider means writing one
-// new Adapter class, not touching the dispatch logic.
+// PATTERN: ADAPTER — unchanged shape from the original stub version (see
+// git history): each channel still normalizes its own "native" provider
+// shape behind one NotificationChannel interface. What changed:
+//   - EmailChannelAdapter now calls Resend for real (free tier: 3,000
+//     sends/month, 100/day, no card required — see docs/NOTIFICATIONS.md)
+//     instead of just logging.
+//   - A new InAppChannelAdapter writes a row to `notifications` so the
+//     frontend's bell icon has something real to query — this is NOT a
+//     third-party API at all, just Postgres, but it fits the same
+//     interface so NotificationDispatcher doesn't need to know the
+//     difference between "call a vendor" and "write a row."
+// SMS/push remain stubs — no free SMS/push provider was in scope, and
+// swapping them for a real one later is, per the Adapter pattern's whole
+// point, a new class here with zero changes to the dispatcher.
 // ============================================================================
 
+import { Resend } from 'resend';
 import { createLogger } from '@urbannest/shared';
+import { pool } from '../../db/pool';
 
 const logger = createLogger('notification-service:channels');
 
@@ -20,6 +25,7 @@ export interface NotificationMessage {
   userId: string;
   title: string;
   body: string;
+  toEmail?: string | null;
 }
 
 export interface NotificationChannel {
@@ -27,14 +33,42 @@ export interface NotificationChannel {
   send(message: NotificationMessage): Promise<void>;
 }
 
-// ---- "Native" third-party-shaped APIs (stand-ins for real SDKs) -----------
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const FROM_ADDRESS = process.env.NOTIFICATIONS_FROM_EMAIL || 'UrbanNest <onboarding@resend.dev>';
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
-interface NativeEmailApi {
-  deliver(args: { to: string; subject: string; html: string }): Promise<void>;
+export class EmailChannelAdapter implements NotificationChannel {
+  readonly name = 'email';
+
+  async send(message: NotificationMessage): Promise<void> {
+    if (!message.toEmail) {
+      logger.debug('No email on file for user, skipping email channel', { userId: message.userId });
+      return;
+    }
+    if (!resend) {
+      logger.warn('[EMAIL] RESEND_API_KEY not set - would have sent', { to: message.toEmail, subject: message.title });
+      return;
+    }
+    const { error } = await resend.emails.send({
+      from: FROM_ADDRESS,
+      to: message.toEmail,
+      subject: message.title,
+      html: '<div style="font-family: sans-serif; padding: 24px;"><h2 style="margin: 0 0 12px;">' +
+        message.title + '</h2><p style="color: #444;">' + message.body + '</p></div>',
+    });
+    if (error) throw new Error('Resend send failed: ' + error.message);
+  }
 }
-class StubEmailProvider implements NativeEmailApi {
-  async deliver(args: { to: string; subject: string; html: string }): Promise<void> {
-    logger.info('[EMAIL STUB] delivered', args);
+
+export class InAppChannelAdapter implements NotificationChannel {
+  readonly name = 'in-app';
+
+  async send(message: NotificationMessage): Promise<void> {
+    await pool.query('INSERT INTO notifications (user_id, title, body) VALUES ($1, $2, $3)', [
+      message.userId,
+      message.title,
+      message.body,
+    ]);
   }
 }
 
@@ -56,27 +90,13 @@ class StubPushProvider implements NativePushApi {
   }
 }
 
-// ---- Adapters ---------------------------------------------------------------
-
-export class EmailChannelAdapter implements NotificationChannel {
-  readonly name = 'email';
-  constructor(private provider: NativeEmailApi = new StubEmailProvider()) {}
-  async send(message: NotificationMessage): Promise<void> {
-    await this.provider.deliver({
-      to: `${message.userId}@example.com`,
-      subject: message.title,
-      html: `<p>${message.body}</p>`,
-    });
-  }
-}
-
 export class SmsChannelAdapter implements NotificationChannel {
   readonly name = 'sms';
   constructor(private provider: NativeSmsApi = new StubSmsProvider()) {}
   async send(message: NotificationMessage): Promise<void> {
     await this.provider.sendText({
-      phoneNumber: `+91-USER-${message.userId.slice(0, 6)}`,
-      message: `${message.title}: ${message.body}`,
+      phoneNumber: '+91-USER-' + message.userId.slice(0, 6),
+      message: message.title + ': ' + message.body,
     });
   }
 }
@@ -86,7 +106,7 @@ export class PushChannelAdapter implements NotificationChannel {
   constructor(private provider: NativePushApi = new StubPushProvider()) {}
   async send(message: NotificationMessage): Promise<void> {
     await this.provider.push({
-      deviceToken: `device-${message.userId}`,
+      deviceToken: 'device-' + message.userId,
       title: message.title,
       body: message.body,
     });

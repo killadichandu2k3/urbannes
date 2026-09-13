@@ -26,6 +26,7 @@ import { pickStrategy } from '../patterns/strategy/PricingStrategy';
 import { buildDefaultValidationChain } from '../patterns/chain/ValidationChain';
 import { priceAddOns } from '../patterns/decorator/AddOnDecorator';
 import { seatAvailabilitySubject } from '../patterns/observer/SeatAvailabilitySubject';
+import { createOrder, verifyPaymentSignature } from '../payments/razorpay';
 
 const logger = createLogger('booking-worker:consumer');
 
@@ -278,15 +279,73 @@ async function handleCreateBooking(payload: {
       await pushSeatMapUpdate({ eventId: payload.eventId, seatId, status: 'LOCKED' });
     }
 
-    return { data: { requestId: uuidv4(), message: `Booking ${booking.id} created` } };
+    return { data: { requestId: uuidv4(), bookingId: booking.id, message: `Booking ${booking.id} created` } };
   } catch (err) {
     await releaseSeatLocks(payload.eventId, payload.seatIds, fencingToken);
     throw err;
   }
 }
 
-async function handleConfirmPayment(payload: { bookingId: string; eventId: string; userId: string }) {
+async function handleCreatePaymentOrder(payload: { bookingId: string; eventId: string; userId: string }) {
   const booking = await withTransaction(async (client) => {
+    const res = await client.query('SELECT * FROM bookings WHERE id = $1 AND event_id = $2', [payload.bookingId, payload.eventId]);
+    if (res.rows.length === 0) throw new Error('Booking not found');
+    const current = res.rows[0];
+    if (current.user_id !== payload.userId) throw new Error('This booking does not belong to you');
+    if (current.status !== 'SEATS_LOCKED') throw new Error(`Cannot start payment for a booking in status ${current.status}`);
+    return current;
+  });
+
+  const order = await createOrder(Number(booking.final_price), booking.id);
+
+  await withTransaction(async (client) => {
+    await client.query(
+      `INSERT INTO payment_orders (booking_id, booking_created_at, user_id, razorpay_order_id, amount, currency)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [booking.id, booking.created_at, payload.userId, order.id, booking.final_price, order.currency],
+    );
+  });
+
+  return {
+    data: {
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      keyId: process.env.RAZORPAY_KEY_ID || '',
+    },
+  };
+}
+
+async function handleConfirmPayment(payload: {
+  bookingId: string;
+  eventId: string;
+  userId: string;
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
+  razorpaySignature: string;
+}) {
+  // Trust boundary: nothing below runs unless the signature genuinely
+  // proves Razorpay processed this exact order+payment pair (see
+  // verifyPaymentSignature's doc comment) — a client claiming success
+  // without paying cannot get past this check.
+  const signatureValid = verifyPaymentSignature(payload.razorpayOrderId, payload.razorpayPaymentId, payload.razorpaySignature);
+  if (!signatureValid) {
+    await withTransaction(async (client) => {
+      await client.query(
+        `UPDATE payment_orders SET status = 'VERIFICATION_FAILED', razorpay_payment_id = $1, updated_at = now() WHERE razorpay_order_id = $2`,
+        [payload.razorpayPaymentId, payload.razorpayOrderId],
+      );
+    });
+    throw new Error('Payment verification failed — signature mismatch');
+  }
+
+  const booking = await withTransaction(async (client) => {
+    const orderRes = await client.query('SELECT * FROM payment_orders WHERE razorpay_order_id = $1', [payload.razorpayOrderId]);
+    if (orderRes.rows.length === 0) throw new Error('Payment order not found');
+    const order = orderRes.rows[0];
+    if (order.booking_id !== payload.bookingId) throw new Error('Payment order does not match booking');
+    if (order.user_id !== payload.userId) throw new Error('This payment order does not belong to you');
+
     const res = await client.query('SELECT * FROM bookings WHERE id = $1 AND event_id = $2', [payload.bookingId, payload.eventId]);
     if (res.rows.length === 0) throw new Error('Booking not found');
     const current = res.rows[0];
@@ -304,6 +363,12 @@ async function handleConfirmPayment(payload: { bookingId: string; eventId: strin
       JSON.stringify(history),
       current.id,
     ]);
+
+    await client.query(
+      `UPDATE payment_orders SET status = 'PAID', razorpay_payment_id = $1, updated_at = now() WHERE razorpay_order_id = $2`,
+      [payload.razorpayPaymentId, payload.razorpayOrderId],
+    );
+
     return updated.rows[0];
   });
 
@@ -372,6 +437,7 @@ const HANDLERS: Record<string, (payload: any) => Promise<{ data: any; servedFrom
   GET_BOOKING: handleGetBooking,
   LIST_MY_BOOKINGS: handleListMyBookings,
   CREATE_BOOKING: handleCreateBooking,
+  CREATE_PAYMENT_ORDER: handleCreatePaymentOrder,
   CONFIRM_PAYMENT: handleConfirmPayment,
   CANCEL_BOOKING: handleCancelBooking,
   CREATE_SHORT_LINK: handleCreateShortLink,

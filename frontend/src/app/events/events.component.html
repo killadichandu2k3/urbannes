@@ -1,8 +1,14 @@
 <div>
-  <div style="margin-bottom: var(--sp-6);">
-    <h1>Explore Live Events</h1>
-    <p class="muted">Discover upcoming concerts, sports, and live shows. Pick your seats in real-time.</p>
-    <app-search-autocomplete (select)="onSearchSelect($event)"></app-search-autocomplete>
+  <div class="hero-banner hero-banner--photo">
+    <div class="hero-banner-content">
+      <h1>Explore Live Events</h1>
+      <p class="muted">Discover upcoming concerts, sports, and live shows. Pick your seats in real-time.</p>
+      <app-search-autocomplete (select)="onSearchSelect($event)"></app-search-autocomplete>
+    </div>
+    <p class="hero-banner-credit">
+      Photo by <a href="https://unsplash.com/@joshua_hoehne" target="_blank" rel="noopener">Joshua Hoehne</a> on
+      <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a>
+    </p>
   </div>
 
   <div *ngIf="error" class="error-banner">

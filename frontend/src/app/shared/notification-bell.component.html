@@ -1,0 +1,29 @@
+<div class="notif-bell-wrap" *ngIf="auth.isLoggedIn">
+  <button class="secondary notif-bell-btn" (click)="toggle()" [attr.aria-expanded]="open">
+    🔔
+    <span class="notif-badge" *ngIf="unreadCount > 0">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+  </button>
+
+  <div class="notif-dropdown" *ngIf="open">
+    <div class="notif-dropdown-head">
+      <span style="font-weight: 700;">Notifications</span>
+      <a *ngIf="unreadCount > 0" (click)="markAllRead()" style="font-size: var(--fs-xs); cursor: pointer;">Mark all read</a>
+    </div>
+
+    <div class="empty-state" style="padding: var(--sp-5);" *ngIf="notifications.length === 0">
+      <p class="muted" style="margin: 0;">No notifications yet.</p>
+    </div>
+
+    <div class="notif-list" *ngIf="notifications.length > 0">
+      <div
+        class="notif-item"
+        *ngFor="let n of notifications"
+        [class.unread]="!n.readAt"
+        (click)="markRead(n)"
+      >
+        <div class="notif-item-title">{{ n.title }}</div>
+        <div class="notif-item-body muted">{{ n.body }}</div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,10 +1,10 @@
 <div>
-  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-4);">
+  <div class="page-header">
     <a class="btn btn-secondary" routerLink="/">&larr; Back to Events</a>
     <span class="badge ok" *ngIf="seatMap?.servedFromCache">⚡ Live Cache</span>
   </div>
 
-  <div style="margin-bottom: var(--sp-5);">
+  <div class="page-intro">
     <h1>Select Event Seats</h1>
     <p class="muted">Interactive real-time seating layout. Choose your preferred seats to proceed.</p>
   </div>
@@ -66,15 +66,15 @@
         </div>
       </div>
 
-      <div *ngIf="!activeBooking">
+      <div *ngIf="phase === 'SELECTING'">
         <button
           *ngIf="auth.isLoggedIn"
           class="full-width"
           style="width: 100%; padding: 12px;"
-          [disabled]="selected.size === 0 || booking"
+          [disabled]="selected.size === 0"
           (click)="createBooking()"
         >
-          {{ booking ? 'Processing Booking…' : 'Confirm & Book Seats' }}
+          Confirm & Book Seats
         </button>
 
         <a
@@ -88,12 +88,29 @@
         </a>
       </div>
 
-      <div *ngIf="activeBooking" class="booking-confirmation" style="margin-top: var(--sp-4); padding: var(--sp-4); background: var(--bg-elevated-2); border-radius: var(--radius-sm); border: 1px solid var(--border-strong);">
-        <div style="display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-2);">
-          <span class="badge ok">🎉 {{ activeBooking.status }}</span>
+      <div *ngIf="phase === 'CREATING_BOOKING'" class="checkout-status">
+        <span class="badge warn">● Holding your seats…</span>
+      </div>
+
+      <div *ngIf="phase === 'AWAITING_PAYMENT'" class="checkout-status">
+        <span class="badge warn">● Waiting for payment…</span>
+        <p class="muted" style="margin-top: var(--sp-2);">Complete payment in the Razorpay window. Your seats are held for 5 minutes.</p>
+      </div>
+
+      <div *ngIf="phase === 'CONFIRMING'" class="checkout-status">
+        <span class="badge warn">● Verifying payment…</span>
+      </div>
+
+      <div *ngIf="phase === 'CONFIRMED' && confirmedBooking" class="booking-confirmation ticket-confirmation">
+        <div style="display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-3);">
+          <span class="badge ok">🎉 Booking Confirmed</span>
         </div>
-        <p class="muted" style="margin-bottom: var(--sp-4);">{{ activeBooking.message }}</p>
-        <a routerLink="/my-bookings" class="btn full-width" style="width: 100%; text-align: center;">View My Bookings &rarr;</a>
+        <p class="muted" style="margin-bottom: var(--sp-4);">{{ confirmedBooking.message }}</p>
+        <div class="ticket-qr-wrap">
+          <app-ticket-qr [bookingId]="confirmedBooking.bookingId"></app-ticket-qr>
+          <p class="faint" style="margin-top: var(--sp-2); margin-bottom: 0;">Show this code at the venue entrance</p>
+        </div>
+        <a routerLink="/my-bookings" class="btn full-width" style="width: 100%; text-align: center; margin-top: var(--sp-4);">View My Bookings &rarr;</a>
       </div>
     </div>
   </div>

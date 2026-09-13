@@ -1,0 +1,57 @@
+<div class="auth-page auth-page--split">
+  <div class="auth-visual" aria-hidden="true">
+    <div class="auth-visual-copy">
+      <h2>Almost there.</h2>
+      <p>We've sent a 6-digit code to your email. Enter it to activate your account.</p>
+    </div>
+    <p class="hero-banner-credit auth-visual-credit">
+      Photo by <a href="https://unsplash.com/@joshua_hoehne" target="_blank" rel="noopener">Joshua Hoehne</a> on
+      <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a>
+    </p>
+  </div>
+  <div class="auth-form-side">
+  <div class="card auth-card">
+    <div style="text-align: center; margin-bottom: var(--sp-5);">
+      <div class="brand-logo" style="width: 48px; height: 48px; font-size: 24px; margin: 0 auto var(--sp-3);">✉️</div>
+      <h2>Verify your email</h2>
+      <p class="muted">Enter the code we sent to <strong>{{ email || 'your email' }}</strong>.</p>
+    </div>
+
+    <div *ngIf="error" class="error-banner">
+      <span>⚠️</span>
+      <span>{{ error }}</span>
+    </div>
+
+    <div *ngIf="info" class="badge ok" style="display: flex; margin-bottom: var(--sp-4);">
+      <span>{{ info }}</span>
+    </div>
+
+    <form (ngSubmit)="submit()" #form="ngForm">
+      <div>
+        <label class="muted" style="font-weight: 600; margin-bottom: 6px; display: block;" for="otp-code">Verification code</label>
+        <input
+          id="otp-code"
+          name="code"
+          type="text"
+          inputmode="numeric"
+          maxlength="6"
+          autocomplete="one-time-code"
+          [(ngModel)]="code"
+          required
+          placeholder="123456"
+          style="letter-spacing: 0.4em; text-align: center; font-size: var(--fs-lg); font-weight: 700;"
+        />
+      </div>
+
+      <button type="submit" style="margin-top: var(--sp-4); width: 100%; padding: 12px;" [disabled]="submitting">
+        {{ submitting ? 'Verifying…' : 'Verify & Continue' }}
+      </button>
+    </form>
+
+    <p class="muted auth-switch" style="margin-top: var(--sp-5); text-align: center;">
+      Didn't get a code?
+      <a (click)="resend()" style="font-weight: 600; cursor: pointer;">{{ resending ? 'Sending…' : 'Resend code' }}</a>
+    </p>
+  </div>
+  </div>
+</div>

@@ -6,6 +6,7 @@ import { catchError } from 'rxjs/operators';
 import { AppRoutingModule } from './app-routing.module';
 import { GraphQLModule } from './graphql.module';
 import { AppComponent } from './app.component';
+import { NotificationBellComponent } from './shared/notification-bell.component';
 import { AuthInterceptor } from './core/services/auth.interceptor';
 import { AuthService } from './core/services/auth.service';
 
@@ -20,7 +21,7 @@ function initializeAuth(auth: AuthService) {
 }
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [AppComponent, NotificationBellComponent],
   imports: [BrowserModule, AppRoutingModule, GraphQLModule],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },

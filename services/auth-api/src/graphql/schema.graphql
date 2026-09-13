@@ -19,6 +19,13 @@ type AuthPayload {
   user: User!
 }
 
+# Returned by `register` — no token yet, since the account isn't usable
+# until the emailed code is verified (see verifyEmail below).
+type RegistrationStarted {
+  email: String!
+  message: String!
+}
+
 input RegisterInput {
   email: String!
   password: String!
@@ -30,14 +37,32 @@ input LoginInput {
   password: String!
 }
 
+type Notification {
+  id: ID!
+  title: String!
+  body: String!
+  readAt: String
+  createdAt: String!
+}
+
 type Query {
   # Resolves the caller's own identity from the Authorization header —
   # lets the Angular app restore a session on page reload without
   # re-sending the password (see AuthService.restoreSession()).
   me: User
+  # Most-recent-first, capped server-side (see resolvers.ts) — the bell
+  # dropdown is a recent-activity list, not a full paginated inbox.
+  myNotifications: [Notification!]!
 }
 
 type Mutation {
-  register(input: RegisterInput!): AuthPayload!
+  # Validates input (password strength, duplicate email), creates the
+  # account in an unverified state, and emails a 6-digit code — does NOT
+  # return a token. Call verifyEmail with the code to actually sign in.
+  register(input: RegisterInput!): RegistrationStarted!
+  verifyEmail(email: String!, code: String!): AuthPayload!
+  resendVerificationCode(email: String!): RegistrationStarted!
   login(input: LoginInput!): AuthPayload!
+  markNotificationRead(id: ID!): Boolean!
+  markAllNotificationsRead: Boolean!
 }
