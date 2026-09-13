@@ -24,7 +24,7 @@ const kafka = new Kafka({
   clientId: 'notification-service',
   brokers: (process.env.KAFKA_BROKERS || 'localhost:9092').split(','),
   logLevel: logLevel.WARN,
-  retry: { retries: 8, initialRetryTime: 300 },
+  retry: { retries: 15, initialRetryTime: 1000 },
 });
 
 const SOURCE_TOPIC = 'booking.events'; // wildcard-ish: booking-worker publishes each KAFKA_TOPICS.* value; we subscribe to all of them below

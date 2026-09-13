@@ -34,7 +34,7 @@ const kafka = new Kafka({
   clientId: 'booking-worker',
   brokers: (process.env.KAFKA_BROKERS || 'localhost:9092').split(','),
   logLevel: logLevel.WARN,
-  retry: { retries: 8, initialRetryTime: 300 },
+  retry: { retries: 15, initialRetryTime: 1000 },
 });
 
 const REQUEST_TOPIC = 'booking.requests';
