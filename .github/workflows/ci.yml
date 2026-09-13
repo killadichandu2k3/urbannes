@@ -151,8 +151,8 @@ jobs:
         run: |
           for i in $(seq 1 60); do
             if curl -sf http://localhost:8080/graphql \
-              -X POST -H 'content-type: application/json' \
-              -d '{"query":"{ __typename }"}' 2>/dev/null; then
+              -X POST -H "content-type: application/json" \
+              -d "{\"query\":\"{ __typename }\"}" 2>/dev/null; then
               echo ""
               echo "gateway healthy on attempt $i"
               exit 0
@@ -166,8 +166,8 @@ jobs:
       - name: Smoke test — list events (public, no auth)
         run: |
           RESP=$(curl -sf http://localhost:8080/graphql \
-            -X POST -H 'content-type: application/json' \
-            -d '{"query":"{ events { id title } }"}')
+            -X POST -H "content-type: application/json" \
+            -d "{\"query\":\"{ events { id title } }\"}")
           echo "$RESP"
           echo "$RESP" | grep -q '"events"'
 
