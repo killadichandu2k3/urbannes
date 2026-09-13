@@ -20,7 +20,7 @@ if (!KEY_ID || !KEY_SECRET) {
   logger.warn('RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET not set — payment order creation will fail until configured. See .env.example.');
 }
 
-const razorpay = new Razorpay({ key_id: KEY_ID, key_secret: KEY_SECRET });
+const razorpay = (KEY_ID && KEY_SECRET) ? new Razorpay({ key_id: KEY_ID, key_secret: KEY_SECRET }) : null;
 
 export interface RazorpayOrder {
   id: string;
@@ -30,6 +30,8 @@ export interface RazorpayOrder {
 
 /** Amount is the booking's finalPrice in rupees; Razorpay's API wants paise (integer). */
 export async function createOrder(amountRupees: number, receipt: string): Promise<RazorpayOrder> {
+  if (!razorpay) throw new Error('Razorpay is not configured (missing RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET)');
+  
   const order = await razorpay.orders.create({
     amount: Math.round(amountRupees * 100),
     currency: 'INR',
