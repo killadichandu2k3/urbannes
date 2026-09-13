@@ -39,6 +39,7 @@
 # each service for the application-side change.
 # =============================================================================
 
+name: urbannes
 services:
   zookeeper:
     container_name: zookeeper # Kafka's metadata/coordination store (broker registry, partition leader election) — Kafka cannot start without it on this version
