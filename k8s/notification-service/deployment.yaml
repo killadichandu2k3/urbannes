@@ -33,6 +33,10 @@ spec:
         env:
         - name: PORT
           value: "4100"
+        - name: PGUSER
+          valueFrom: {secretKeyRef: {name: urbannes-secrets, key: PGUSER}}
+        - name: PGPASSWORD
+          valueFrom: {secretKeyRef: {name: urbannes-secrets, key: PGPASSWORD}}
         - name: RESEND_API_KEY
           valueFrom: {secretKeyRef: {name: urbannes-secrets, key: RESEND_API_KEY, optional: true}}
         readinessProbe:

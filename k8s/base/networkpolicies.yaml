@@ -168,6 +168,7 @@ spec:
         - podSelector: { matchLabels: { app: booking-worker } }
         - podSelector: { matchLabels: { app: analytics-api } }
         - podSelector: { matchLabels: { app: auth-api } }
+        - podSelector: { matchLabels: { app: notification-service } }
       ports:
         - port: 5432
 
