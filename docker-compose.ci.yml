@@ -1,0 +1,40 @@
+# =============================================================================
+# CI override — pulls pre-built GHCR images instead of rebuilding from source.
+# The docker-build-push job has already built and pushed these images.
+# Also injects CI=true into auth-api so the OTP test bypass works.
+# =============================================================================
+#
+# Usage (in CI):
+#   REGISTRY=ghcr.io IMAGE_NAMESPACE=<owner>/urbannest \
+#     docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d
+#
+# How it works: when both `build` and `image` are set on a service, Docker
+# Compose pulls the `image` instead of building — unless --build is passed.
+# Since we never pass --build in CI, the GHCR images are pulled directly.
+
+services:
+  auth-api:
+    image: ${REGISTRY}/${IMAGE_NAMESPACE}/auth-api:${IMAGE_TAG:-latest}
+    environment:
+      CI: "true"
+
+  booking-api:
+    image: ${REGISTRY}/${IMAGE_NAMESPACE}/booking-api:${IMAGE_TAG:-latest}
+
+  booking-worker:
+    image: ${REGISTRY}/${IMAGE_NAMESPACE}/booking-worker:${IMAGE_TAG:-latest}
+
+  notification-service:
+    image: ${REGISTRY}/${IMAGE_NAMESPACE}/notification-service:${IMAGE_TAG:-latest}
+
+  chat-service:
+    image: ${REGISTRY}/${IMAGE_NAMESPACE}/chat-service:${IMAGE_TAG:-latest}
+
+  analytics-api:
+    image: ${REGISTRY}/${IMAGE_NAMESPACE}/analytics-api:${IMAGE_TAG:-latest}
+
+  gateway-graphql:
+    image: ${REGISTRY}/${IMAGE_NAMESPACE}/gateway-graphql:${IMAGE_TAG:-latest}
+
+  gateway:
+    image: ${REGISTRY}/${IMAGE_NAMESPACE}/gateway:${IMAGE_TAG:-latest}
