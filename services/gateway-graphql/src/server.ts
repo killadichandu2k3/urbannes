@@ -86,7 +86,21 @@ async function main() {
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
   });
 
-  await apollo.start();
+  let started = false;
+  let attempts = 0;
+  while (!started && attempts < 30) {
+    try {
+      await apollo.start();
+      started = true;
+    } catch (err: any) {
+      attempts++;
+      logger.warn(`Gateway failed to start, retrying (${attempts}/30)...`, { error: err.message });
+      await new Promise(r => setTimeout(r, 2000));
+    }
+  }
+  if (!started) {
+    throw new Error('Failed to start Apollo Gateway after 30 attempts');
+  }
 
   app.use('/health', (_req, res) => res.json({ status: 'ok', service: 'gateway-graphql' }));
 

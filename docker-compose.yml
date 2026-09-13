@@ -257,6 +257,7 @@ services:
     build:
       context: .
       dockerfile: services/gateway-graphql/Dockerfile
+    restart: on-failure
     depends_on:
       - auth-api
       - booking-api
