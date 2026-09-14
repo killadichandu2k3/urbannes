@@ -14,6 +14,9 @@ export class MyBookingsComponent implements OnInit, OnDestroy {
   loading = true;
   error = '';
   cancellingId: string | null = null;
+  bookingToCancel: Booking | null = null;
+  notification: { type: 'success' | 'error'; message: string } | null = null;
+  private notificationTimer: any = null;
 
   private readonly destroy$ = new Subject<void>();
 
@@ -26,6 +29,9 @@ export class MyBookingsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.notificationTimer) {
+      clearTimeout(this.notificationTimer);
+    }
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -58,11 +64,21 @@ export class MyBookingsComponent implements OnInit, OnDestroy {
     return this.eventsById.get(eventId)?.title ?? 'Event';
   }
 
-  cancelBooking(booking: Booking): void {
-    if (!confirm('Are you sure you want to cancel this booking?')) return;
+  promptCancel(booking: Booking): void {
+    this.bookingToCancel = booking;
+  }
+
+  closeCancelModal(): void {
+    if (this.cancellingId) return;
+    this.bookingToCancel = null;
+  }
+
+  confirmCancel(): void {
+    if (!this.bookingToCancel) return;
+    const booking = this.bookingToCancel;
 
     if (this.cancellingId) {
-      alert('A cancellation is already in progress. Please wait.');
+      this.showNotification('error', 'A cancellation is already in progress. Please wait.');
       return;
     }
 
@@ -75,27 +91,20 @@ export class MyBookingsComponent implements OnInit, OnDestroy {
         next: (response) => {
           console.log('Cancel booking response:', response);
           this.cancellingId = null;
-          
-          // Reload bookings to reflect the cancellation
+          this.bookingToCancel = null;
           this.loadBookings();
-          alert('Booking cancelled successfully');
+          this.showNotification('success', 'Booking cancelled successfully');
         },
         error: (err) => {
           console.error('Cancel booking error:', err);
           this.cancellingId = null;
           
-          // Extract error message from different error formats
           let errorMessage = 'Failed to cancel booking';
-          
           if (err?.message) {
             errorMessage = err.message;
           } else if (err?.error?.message) {
             errorMessage = err.error.message;
-          } else if (
-            err?.error?.errors &&
-            Array.isArray(err.error.errors) &&
-            err.error.errors.length > 0
-          ) {
+          } else if (err?.error?.errors && Array.isArray(err.error.errors) && err.error.errors.length > 0) {
             errorMessage = err.error.errors[0].message || errorMessage;
           } else if (err?.graphQLErrors && Array.isArray(err.graphQLErrors) && err.graphQLErrors.length > 0) {
             errorMessage = err.graphQLErrors[0].message || errorMessage;
@@ -103,9 +112,25 @@ export class MyBookingsComponent implements OnInit, OnDestroy {
             errorMessage = err;
           }
 
-          console.error('Final error message:', errorMessage);
-          alert(errorMessage);
+          this.showNotification('error', errorMessage);
         },
       });
+  }
+
+  showNotification(type: 'success' | 'error', message: string): void {
+    this.notification = { type, message };
+    if (this.notificationTimer) {
+      clearTimeout(this.notificationTimer);
+    }
+    this.notificationTimer = setTimeout(() => {
+      this.notification = null;
+    }, 5000);
+  }
+
+  dismissNotification(): void {
+    this.notification = null;
+    if (this.notificationTimer) {
+      clearTimeout(this.notificationTimer);
+    }
   }
 }

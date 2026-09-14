@@ -37,59 +37,131 @@
 
   <!-- Booking Grid -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6" *ngIf="!loading && bookings.length > 0">
-    <div class="group relative flex flex-col justify-between p-6 rounded-2xl border bg-[#13131c] shadow-2xl transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.8)]"
-         [ngClass]="{
-           'border-emerald-500/40 hover:border-emerald-400': b.status === 'CONFIRMED' || b.status === 'ACCEPTED',
-           'border-amber-500/40 hover:border-amber-400': b.status === 'SEATS_LOCKED' || b.status === 'PAYMENT_PENDING',
-           'border-red-500/40 hover:border-red-400': b.status === 'CANCELLED' || b.status === 'EXPIRED'
-         }"
+    <div class="group relative flex flex-col justify-between p-6 rounded-2xl border border-app-border bg-app-surface transition-all duration-200 hover:-translate-y-1 hover:border-app-accent/50 hover:shadow-[0_8px_32px_rgba(255,56,122,0.1)]"
          *ngFor="let b of bookings; let i = index"
          style="opacity: 0; animation: fadeIn 0.5s ease-out forwards;"
          [style.animation-delay]="(i * 0.1) + 's'">
       
       <div>
         <div class="flex items-start justify-between mb-4">
-          <span class="px-3 py-1 text-[11px] font-semibold uppercase tracking-wider rounded-full border"
+          <span class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border"
                 [ngClass]="{
-                  'bg-emerald-500/15 text-emerald-400 border-emerald-500/30': b.status === 'CONFIRMED' || b.status === 'ACCEPTED',
-                  'bg-amber-500/15 text-amber-400 border-amber-500/30': b.status === 'SEATS_LOCKED' || b.status === 'PAYMENT_PENDING',
-                  'bg-red-500/15 text-red-400 border-red-500/30': b.status === 'CANCELLED' || b.status === 'EXPIRED'
+                  'bg-app-ok/10 text-app-ok border-app-ok/20': b.status === 'CONFIRMED' || b.status === 'ACCEPTED',
+                  'bg-app-warn/10 text-app-warn border-app-warn/20': b.status === 'SEATS_LOCKED' || b.status === 'PAYMENT_PENDING',
+                  'bg-app-danger/10 text-app-danger border-app-danger/20': b.status === 'CANCELLED' || b.status === 'EXPIRED'
                 }">
             ● {{ b.status | titlecase }}
           </span>
-          <span class="text-xs text-gray-400 font-mono">ID: {{ b.id.split('-')[0] }}</span>
+          <span class="text-xs text-app-faint font-mono">ID: {{ b.id.split('-')[0] }}</span>
         </div>
         
         <h3 class="text-xl font-bold text-white mb-6 line-clamp-2">{{ eventTitle(b.eventId) }}</h3>
       </div>
 
       <div class="flex flex-col gap-3">
-        <div class="flex items-center justify-between p-3.5 rounded-xl bg-white/[0.04] border border-white/10">
-          <span class="text-sm text-gray-400">Reserved Seats</span>
+        <div class="flex items-center justify-between p-3.5 rounded-lg bg-app-bg-elevated border border-app-border/50">
+          <span class="text-sm text-app-muted">Reserved Seats</span>
           <span class="text-sm font-semibold text-white">{{ b.seatIds.length }} Seat{{ b.seatIds.length === 1 ? '' : 's' }}</span>
         </div>
-        <div class="flex items-center justify-between p-3.5 rounded-xl bg-white/[0.04] border border-white/10">
-          <span class="text-sm text-gray-400">Total Paid</span>
-          <span class="text-sm font-bold text-emerald-400">₹{{ b.finalPrice }}</span>
+        <div class="flex items-center justify-between p-3.5 rounded-lg bg-app-bg-elevated border border-app-border/50">
+          <span class="text-sm text-app-muted">Total Paid</span>
+          <span class="text-sm font-bold text-app-ok">₹{{ b.finalPrice }}</span>
         </div>
         
         <!-- Cancel Action -->
-        <div class="mt-3 pt-4 border-t border-white/10 flex justify-end" *ngIf="b.status === 'CONFIRMED' || b.status === 'ACCEPTED' || b.status === 'SEATS_LOCKED' || b.status === 'PAYMENT_PENDING'">
-          <button class="px-4 py-2.5 text-sm font-semibold rounded-lg border border-red-500/50 bg-red-950/40 text-red-200 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer" 
+        <div class="mt-3 pt-4 border-t border-app-border/50 flex justify-end" *ngIf="b.status === 'CONFIRMED' || b.status === 'ACCEPTED' || b.status === 'SEATS_LOCKED' || b.status === 'PAYMENT_PENDING'">
+          <button class="px-4 py-2 text-sm font-semibold rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer" 
                   [disabled]="cancellingId === b.id" 
-                  (click)="cancelBooking(b)">
-            <span *ngIf="cancellingId !== b.id">Cancel Booking</span>
-            <span *ngIf="cancellingId === b.id" class="flex items-center gap-2">
-              <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Cancelling...
-            </span>
+                  (click)="promptCancel(b)">
+            <span>Cancel Booking</span>
           </button>
         </div>
       </div>
       
     </div>
+  </div>
+
+  <!-- In-App Cancel Confirmation Modal -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md fade-in"
+       *ngIf="bookingToCancel"
+       (click)="closeCancelModal()">
+    <div class="relative w-full max-w-md rounded-2xl border border-app-border bg-[#121218] p-6 shadow-[0_25px_60px_rgba(0,0,0,0.9)] overflow-hidden"
+         (click)="$event.stopPropagation()">
+      
+      <!-- Top subtle accent line -->
+      <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-amber-500"></div>
+
+      <!-- Icon & Title -->
+      <div class="flex items-start gap-4 mb-4">
+        <div class="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.2)]">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-white mb-1">Cancel Booking?</h3>
+          <p class="text-sm text-app-muted leading-relaxed">
+            Are you sure you want to cancel your reservation for <span class="font-semibold text-white">{{ eventTitle(bookingToCancel.eventId) }}</span>?
+          </p>
+        </div>
+      </div>
+
+      <!-- Booking snapshot details -->
+      <div class="my-5 p-3.5 rounded-xl bg-app-bg-elevated border border-app-border/60 flex items-center justify-between text-sm">
+        <div>
+          <span class="text-xs text-app-faint block">Reservation ID</span>
+          <span class="font-mono text-white text-xs">{{ bookingToCancel.id }}</span>
+        </div>
+        <div class="text-right">
+          <span class="text-xs text-app-faint block">Amount Paid</span>
+          <span class="font-bold text-app-ok">₹{{ bookingToCancel.finalPrice }}</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button type="button"
+                class="px-4 py-2 text-sm font-medium rounded-lg border border-app-border bg-app-bg-elevated text-app-muted hover:text-white hover:border-white/20 transition-all cursor-pointer disabled:opacity-50"
+                [disabled]="cancellingId === bookingToCancel.id"
+                (click)="closeCancelModal()">
+          Keep Booking
+        </button>
+        <button type="button"
+                class="px-5 py-2 text-sm font-semibold rounded-lg bg-red-600 hover:bg-red-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.4)] transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                [disabled]="cancellingId === bookingToCancel.id"
+                (click)="confirmCancel()">
+          <span *ngIf="cancellingId !== bookingToCancel.id">Confirm Cancellation</span>
+          <span *ngIf="cancellingId === bookingToCancel.id" class="flex items-center gap-2">
+            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Cancelling...
+          </span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- In-App Toast Notification -->
+  <div *ngIf="notification" 
+       class="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-xl border shadow-2xl backdrop-blur-md fade-in max-w-md transition-all"
+       [ngClass]="{
+         'bg-emerald-950/90 border-emerald-500/40 text-emerald-200': notification.type === 'success',
+         'bg-red-950/90 border-red-500/40 text-red-200': notification.type === 'error'
+       }">
+    <svg *ngIf="notification.type === 'success'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-emerald-400 flex-shrink-0">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+    </svg>
+    <svg *ngIf="notification.type === 'error'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-red-400 flex-shrink-0">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+    </svg>
+    <span class="text-sm font-medium flex-1">{{ notification.message }}</span>
+    <button (click)="dismissNotification()" class="text-gray-400 hover:text-white p-1 ml-2 cursor-pointer">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
   </div>
 </div>
