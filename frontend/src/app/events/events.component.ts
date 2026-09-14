@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { forkJoin, Subject } from 'rxjs';
+import { combineLatest, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { GraphqlService } from '../core/services/graphql.service';
 import { EventItem, SearchResult, Venue } from '../core/models';
@@ -27,7 +27,7 @@ export class EventsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     try {
-      forkJoin({
+      combineLatest({
         events: this.graphql.events(),
         venues: this.graphql.venues(),
       })
@@ -57,21 +57,10 @@ export class EventsComponent implements OnInit, OnDestroy {
 
               // Enrich events with venues
               const enrichedEvents: EventWithVenue[] = [];
-              const now = Date.now();
 
               for (const event of events) {
                 // Skip events without venueId
                 if (!event || !event.venueId) {
-                  continue;
-                }
-
-                // Skip past events
-                try {
-                  const startTime = new Date(event.startsAt).getTime();
-                  if (startTime <= now) {
-                    continue;
-                  }
-                } catch {
                   continue;
                 }
 
@@ -84,22 +73,23 @@ export class EventsComponent implements OnInit, OnDestroy {
                 enrichedEvents.push({ ...event, venue });
               }
 
-              // Sort by date
+              // Sort by date (earliest first)
               enrichedEvents.sort(
                 (a, b) =>
                   new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
               );
 
-              // Categorize
+              // Categorize safely across venue types
               this.movies = enrichedEvents.filter(
-                (e) => e.venue.venueType === 'CINEMA'
-              );
-              this.concerts = enrichedEvents.filter(
-                (e) => e.venue.venueType === 'STADIUM'
+                (e) => (e.venue?.venueType || '').toUpperCase() === 'CINEMA'
               );
               this.theatre = enrichedEvents.filter(
-                (e) => e.venue.venueType === 'THEATRE'
+                (e) => (e.venue?.venueType || '').toUpperCase() === 'THEATRE'
               );
+              this.concerts = enrichedEvents.filter((e) => {
+                const vt = (e.venue?.venueType || '').toUpperCase();
+                return vt !== 'CINEMA' && vt !== 'THEATRE';
+              });
 
               this.loading = false;
               this.error = '';

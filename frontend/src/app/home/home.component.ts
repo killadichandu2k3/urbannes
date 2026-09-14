@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { combineLatest, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { GraphqlService } from '../core/services/graphql.service';
 import { AuthService } from '../core/services/auth.service';
 import { Booking, EventItem } from '../core/models';
@@ -8,7 +9,7 @@ import { Booking, EventItem } from '../core/models';
   selector: 'app-home',
   templateUrl: './home.component.html',
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   loading = true;
   // The single soonest CONFIRMED/PAYMENT_PENDING/SEATS_LOCKED booking, if
   // any — a post-login home's most useful job is answering "what do I have
@@ -17,13 +18,17 @@ export class HomeComponent implements OnInit {
   nextBookingEvent: EventItem | null = null;
   featuredEvents: EventItem[] = [];
 
+  private readonly destroy$ = new Subject<void>();
+
   constructor(private readonly graphql: GraphqlService, public readonly auth: AuthService) {}
 
   ngOnInit(): void {
-    forkJoin({
+    combineLatest({
       bookings: this.graphql.myBookings(),
       events: this.graphql.events(),
-    }).subscribe({
+    })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
       next: ({ bookings, events }) => {
         const eventsById = new Map(events.map((e) => [e.id, e]));
 
@@ -50,6 +55,11 @@ export class HomeComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   formatDate(iso: string): string {
