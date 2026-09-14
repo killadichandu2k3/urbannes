@@ -250,21 +250,27 @@ button.secondary:hover:not(:disabled), .btn-secondary:hover:not(:disabled) {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.nav {
+.nav-wrapper {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 50;
+  width: 100%;
+  padding: 12px 16px 8px;
+  box-sizing: border-box;
+}
+
+.nav {
   display: flex;
   align-items: center;
   gap: var(--sp-5);
-  padding: var(--sp-4) 0;
-  margin: 0 calc(-1 * var(--sp-5)) var(--sp-7);
-  padding-left: var(--sp-5);
-  padding-right: var(--sp-5);
-  border-bottom: 1px solid var(--border);
+  width: 100%;
+  padding: 12px var(--sp-6);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
   background: var(--surface);
   backdrop-filter: var(--surface-backdrop);
   -webkit-backdrop-filter: var(--surface-backdrop);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 .nav .brand {
   display: flex;
