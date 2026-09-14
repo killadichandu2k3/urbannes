@@ -28,6 +28,10 @@ export interface EventItem {
   endsAt: string;
   basePrice: number;
   bookingOpen: boolean;
+  stats?: {
+    seatsSold: number;
+    seatsRemaining: number;
+  };
 }
 
 export interface Seat {

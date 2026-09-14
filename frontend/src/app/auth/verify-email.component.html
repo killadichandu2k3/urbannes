@@ -12,13 +12,15 @@
   <div class="auth-form-side">
   <div class="card auth-card">
     <div style="text-align: center; margin-bottom: var(--sp-5);">
-      <div class="brand-logo" style="width: 48px; height: 48px; font-size: 24px; margin: 0 auto var(--sp-3);">✉️</div>
+      <div class="h-12 w-12 rounded-full bg-app-accent/20 flex items-center justify-center text-app-accent mx-auto mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+      </div>
       <h2>Verify your email</h2>
       <p class="muted">Enter the code we sent to <strong>{{ email || 'your email' }}</strong>.</p>
     </div>
 
-    <div *ngIf="error" class="error-banner">
-      <span>⚠️</span>
+    <div *ngIf="error" class="error-banner flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
       <span>{{ error }}</span>
     </div>
 

@@ -26,7 +26,10 @@ const VENUES_QUERY = gql`
 
 const EVENTS_QUERY = gql`
   query Events {
-    events { id title venueId startsAt endsAt basePrice bookingOpen }
+    events { 
+      id title venueId startsAt endsAt basePrice bookingOpen 
+      stats { seatsSold seatsRemaining }
+    }
   }
 `;
 
@@ -56,6 +59,12 @@ const CREATE_BOOKING_MUTATION = gql`
 const CREATE_PAYMENT_ORDER_MUTATION = gql`
   mutation CreatePaymentOrder($bookingId: String!, $eventId: String!) {
     createPaymentOrder(bookingId: $bookingId, eventId: $eventId) { orderId amount currency keyId }
+  }
+`;
+
+const CANCEL_BOOKING_MUTATION = gql`
+  mutation CancelBooking($bookingId: String!, $eventId: String!) {
+    cancelBooking(bookingId: $bookingId, eventId: $eventId) { requestId status message }
   }
 `;
 
@@ -180,6 +189,15 @@ export class GraphqlService {
         variables: args,
       })
       .pipe(map((result) => result.data!.confirmPayment));
+  }
+
+  cancelBooking(bookingId: string, eventId: string): Observable<BookingAccepted> {
+    return this.apollo
+      .mutate<{ cancelBooking: BookingAccepted }>({
+        mutation: CANCEL_BOOKING_MUTATION,
+        variables: { bookingId, eventId },
+      })
+      .pipe(map((result) => result.data!.cancelBooking));
   }
 
   myNotifications(): Observable<AppNotification[]> {

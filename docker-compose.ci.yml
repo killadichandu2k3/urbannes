@@ -32,9 +32,6 @@ services:
       # Clear API key during CI so we don't try to send real emails to @example.com
       RESEND_API_KEY: ""
 
-  chat-service:
-    image: ${REGISTRY}/${IMAGE_NAMESPACE}/chat-service:${IMAGE_TAG:-latest}
-
   analytics-api:
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/analytics-api:${IMAGE_TAG:-latest}
 

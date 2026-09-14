@@ -1,47 +1,65 @@
-<div class="flex flex-col gap-8">
+<div class="flex flex-col gap-10">
 
-  <!-- Greeting header -->
-  <div>
-    <p class="text-sm text-app-muted mb-1">Welcome back</p>
-    <h1 class="text-3xl font-extrabold tracking-tight">{{ firstName ? 'Hey ' + firstName + ',' : 'Hey,' }} good to see you.</h1>
-  </div>
-
-  <!-- Quick nav — the three real destinations in the app, always one tap away -->
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-    <a routerLink="/events" class="group rounded-app-lg border border-app-border bg-app-surface p-5 flex items-center justify-between transition-all hover:border-app-border-strong hover:-translate-y-0.5">
-      <div>
-        <h3 class="m-0 mb-1">Browse events</h3>
-        <p class="text-sm text-app-muted m-0">Find your next night out</p>
-      </div>
-      <span class="text-app-accent text-xl transition-transform group-hover:translate-x-1">→</span>
-    </a>
-    <a routerLink="/my-bookings" class="group rounded-app-lg border border-app-border bg-app-surface p-5 flex items-center justify-between transition-all hover:border-app-border-strong hover:-translate-y-0.5">
-      <div>
-        <h3 class="m-0 mb-1">My bookings</h3>
-        <p class="text-sm text-app-muted m-0">Tickets, receipts, history</p>
-      </div>
-      <span class="text-app-accent text-xl transition-transform group-hover:translate-x-1">→</span>
-    </a>
-    <a routerLink="/profile" class="group rounded-app-lg border border-app-border bg-app-surface p-5 flex items-center justify-between transition-all hover:border-app-border-strong hover:-translate-y-0.5">
-      <div>
-        <h3 class="m-0 mb-1">Account</h3>
-        <p class="text-sm text-app-muted m-0">{{ (auth.user$ | async)?.email }}</p>
-      </div>
-      <span class="text-app-accent text-xl transition-transform group-hover:translate-x-1">→</span>
-    </a>
-  </div>
-
-  <!-- Next booking spotlight — the single most useful thing a returning,
-       signed-in user wants to see, so it earns a bigger, dedicated card
-       rather than being buried in a list. -->
-  <div *ngIf="!loading && nextBooking && nextBookingEvent" class="rounded-app-lg border border-app-border bg-app-bg-elevated p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-    <div>
-      <p class="text-xs font-bold uppercase tracking-wide text-app-accent mb-2">Coming up</p>
-      <h2 class="m-0 mb-1">{{ nextBookingEvent.title }}</h2>
-      <p class="text-app-muted m-0">{{ formatDate(nextBookingEvent.startsAt) }} · {{ nextBooking.seatIds.length }} seat{{ nextBooking.seatIds.length === 1 ? '' : 's' }}</p>
+  <!-- Fascinating Authenticated Hero Section -->
+  <section class="relative isolate overflow-hidden min-h-[40vh] flex flex-col justify-center -mx-5 -mt-8 pt-12 pb-16 px-5 rounded-b-[24px] bg-transparent">
+    <!-- Background glow effects -->
+    <div class="absolute inset-0 z-0 pointer-events-none">
+      <div class="absolute top-0 right-0 w-[600px] h-[500px] bg-app-accent/20 rounded-full blur-[120px] opacity-60"></div>
+      <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-app-accent/10 rounded-full blur-[100px] opacity-40"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-[#0b0b0f] via-transparent to-transparent"></div>
     </div>
-    <a routerLink="/my-bookings" class="btn whitespace-nowrap">View ticket</a>
-  </div>
+
+    <div class="relative z-10 w-full max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+      <!-- Greeting -->
+      <div class="fade-in flex-1">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-app-border bg-app-surface backdrop-blur-md mb-6">
+          <span class="flex h-2 w-2 rounded-full bg-app-ok animate-pulse"></span>
+          <span class="text-xs font-semibold tracking-wide text-app-muted uppercase">Welcome back</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70 mb-4" style="text-wrap: balance;">
+          {{ firstName ? 'Hey ' + firstName + ',' : 'Hey,' }} <br/>
+          <span class="text-app-accent">Ready for a show?</span>
+        </h1>
+        <p class="text-lg text-app-muted max-w-md" style="text-wrap: pretty;">
+          Your personalized dashboard for upcoming events, tickets, and reservations.
+        </p>
+      </div>
+
+      <!-- Next booking spotlight (Hero Card) -->
+      <div *ngIf="!loading && nextBooking && nextBookingEvent" class="fade-in stagger-2 w-full max-w-md">
+        <div class="relative p-[1px] rounded-2xl bg-gradient-to-br from-app-accent/50 to-transparent">
+          <div class="rounded-2xl bg-app-surface/80 backdrop-blur-xl p-6 shadow-2xl">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="h-8 w-8 rounded-full bg-app-accent/20 flex items-center justify-center text-app-accent">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M1.5 7.125c0-1.035.84-1.875 1.875-1.875h17.25c1.035 0 1.875.84 1.875 1.875v3.714c-1.114.182-1.996 1.092-2.148 2.226a2.254 2.254 0 002.15 2.502v3.308c0 1.035-.84 1.875-1.875 1.875H3.375c-1.035 0-1.875-.84-1.875-1.875v-3.308a2.254 2.254 0 002.15-2.502c-.152-1.134-1.034-2.044-2.148-2.226V7.125zM15 10.5a.75.75 0 00-1.5 0v3a.75.75 0 001.5 0v-3z" clip-rule="evenodd" /></svg>
+              </div>
+              <p class="text-xs font-bold uppercase tracking-wide text-app-accent m-0">Up Next</p>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">{{ nextBookingEvent.title }}</h2>
+            <p class="text-app-muted mb-6">{{ formatDate(nextBookingEvent.startsAt) }} · {{ nextBooking.seatIds.length }} seat{{ nextBooking.seatIds.length === 1 ? '' : 's' }}</p>
+            <a routerLink="/my-bookings" class="w-full flex justify-center py-3 bg-app-accent hover:bg-white text-white hover:text-black hover:shadow-[0_0_15px_rgba(255,255,255,0.5)] font-semibold rounded-lg shadow-[0_0_16px_rgba(255,56,122,0.3)] transition-all">
+              View your ticket
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty state if no next booking -->
+      <div *ngIf="!loading && (!nextBooking || !nextBookingEvent)" class="fade-in stagger-2 w-full max-w-md">
+        <div class="rounded-2xl bg-app-surface/40 border border-app-border backdrop-blur-md p-6 text-center flex flex-col items-center">
+          <div class="mb-4 opacity-50">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" /></svg>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">No upcoming plans</h3>
+          <p class="text-sm text-app-muted mb-4">You don't have any tickets for future events.</p>
+          <a routerLink="/events" class="btn secondary">Browse events</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick nav — the three real destinations in the app -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 fade-in stagger-3">
 
   <!-- Featured events -->
   <div *ngIf="!loading && featuredEvents.length > 0">

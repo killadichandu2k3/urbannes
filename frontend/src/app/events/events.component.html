@@ -1,57 +1,143 @@
-<div>
-  <div class="hero-banner hero-banner--photo">
-    <div class="hero-banner-content">
-      <h1>Explore Live Events</h1>
-      <p class="muted">Discover upcoming concerts, sports, and live shows. Pick your seats in real-time.</p>
-      <app-search-autocomplete (select)="onSearchSelect($event)"></app-search-autocomplete>
+<div class="flex flex-col gap-12 pb-16">
+  <!-- Gorgeous modern banner for the events page -->
+  <div class="relative isolate overflow-hidden min-h-[40vh] flex flex-col justify-center -mx-5 -mt-8 pt-12 pb-16 px-5 rounded-b-[24px] bg-[#0b0b0f]">
+    <div class="absolute inset-0 z-0 pointer-events-none">
+      <div class="absolute top-1/2 left-1/4 -translate-y-1/2 w-[600px] h-[500px] bg-app-accent/20 rounded-full blur-[120px] opacity-70"></div>
+      <img src="https://images.unsplash.com/photo-1540039155732-6761b54f22ce?auto=format&fit=crop&q=80&w=2000" alt="Concert Stage" class="w-full h-full object-cover opacity-20 mix-blend-overlay">
+      <div class="absolute inset-0 bg-gradient-to-t from-[#0b0b0f] via-transparent to-[#0b0b0f]/50"></div>
     </div>
-    <p class="hero-banner-credit">
-      Photo by <a href="https://unsplash.com/@joshua_hoehne" target="_blank" rel="noopener">Joshua Hoehne</a> on
-      <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a>
-    </p>
-  </div>
-
-  <div *ngIf="error" class="error-banner">
-    <span>⚠️</span>
-    <span>{{ error }}</span>
-  </div>
-
-  <div class="grid grid-2" *ngIf="loading">
-    <div class="skeleton skeleton-card" *ngFor="let _ of [1,2,3,4]"></div>
-  </div>
-
-  <div class="empty-state" *ngIf="!loading && !error && events.length === 0">
-    <div class="icon">🎟️</div>
-    <h3>No events listed</h3>
-    <p class="muted">Check back soon for new event schedules.</p>
-  </div>
-
-  <div class="grid grid-2" *ngIf="!loading && events.length > 0">
-    <div class="card interactive event-card" *ngFor="let event of events; let i = index" style="opacity: 0; animation: fadeIn 0.5s ease-out forwards;" [style.animation-delay]="(i * 0.1) + 's'">
-      <div class="event-card-head">
-        <div>
-          <h3 style="font-size: var(--fs-lg); margin-bottom: 4px;">{{ event.title }}</h3>
-          <span class="muted" style="font-size: var(--fs-xs);">📍 Venue ID: {{ event.venueId }}</span>
-        </div>
-        <span class="badge" [class.ok]="event.bookingOpen" [class.danger]="!event.bookingOpen">
-          {{ event.bookingOpen ? '● Booking Open' : '● Sold Out' }}
-        </span>
-      </div>
-
-      <div style="margin: var(--sp-3) 0;">
-        <span class="faint">Starts: </span>
-        <span class="muted" style="font-weight: 600;">{{ formatDate(event.startsAt) }}</span>
-      </div>
-
-      <div class="event-card-foot" style="display: flex; align-items: center; justify-content: space-between; margin-top: var(--sp-3); border-top: 1px solid var(--border); padding-top: var(--sp-3);">
-        <div>
-          <span class="faint" style="display: block;">Starts from</span>
-          <span class="price" style="color: var(--ok);">₹{{ event.basePrice }}</span>
-        </div>
-        <a [routerLink]="['/events', event.id, 'seats']" class="btn" [class.disabled]="!event.bookingOpen">
-          Select Seats &rarr;
-        </a>
+    <div class="relative z-10 w-full max-w-5xl mx-auto text-center fade-in">
+      <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70 mb-4" style="text-wrap: balance;">
+        Explore Live Events
+      </h1>
+      <p class="text-lg text-app-muted max-w-2xl mx-auto mb-8" style="text-wrap: pretty;">
+        Discover upcoming concerts, sports, movies, and live shows. Pick your seats in real-time.
+      </p>
+      <div class="max-w-xl mx-auto">
+        <app-search-autocomplete (select)="onSearchSelect($event)"></app-search-autocomplete>
       </div>
     </div>
+  </div>
+
+  <div *ngIf="error" class="mx-auto w-full max-w-5xl">
+    <div class="p-4 bg-app-danger/10 border border-app-danger/20 rounded-app-md text-app-danger flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+      <span>{{ error }}</span>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="mx-auto w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="h-[200px] bg-app-surface border border-app-border rounded-app-lg animate-pulse" *ngFor="let _ of [1,2,3,4,5,6]"></div>
+  </div>
+
+  <div class="empty-state mx-auto w-full max-w-5xl text-center py-12" *ngIf="!loading && !error && movies.length === 0 && concerts.length === 0 && theatre.length === 0">
+    <div class="mb-4 opacity-50 flex justify-center">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
+      </svg>
+    </div>
+    <h3 class="text-xl font-bold mb-2">No events listed</h3>
+    <p class="text-app-muted">Check back soon for new event schedules.</p>
+  </div>
+
+  <!-- Reusable Template for Event Grid -->
+  <ng-template #eventGrid let-events="events">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="group relative flex flex-col justify-between p-5 rounded-2xl border border-app-border bg-app-surface transition-all hover:-translate-y-1 hover:border-app-accent/50 hover:shadow-[0_8px_32px_rgba(255,56,122,0.1)]"
+           *ngFor="let event of events; let i = index"
+           style="opacity: 0; animation: fadeIn 0.5s ease-out forwards;"
+           [style.animation-delay]="(i * 0.1) + 's'">
+        
+        <div>
+          <div class="flex items-start justify-between mb-3">
+            <span class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border"
+                  [ngClass]="event.bookingOpen ? 'bg-app-ok/10 text-app-ok border-app-ok/20' : 'bg-app-danger/10 text-app-danger border-app-danger/20'">
+              {{ event.bookingOpen ? 'Booking Open' : 'Sold Out' }}
+            </span>
+            <span *ngIf="getTrendingStatus(event) as status" class="px-2.5 py-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider rounded-full border"
+                  [ngClass]="{
+                    'bg-app-accent/10 text-app-accent border-app-accent/20 shadow-[0_0_10px_rgba(255,56,122,0.2)]': status.icon === 'fire',
+                    'bg-app-warn/10 text-app-warn border-app-warn/20': status.icon === 'trending',
+                    'bg-app-ok/10 text-app-ok border-app-ok/20': status.icon === 'users'
+                  }">
+              <svg *ngIf="status.icon === 'fire'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3"><path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177A7.547 7.547 0 016.648 6.61a.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248z" clip-rule="evenodd" /></svg>
+              <svg *ngIf="status.icon === 'trending'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3 h-3"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" /></svg>
+              <svg *ngIf="status.icon === 'users'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3"><path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.01.75.75 0 00.42-.643 4.875 4.875 0 00-6.957-4.611 8.586 8.586 0 011.71 5.157v.003z" /></svg>
+              {{ status.label }}
+            </span>
+          </div>
+          <h3 class="text-xl font-bold mb-1 line-clamp-2">{{ event.title }}</h3>
+          <p class="text-sm text-app-muted flex items-center gap-1.5 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 opacity-70"><path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg>
+            {{ event.venue.name }}, {{ event.venue.city }}
+          </p>
+        </div>
+
+        <div>
+          <div class="flex items-center gap-3 mb-4 p-3 rounded-lg bg-app-bg-elevated border border-app-border/50">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 opacity-70 text-app-accent"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+            <div>
+              <p class="text-xs text-app-faint mb-0.5 m-0 leading-none">Starts</p>
+              <p class="text-sm font-semibold m-0 leading-none">{{ formatDate(event.startsAt) }}</p>
+            </div>
+          </div>
+
+          <!-- Analytics Seats Bar -->
+          <div *ngIf="event.stats" class="mb-5 px-1">
+            <div class="flex justify-between text-xs mb-1.5">
+              <span class="text-white font-medium">{{ getFillPercentage(event) }}% Full</span>
+              <span class="text-app-muted">{{ event.stats.seatsRemaining }} seats left</span>
+            </div>
+            <div class="w-full h-1.5 bg-app-bg-elevated rounded-full overflow-hidden">
+              <div class="h-full rounded-full transition-all" 
+                   [ngClass]="getFillPercentage(event) > 85 ? 'bg-app-accent' : (getFillPercentage(event) > 50 ? 'bg-app-warn' : 'bg-app-ok')"
+                   [style.width.%]="getFillPercentage(event)">
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex items-center justify-between border-t border-app-border pt-4">
+            <div>
+              <p class="text-xs text-app-faint m-0 mb-0.5">Starting from</p>
+              <p class="text-lg font-bold text-app-ok m-0">₹{{ event.basePrice }}</p>
+            </div>
+            <a [routerLink]="['/events', event.id, 'seats']" 
+               class="px-4 py-2 text-sm font-semibold rounded-lg transition-all"
+               [ngClass]="event.bookingOpen ? 'bg-app-accent text-white hover:bg-white hover:text-black hover:shadow-[0_0_15px_rgba(255,255,255,0.5)]' : 'bg-app-bg-elevated text-app-muted cursor-not-allowed pointer-events-none'">
+              Select Seats
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="w-full max-w-6xl mx-auto px-5" *ngIf="!loading && !error">
+    <!-- Concerts & Sports -->
+    <section class="mb-16 fade-in" *ngIf="concerts.length > 0">
+      <div class="flex items-center gap-3 mb-6">
+        <h2 class="text-2xl font-bold m-0">Concerts & Sports</h2>
+        <div class="h-px bg-app-border flex-1 ml-4"></div>
+      </div>
+      <ng-container *ngTemplateOutlet="eventGrid; context: { events: concerts }"></ng-container>
+    </section>
+
+    <!-- Theatre & Arts -->
+    <section class="mb-16 fade-in stagger-1" *ngIf="theatre.length > 0">
+      <div class="flex items-center gap-3 mb-6">
+        <h2 class="text-2xl font-bold m-0">Theatre & Arts</h2>
+        <div class="h-px bg-app-border flex-1 ml-4"></div>
+      </div>
+      <ng-container *ngTemplateOutlet="eventGrid; context: { events: theatre }"></ng-container>
+    </section>
+
+    <!-- Movies -->
+    <section class="mb-8 fade-in stagger-2" *ngIf="movies.length > 0">
+      <div class="flex items-center gap-3 mb-6">
+        <h2 class="text-2xl font-bold m-0">Movies</h2>
+        <div class="h-px bg-app-border flex-1 ml-4"></div>
+      </div>
+      <ng-container *ngTemplateOutlet="eventGrid; context: { events: movies }"></ng-container>
+    </section>
   </div>
 </div>

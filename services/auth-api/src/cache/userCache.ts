@@ -8,7 +8,7 @@
 // Uses a dedicated cache Redis instance (REDIS_CACHE_HOST/REDIS_CACHE_PORT
 // — same instance and same env var names as booking-worker's cache — see
 // its cache/cache.ts), kept separate from the REDIS_HOST/REDIS_PORT
-// coordination instance that booking-api/chat-service use for locks and
+// coordination instance that booking-api uses for locks and
 // Pub/Sub, since this is a shared Kubernetes ConfigMap and the two
 // instances must not collide under the same env var name. Cache
 // invalidation is a plain `del()` on the rare write that changes a user

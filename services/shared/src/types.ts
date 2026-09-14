@@ -51,7 +51,7 @@ export const KAFKA_TOPICS = {
   EXPENSE_CREATED: 'expense.created',
   EXPENSE_SETTLED: 'expense.settled',
   URL_ACCESSED: 'url.accessed',
-  CHAT_MESSAGE_SENT: 'chat.message.sent',
+
 } as const;
 
 export type KafkaTopic = (typeof KAFKA_TOPICS)[keyof typeof KAFKA_TOPICS];

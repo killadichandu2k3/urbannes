@@ -1,27 +1,63 @@
 <div class="landing">
 
-  <!-- Hero: reuses the same licensed Unsplash concert photo + gradient
-       scrim as the events page (see docs/ASSET_LICENSES.md) so the two
-       pages read as one product, not two different tools bolted together. -->
-  <section class="landing-hero">
-    <div class="landing-hero-content">
-      <p class="landing-eyebrow">Live events, real seats</p>
-      <h1>Find your next night out, and walk in with a seat that's actually yours.</h1>
-      <p class="landing-hero-sub">
-        Browse concerts, comedy, and festivals near you. Pick your exact seat on a live map,
-        pay securely, and get your ticket on your phone — no printing, no guesswork.
+  <!-- Fascinating modern hero section using Tailwind and modern CSS features -->
+  <section class="relative isolate overflow-hidden min-h-[85vh] flex items-center justify-center -mx-5 -mt-8 pt-8 pb-16 rounded-b-[24px] bg-transparent">
+    <!-- Background glow effects -->
+    <div class="absolute inset-0 z-0 pointer-events-none">
+      <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-accent/20 rounded-full blur-[120px] opacity-70"></div>
+      <div class="absolute bottom-0 right-0 w-[500px] h-[400px] bg-accent/10 rounded-full blur-[100px] opacity-50"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-[#0b0b0f] via-[#0b0b0f]/40 to-transparent"></div>
+    </div>
+
+    <!-- Content -->
+    <div class="relative z-10 w-full max-w-5xl mx-auto px-6 flex flex-col items-center text-center">
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-surface backdrop-blur-md mb-8 fade-in">
+        <span class="flex h-2 w-2 rounded-full bg-accent animate-pulse"></span>
+        <span class="text-xs font-semibold tracking-wide text-text-muted uppercase">Live events, real seats</span>
+      </div>
+
+      <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70 mb-6 drop-shadow-sm fade-in stagger-1" style="text-wrap: balance;">
+        Find your next night out. <br/>
+        <span class="text-accent">Own your seat.</span>
+      </h1>
+
+      <p class="text-lg md:text-xl text-text-muted max-w-2xl mx-auto mb-10 leading-relaxed fade-in stagger-2" style="text-wrap: pretty;">
+        Browse concerts, comedy, and festivals near you. Pick your exact seat on a live map, 
+        pay securely, and get your ticket instantly on your phone — no printing, no guesswork.
       </p>
-      <div class="landing-hero-actions">
-        <a *ngIf="!auth.isLoggedIn" routerLink="/auth/register" class="btn btn-lg">Create your account</a>
-        <a *ngIf="!auth.isLoggedIn" routerLink="/events" class="secondary btn-lg">Browse events</a>
-        <a *ngIf="auth.isLoggedIn" routerLink="/events" class="btn btn-lg">Browse events</a>
-        <a *ngIf="auth.isLoggedIn" routerLink="/my-bookings" class="secondary btn-lg">View my bookings</a>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto fade-in stagger-3">
+        <a *ngIf="!auth.isLoggedIn" routerLink="/auth/register" class="w-full sm:w-auto px-8 py-4 bg-accent hover:bg-accent-strong text-white font-semibold rounded-lg shadow-[0_0_24px_rgba(255,56,122,0.4)] transition-all transform hover:-translate-y-1 text-center">
+          Create your account
+        </a>
+        <a *ngIf="!auth.isLoggedIn" routerLink="/events" class="w-full sm:w-auto px-8 py-4 bg-surface hover:bg-surface-hover border border-border text-white font-semibold rounded-lg backdrop-blur-sm transition-all text-center">
+          Browse events
+        </a>
+        
+        <a *ngIf="auth.isLoggedIn" routerLink="/events" class="w-full sm:w-auto px-8 py-4 bg-accent hover:bg-accent-strong text-white font-semibold rounded-lg shadow-[0_0_24px_rgba(255,56,122,0.4)] transition-all transform hover:-translate-y-1 text-center">
+          Browse events
+        </a>
+        <a *ngIf="auth.isLoggedIn" routerLink="/my-bookings" class="w-full sm:w-auto px-8 py-4 bg-surface hover:bg-surface-hover border border-border text-white font-semibold rounded-lg backdrop-blur-sm transition-all text-center">
+          View my bookings
+        </a>
+      </div>
+
+      <!-- Quick stats/trust below CTA -->
+      <div class="mt-16 flex flex-wrap justify-center gap-8 md:gap-16 pt-8 border-t border-border/50 text-left fade-in stagger-4">
+        <div>
+          <div class="text-3xl font-bold text-white mb-1">100k+</div>
+          <div class="text-sm text-text-muted font-medium">Tickets Sold</div>
+        </div>
+        <div>
+          <div class="text-3xl font-bold text-white mb-1">Real-time</div>
+          <div class="text-sm text-text-muted font-medium">Seat Selection</div>
+        </div>
+        <div>
+          <div class="text-3xl font-bold text-white mb-1">Zero</div>
+          <div class="text-sm text-text-muted font-medium">Hidden Fees</div>
+        </div>
       </div>
     </div>
-    <p class="hero-banner-credit">
-      Photo by <a href="https://unsplash.com/@joshua_hoehne" target="_blank" rel="noopener">Joshua Hoehne</a> on
-      <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a>
-    </p>
   </section>
 
   <!-- Concrete numbers, not decoration — a real sequence of facts about

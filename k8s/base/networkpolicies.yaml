@@ -4,9 +4,8 @@
 # Without NetworkPolicies, every pod in the namespace can reach every
 # other pod on any port — flat, trust-everything networking. That's fine
 # for local dev-speed iteration, but the opposite of what "production-
-# grade" means: a compromised or misbehaving pod (say, chat-service,
-# which is the one service handling arbitrary user-supplied WebSocket
-# messages) should NOT be able to open a connection straight to Postgres,
+# grade" means: a compromised or misbehaving pod
+# should NOT be able to open a connection straight to Postgres,
 # which it has no legitimate reason to talk to.
 #
 # STRATEGY: one default-deny-ingress policy for the whole namespace
@@ -130,22 +129,7 @@ spec:
       ports:
         - port: 4600
 
-# ---- chat-service: reached only by the NGINX gateway (WS proxy) -----------
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-gateway-to-chat-service
-  namespace: urbannes
-spec:
-  podSelector:
-    matchLabels: { app: chat-service }
-  policyTypes: [Ingress]
-  ingress:
-    - from:
-        - podSelector: { matchLabels: { app: gateway } }
-      ports:
-        - port: 4200
+
 
 # ---- Postgres: reached by booking-worker (read/write OLTP path),
 # analytics-api (direct read path), and auth-api (direct read/write to the
@@ -195,7 +179,7 @@ spec:
         - port: 6379
 
 # ---- redis-coord (seat locks + Pub/Sub): booking-worker publishes/locks,
-# booking-api and chat-service subscribe for push updates -------------------
+# booking-api subscribes for push updates -------------------
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -210,7 +194,6 @@ spec:
     - from:
         - podSelector: { matchLabels: { app: booking-worker } }
         - podSelector: { matchLabels: { app: booking-api } }
-        - podSelector: { matchLabels: { app: chat-service } }
       ports:
         - port: 6379
 

@@ -1,115 +1,144 @@
-<div class="flex flex-col gap-8 max-w-2xl">
+<div class="flex flex-col gap-10 max-w-4xl mx-auto pb-16 pt-8">
 
-  <div>
-    <p class="text-sm text-app-muted mb-1">Account</p>
-    <h1 class="text-3xl font-extrabold tracking-tight">Your profile</h1>
-  </div>
-
-  <!-- Identity summary -->
-  <div class="rounded-app-lg border border-app-border bg-app-surface p-6 flex items-center gap-4">
-    <div class="user-avatar" style="width: 56px; height: 56px; font-size: 1.25rem;">
-      {{ ((auth.user$ | async)?.displayName || 'U')[0].toUpperCase() }}
+  <!-- Glowing Profile Header -->
+  <div class="relative isolate overflow-hidden rounded-[24px] p-8 sm:p-10 bg-transparent border border-app-border/40 shadow-2xl">
+    <div class="absolute inset-0 z-0 pointer-events-none">
+      <div class="absolute -top-10 -right-10 w-[300px] h-[300px] bg-app-accent/20 rounded-full blur-[80px] opacity-60"></div>
+      <div class="absolute bottom-0 left-0 w-[400px] h-[200px] bg-app-accent/10 rounded-full blur-[60px] opacity-40"></div>
+      <div class="absolute inset-0 bg-gradient-to-br from-app-surface/80 to-app-bg-elevated/80 backdrop-blur-xl"></div>
     </div>
-    <div>
-      <h3 class="m-0">{{ (auth.user$ | async)?.displayName }}</h3>
-      <p class="text-sm text-app-muted m-0">{{ (auth.user$ | async)?.email }}</p>
-    </div>
-  </div>
-
-  <!-- Display name -->
-  <div class="rounded-app-lg border border-app-border bg-app-surface p-6">
-    <h3 class="m-0 mb-1">Display name</h3>
-    <p class="text-sm text-app-muted mb-4">This is the name shown on your bookings and in the navbar.</p>
-
-    <div *ngIf="nameError" class="error-banner mb-4">
-      <span>⚠️</span>
-      <span>{{ nameError }}</span>
-    </div>
-    <div *ngIf="nameSaved" class="mb-4 text-sm font-medium" style="color: var(--ok);">
-      Saved — your display name has been updated.
-    </div>
-
-    <form (ngSubmit)="saveDisplayName()" #nameForm="ngForm" class="flex flex-col sm:flex-row gap-3">
-      <input
-        name="displayName"
-        type="text"
-        [(ngModel)]="displayName"
-        required
-        maxlength="80"
-        placeholder="Your name"
-        class="flex-1"
-      />
-      <button type="submit" [disabled]="nameSaving" class="whitespace-nowrap">
-        {{ nameSaving ? 'Saving…' : 'Save name' }}
-      </button>
-    </form>
-  </div>
-
-  <!-- Password — only shown when the account actually has one; a
-       Google-only account has nothing to change here (see hasPassword on
-       the User type, set server-side in auth-api's toUser()). -->
-  <div *ngIf="(auth.user$ | async)?.hasPassword" class="rounded-app-lg border border-app-border bg-app-surface p-6">
-    <h3 class="m-0 mb-1">Password</h3>
-    <p class="text-sm text-app-muted mb-4">Enter your current password to set a new one.</p>
-
-    <div *ngIf="passwordError" class="error-banner mb-4">
-      <span>⚠️</span>
-      <span>{{ passwordError }}</span>
-    </div>
-    <div *ngIf="passwordSaved" class="mb-4 text-sm font-medium" style="color: var(--ok);">
-      Your password has been changed.
-    </div>
-
-    <form (ngSubmit)="changePassword()" #passwordForm="ngForm" class="flex flex-col gap-3">
-      <div>
-        <label class="muted font-semibold mb-1.5 block" for="current-password">Current password</label>
-        <input
-          id="current-password"
-          name="currentPassword"
-          type="password"
-          autocomplete="current-password"
-          [(ngModel)]="currentPassword"
-          required
-          class="w-full"
-        />
+    
+    <div class="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-6 fade-in">
+      <div class="relative">
+        <div class="absolute inset-0 bg-app-accent rounded-full blur-md opacity-50"></div>
+        <div class="relative flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-app-surface to-app-bg-elevated border-2 border-app-accent shadow-[0_0_24px_rgba(255,56,122,0.3)] text-3xl font-bold text-white uppercase">
+          {{ ((auth.user$ | async)?.displayName || 'U')[0] }}
+        </div>
       </div>
-      <div>
-        <label class="muted font-semibold mb-1.5 block" for="new-password">New password</label>
-        <input
-          id="new-password"
-          name="newPassword"
-          type="password"
-          autocomplete="new-password"
-          [(ngModel)]="newPassword"
-          required
-          placeholder="At least 8 characters, one upper, one lower, one number"
-          class="w-full"
-        />
+      <div class="text-center sm:text-left pt-2">
+        <p class="text-xs font-bold tracking-widest text-app-accent uppercase mb-1">Account settings</p>
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-2">{{ (auth.user$ | async)?.displayName }}</h1>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/30 border border-white/10 backdrop-blur-md">
+          <span class="text-sm text-app-muted">{{ (auth.user$ | async)?.email }}</span>
+          <span *ngIf="(auth.user$ | async)?.hasPassword === false" class="text-xs font-semibold bg-white text-black px-1.5 py-0.5 rounded ml-1">G</span>
+        </div>
       </div>
-      <div>
-        <label class="muted font-semibold mb-1.5 block" for="confirm-password">Confirm new password</label>
-        <input
-          id="confirm-password"
-          name="confirmPassword"
-          type="password"
-          autocomplete="new-password"
-          [(ngModel)]="confirmPassword"
-          required
-          class="w-full"
-        />
-      </div>
-      <button type="submit" [disabled]="passwordSaving" class="mt-1 self-start">
-        {{ passwordSaving ? 'Updating…' : 'Change password' }}
-      </button>
-    </form>
+    </div>
   </div>
 
-  <!-- Shown instead of the password card for a Google-only account, so
-       the absence of a password form is explained rather than just
-       silently missing. -->
-  <div *ngIf="(auth.user$ | async)?.hasPassword === false" class="rounded-app-lg border border-app-border bg-app-surface p-6">
-    <h3 class="m-0 mb-1">Password</h3>
-    <p class="text-sm text-app-muted m-0">You sign in with Google, so there's no password to manage here.</p>
-  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    
+    <!-- Display Name Card -->
+    <div class="rounded-2xl border border-app-border/60 bg-app-surface/40 backdrop-blur-lg p-6 sm:p-8 fade-in stagger-1 shadow-lg">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="opacity-80">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+        </div>
+        <h3 class="text-xl font-bold m-0">Display Name</h3>
+      </div>
+      <p class="text-sm text-app-muted mb-6">This is the name shown on your bookings and in the navbar.</p>
 
+      <div *ngIf="nameError" class="p-3 mb-5 bg-app-danger/10 border border-app-danger/20 rounded-lg text-app-danger text-sm flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+        <span>{{ nameError }}</span>
+      </div>
+      <div *ngIf="nameSaved" class="p-3 mb-5 bg-app-ok/10 border border-app-ok/20 rounded-lg text-app-ok text-sm font-medium flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span>Saved — your display name has been updated.</span>
+      </div>
+
+      <form (ngSubmit)="saveDisplayName()" #nameForm="ngForm" class="flex flex-col gap-4">
+        <div>
+          <input
+            name="displayName"
+            type="text"
+            [(ngModel)]="displayName"
+            required
+            maxlength="80"
+            placeholder="Your name"
+            class="w-full bg-black/20 border border-app-border focus:border-app-accent focus:ring-1 focus:ring-app-accent rounded-lg px-4 py-3 text-white placeholder:text-app-faint transition-all"
+          />
+        </div>
+        <button type="submit" [disabled]="nameSaving" class="w-full sm:w-auto self-start px-6 py-2.5 bg-app-bg-elevated hover:bg-app-accent border border-app-border hover:border-app-accent text-white font-semibold rounded-lg transition-all shadow-md">
+          {{ nameSaving ? 'Saving…' : 'Save name' }}
+        </button>
+      </form>
+    </div>
+
+    <!-- Password Card (Standard Account) -->
+    <div *ngIf="(auth.user$ | async)?.hasPassword" class="rounded-2xl border border-app-border/60 bg-app-surface/40 backdrop-blur-lg p-6 sm:p-8 fade-in stagger-2 shadow-lg">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="opacity-80">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+        </div>
+        <h3 class="text-xl font-bold m-0">Security</h3>
+      </div>
+      <p class="text-sm text-app-muted mb-6">Enter your current password to set a new one.</p>
+
+      <div *ngIf="passwordError" class="p-3 mb-5 bg-app-danger/10 border border-app-danger/20 rounded-lg text-app-danger text-sm flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+        <span>{{ passwordError }}</span>
+      </div>
+      <div *ngIf="passwordSaved" class="p-3 mb-5 bg-app-ok/10 border border-app-ok/20 rounded-lg text-app-ok text-sm font-medium flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span>Your password has been securely changed.</span>
+      </div>
+
+      <form (ngSubmit)="changePassword()" #passwordForm="ngForm" class="flex flex-col gap-5">
+        <div>
+          <label class="text-sm text-app-faint font-semibold mb-2 block" for="current-password">Current password</label>
+          <input
+            id="current-password"
+            name="currentPassword"
+            type="password"
+            autocomplete="current-password"
+            [(ngModel)]="currentPassword"
+            required
+            class="w-full bg-black/20 border border-app-border focus:border-app-accent focus:ring-1 focus:ring-app-accent rounded-lg px-4 py-2.5 text-white transition-all"
+          />
+        </div>
+        <div class="pt-2 border-t border-app-border/50">
+          <label class="text-sm text-app-faint font-semibold mb-2 block" for="new-password">New password</label>
+          <input
+            id="new-password"
+            name="newPassword"
+            type="password"
+            autocomplete="new-password"
+            [(ngModel)]="newPassword"
+            required
+            placeholder="At least 8 characters"
+            class="w-full bg-black/20 border border-app-border focus:border-app-accent focus:ring-1 focus:ring-app-accent rounded-lg px-4 py-2.5 text-white placeholder:text-app-faint transition-all mb-4"
+          />
+          <label class="text-sm text-app-faint font-semibold mb-2 block" for="confirm-password">Confirm new password</label>
+          <input
+            id="confirm-password"
+            name="confirmPassword"
+            type="password"
+            autocomplete="new-password"
+            [(ngModel)]="confirmPassword"
+            required
+            class="w-full bg-black/20 border border-app-border focus:border-app-accent focus:ring-1 focus:ring-app-accent rounded-lg px-4 py-2.5 text-white transition-all"
+          />
+        </div>
+        <button type="submit" [disabled]="passwordSaving" class="w-full sm:w-auto self-start mt-2 px-6 py-2.5 bg-app-bg-elevated hover:bg-app-accent border border-app-border hover:border-app-accent text-white font-semibold rounded-lg transition-all shadow-md">
+          {{ passwordSaving ? 'Updating…' : 'Change password' }}
+        </button>
+      </form>
+    </div>
+
+    <!-- Password Card (Google Account) -->
+    <div *ngIf="(auth.user$ | async)?.hasPassword === false" class="rounded-2xl border border-app-border/60 bg-app-surface/40 backdrop-blur-lg p-6 sm:p-8 fade-in stagger-2 shadow-lg h-fit">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="opacity-80">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
+        </div>
+        <h3 class="text-xl font-bold m-0">Security</h3>
+      </div>
+      <p class="text-sm text-app-muted m-0 leading-relaxed">
+        You are currently signed in securely with Google.<br/><br/>
+        There is no password to manage here since Google handles your authentication directly.
+      </p>
+    </div>
+
+  </div>
 </div>

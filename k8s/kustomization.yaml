@@ -23,7 +23,6 @@ resources:
   - analytics-api/
   - gateway-graphql/
   - notification-service/
-  - chat-service/
   - gateway/
   # NetworkPolicies applied LAST — every pod-selector label above must
   # already exist as a resource in this list for the policies to make

@@ -1,15 +1,10 @@
 {
-  "_comment": "Every path below goes straight to NGINX at :8080 — Kong (which used to sit in front of it at :8000 and handle auth/rate limiting) has been removed. NGINX now owns reverse-proxy routing, load balancing, and rate limiting on its own (see gateway/nginx/nginx.conf); per-user authentication happens at the application layer — see booking-api's requireAuth() and auth-api's resolvers — via the JWT AuthInterceptor attaches to every request (see core/services/auth.interceptor.ts). /graphql/ws (subscriptions) and /chat both use raw WebSocket upgrades and go straight to NGINX the same as everything else.",
+  "_comment": "Every path below goes straight to NGINX at :8080 — Kong (which used to sit in front of it at :8000 and handle auth/rate limiting) has been removed. NGINX now owns reverse-proxy routing, load balancing, and rate limiting on its own (see gateway/nginx/nginx.conf); per-user authentication happens at the application layer — see booking-api's requireAuth() and auth-api's resolvers — via the JWT AuthInterceptor attaches to every request (see core/services/auth.interceptor.ts). /graphql/ws (subscriptions) uses raw WebSocket upgrades and goes straight to NGINX the same as everything else.",
   "/graphql": {
     "target": "http://localhost:8080",
     "changeOrigin": true
   },
   "/graphql/ws": {
-    "target": "http://localhost:8080",
-    "changeOrigin": true,
-    "ws": true
-  },
-  "/chat": {
     "target": "http://localhost:8080",
     "changeOrigin": true,
     "ws": true

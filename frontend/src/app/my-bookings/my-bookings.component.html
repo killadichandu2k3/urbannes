@@ -1,49 +1,81 @@
-<div>
-  <div class="page-intro">
-    <h1>My Booking Dashboard</h1>
-    <p class="muted">Manage your seat reservations, tickets, and booking history.</p>
+<div class="flex flex-col gap-10 max-w-5xl mx-auto pb-16 pt-8">
+
+  <!-- Gorgeous Modern Header -->
+  <div class="relative isolate overflow-hidden rounded-[24px] p-8 sm:p-10 bg-transparent border border-app-border/40 shadow-2xl">
+    <div class="absolute inset-0 z-0 pointer-events-none">
+      <div class="absolute -top-10 -right-10 w-[300px] h-[300px] bg-app-accent/20 rounded-full blur-[80px] opacity-60"></div>
+      <div class="absolute inset-0 bg-gradient-to-br from-app-surface/80 to-app-bg-elevated/80 backdrop-blur-xl"></div>
+    </div>
+    
+    <div class="relative z-10 fade-in">
+      <p class="text-xs font-bold tracking-widest text-app-accent uppercase mb-1">Dashboard</p>
+      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-2">My Bookings</h1>
+      <p class="text-sm text-app-muted max-w-xl">Manage your seat reservations, view ticket details, and cancel upcoming events.</p>
+    </div>
   </div>
 
-  <div *ngIf="error" class="error-banner">
-    <span>⚠️</span>
+  <div *ngIf="error" class="p-4 bg-app-danger/10 border border-app-danger/20 rounded-app-md text-app-danger flex items-center gap-3 fade-in">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
     <span>{{ error }}</span>
   </div>
 
-  <div class="grid grid-2" *ngIf="loading">
-    <div class="skeleton skeleton-card" *ngFor="let _ of [1,2,3]"></div>
+  <div *ngIf="loading" class="grid grid-cols-1 md:grid-cols-2 gap-6 fade-in">
+    <div class="h-[200px] bg-app-surface border border-app-border rounded-2xl animate-pulse" *ngFor="let _ of [1,2,3,4]"></div>
   </div>
 
-  <div class="empty-state" *ngIf="!loading && bookings.length === 0">
-    <div class="icon">📭</div>
-    <h3>No active bookings</h3>
-    <p class="muted">You haven't reserved any tickets yet.</p>
-    <a routerLink="/events" class="btn" style="margin-top: var(--sp-3);">Browse Events</a>
+  <!-- Premium Empty State -->
+  <div class="flex flex-col items-center justify-center text-center py-20 px-4 fade-in" *ngIf="!loading && bookings.length === 0">
+    <div class="w-24 h-24 rounded-full bg-app-surface border border-app-border flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(255,255,255,0.05)]">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 opacity-80"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" /></svg>
+    </div>
+    <h3 class="text-2xl font-bold mb-2">No Active Bookings</h3>
+    <p class="text-app-muted max-w-sm mb-8">It looks like your calendar is clear. Find an exciting event and lock in your seats now.</p>
+    <a routerLink="/events" class="px-8 py-3 bg-app-accent text-white hover:bg-white hover:text-black font-semibold rounded-lg transition-all shadow-[0_0_20px_rgba(255,56,122,0.3)]">
+      Explore Events
+    </a>
   </div>
 
-  <div class="grid grid-2" *ngIf="!loading && bookings.length > 0">
-    <div class="card" *ngFor="let b of bookings">
-      <div class="booking-card-head">
-        <div>
-          <h3>{{ eventTitle(b.eventId) }}</h3>
-          <span class="faint">Booking ID: {{ b.id }}</span>
+  <!-- Booking Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6" *ngIf="!loading && bookings.length > 0">
+    <div class="group relative flex flex-col justify-between p-6 rounded-2xl border border-app-border bg-app-surface/60 backdrop-blur-md transition-all hover:border-app-border-strong hover:shadow-lg"
+         *ngFor="let b of bookings; let i = index"
+         style="opacity: 0; animation: fadeIn 0.5s ease-out forwards;"
+         [style.animation-delay]="(i * 0.1) + 's'">
+      
+      <div>
+        <div class="flex items-start justify-between mb-4">
+          <span class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border"
+                [ngClass]="{
+                  'bg-app-ok/10 text-app-ok border-app-ok/20': b.status === 'CONFIRMED' || b.status === 'ACCEPTED',
+                  'bg-app-warn/10 text-app-warn border-app-warn/20': b.status === 'SEATS_LOCKED' || b.status === 'PAYMENT_PENDING',
+                  'bg-app-danger/10 text-app-danger border-app-danger/20': b.status === 'CANCELLED' || b.status === 'EXPIRED'
+                }">
+            ● {{ b.status | titlecase }}
+          </span>
+          <span class="text-[10px] text-app-faint font-mono">ID: {{ b.id.split('-')[0] }}</span>
         </div>
-        <span class="badge" [ngClass]="{
-          ok: b.status === 'CONFIRMED' || b.status === 'ACCEPTED',
-          warn: b.status === 'SEATS_LOCKED' || b.status === 'PAYMENT_PENDING',
-          danger: b.status === 'CANCELLED' || b.status === 'EXPIRED'
-        }">● {{ b.status | titlecase }}</span>
+        
+        <h3 class="text-xl font-bold mb-6 line-clamp-2">{{ eventTitle(b.eventId) }}</h3>
       </div>
 
-      <div class="booking-summary-box">
-        <div class="booking-summary-row">
-          <span class="muted">Reserved Seats:</span>
-          <span class="booking-summary-value">{{ b.seatIds.length }} Seat{{ b.seatIds.length === 1 ? '' : 's' }}</span>
+      <div class="flex flex-col gap-3">
+        <div class="flex items-center justify-between p-3 rounded-lg bg-black/20 border border-app-border/40">
+          <span class="text-sm text-app-muted">Reserved Seats</span>
+          <span class="text-sm font-semibold">{{ b.seatIds.length }} Seat{{ b.seatIds.length === 1 ? '' : 's' }}</span>
         </div>
-        <div class="booking-summary-row">
-          <span class="muted">Total Paid / Due:</span>
-          <span class="price">₹{{ b.finalPrice }}</span>
+        <div class="flex items-center justify-between p-3 rounded-lg bg-black/20 border border-app-border/40">
+          <span class="text-sm text-app-muted">Total Paid</span>
+          <span class="text-sm font-bold text-app-ok">₹{{ b.finalPrice }}</span>
+        </div>
+        
+        <!-- Cancel Action -->
+        <div class="mt-3 pt-4 border-t border-app-border/50 flex justify-end" *ngIf="b.status === 'CONFIRMED' || b.status === 'ACCEPTED' || b.status === 'SEATS_LOCKED' || b.status === 'PAYMENT_PENDING'">
+          <button class="px-4 py-2 text-sm font-semibold rounded-lg border border-app-danger/30 text-app-danger hover:bg-app-danger hover:text-white transition-all" (click)="cancelBooking(b)">
+            Cancel Booking
+          </button>
         </div>
       </div>
+      
     </div>
   </div>
 </div>

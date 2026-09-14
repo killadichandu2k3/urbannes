@@ -11,7 +11,6 @@
 #        -> booking-api     :4000  (GraphQL, Kafka producer + Redis Pub/Sub waiter)
 #        -> analytics-api   :4300  (read-only aggregates, direct Postgres + Redis cache)
 #     -> booking-api        :4000  (direct, for /graphql/ws + /s/:code — bypasses federation)
-#     -> chat-service       :4200  (WebSocket)
 #   booking-worker (no exposed port — pure Kafka consumer)
 #   notification-service    :4100  (health only — pure Kafka consumer)
 #   postgres                :5432  (single instance — sharding has been removed)
@@ -219,20 +218,6 @@ services:
     ports:
       - "4100:4100"
 
-  chat-service:
-    container_name: chat-service # plain WebSocket chat (deliberately NOT GraphQL — see its own server.ts) — one process, N replicas, coordinating presence/broadcast through redis-coord's Pub/Sub
-    build:
-      context: .
-      dockerfile: services/chat-service/Dockerfile
-    depends_on:
-      - redis-coord
-    environment:
-      PORT: 4200
-      REDIS_HOST: redis-coord
-      REDIS_PORT: 6379
-    expose:
-      - "4200"
-
   analytics-api:
     container_name: analytics-api # read-only aggregates (revenue/bookings per venue) — talks directly to Postgres (not through booking-worker's Kafka path, since an aggregate read doesn't need the write-path queue), cache-aside through redis-cache
     build:
@@ -279,7 +264,6 @@ services:
     depends_on:
       - auth-api
       - booking-api
-      - chat-service
       - gateway-graphql
     ports:
       - "8080:8080"

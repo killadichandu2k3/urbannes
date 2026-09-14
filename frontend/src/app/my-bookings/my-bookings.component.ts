@@ -37,4 +37,18 @@ export class MyBookingsComponent implements OnInit {
   eventTitle(eventId: string): string {
     return this.eventsById.get(eventId)?.title ?? 'Event';
   }
+
+  cancelBooking(booking: Booking): void {
+    if (!confirm('Are you sure you want to cancel this booking?')) return;
+    
+    this.graphql.cancelBooking(booking.id, booking.eventId).subscribe({
+      next: () => {
+        // Update the booking status locally to reflect the cancellation
+        booking.status = 'CANCELLED';
+      },
+      error: (err) => {
+        alert(err.message || 'Failed to cancel booking');
+      },
+    });
+  }
 }
