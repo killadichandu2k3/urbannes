@@ -1,14 +1,5 @@
 #!/usr/bin/env bash
-# Builds every service image with the local Docker daemon, then loads each
-# one into the Kind cluster's own internal containerd.
-#
-# Kind nodes don't share your host's Docker daemon — a Kind "node" is a
-# Docker container running its own containerd inside it. Building an image
-# with `docker build` only puts it in your HOST daemon's image store; the
-# Kind node has never heard of it. `kind load docker-image` is the copy
-# step that actually gets each image onto every node in the cluster so the
-# scheduler can start pods from it — skip this and pods sit in
-# `ImagePullBackOff` (or silently keep running a stale image) forever.
+
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

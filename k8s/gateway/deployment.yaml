@@ -13,11 +13,7 @@ spec:
       labels:
         app: gateway
     spec:
-      # Spreads replicas across different nodes — see booking-api/deployment.yaml's
-      # topologySpreadConstraints comment for the full explanation. This one
-      # matters most of all seven: gateway is the sole public entrypoint
-      # (see service.yaml), so if both replicas landed on the same node, a
-      # single node failure would take down the entire app's front door.
+
       topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: kubernetes.io/hostname

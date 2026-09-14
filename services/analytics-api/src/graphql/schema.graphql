@@ -1,15 +1,3 @@
-# ============================================================================
-# analytics-api — Apollo Federation subgraph.
-# ----------------------------------------------------------------------------
-# This subgraph OWNS: VenueStats, EventStats, RevenueBreakdown.
-# It EXTENDS (does not own) Venue and EventType, whose canonical fields
-# (name, city, title, etc.) are owned by the booking-api subgraph. Extending
-# them here means a client can query `venue(id).stats { ... }` in the SAME
-# GraphQL request as `venue(id).name`, and the Apollo Gateway transparently
-# fans that one client query out to both subgraphs and stitches the result
-# back into one response — that stitching is the whole point of Federation.
-# ============================================================================
-
 extend schema
   @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@extends", "@external", "@shareable"])
 
@@ -19,7 +7,7 @@ type VenueStats {
   confirmedBookings: Int!
   cancelledBookings: Int!
   totalRevenue: Float!
-  occupancyRate: Float! # confirmed seats booked / total seats, across all events at this venue
+  occupancyRate: Float!
 }
 
 type EventStats {
@@ -32,7 +20,7 @@ type EventStats {
 }
 
 type RevenueByMonth {
-  month: String! # "2026-01"
+  month: String!
   totalRevenue: Float!
   bookingCount: Int!
 }
@@ -45,22 +33,18 @@ type PlatformStats {
   revenueByMonth: [RevenueByMonth!]!
 }
 
-# Extends the Venue entity owned by booking-api's subgraph. `@key` must
-# match the key booking-api declares for Venue, so the Gateway knows these
-# are the same entity, just with fields split across two services.
 type Venue @key(fields: "id") @extends {
   id: ID! @external
   stats: VenueStats!
 }
 
-# Same idea for EventType.
 type EventType @key(fields: "id") @extends {
   id: ID! @external
   stats: EventStats!
 }
 
 type SearchResult {
-  kind: String! # "EVENT" | "VENUE"
+  kind: String!
   id: ID!
   title: String!
   subtitle: String!
@@ -70,13 +54,6 @@ type Query {
   venueStats(venueId: ID!): VenueStats!
   eventStats(eventId: ID!): EventStats!
   platformStats: PlatformStats!
-  # Search-as-a-read-replica-query: this resolver queries Postgres
-  # directly, cache-aside through Redis (see resolvers.ts and
-  # cache/statsCache.ts), same as every other query in this subgraph —
-  # the architectural point being that search is a read-heavy,
-  # latency-tolerant, eventually-consistent-is-fine workload, exactly the
-  # kind of traffic a real system routes away from the primary OLTP path
-  # (booking-api -> Kafka -> booking-worker -> Postgres). Autocomplete
-  # never touches the write path or the request/reply Kafka bridge.
+
   search(query: String!, limit: Int): [SearchResult!]!
 }

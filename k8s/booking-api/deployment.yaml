@@ -13,16 +13,7 @@ spec:
       labels:
         app: booking-api
     spec:
-      # Spreads this Deployment's replicas across DIFFERENT nodes rather
-      # than letting the scheduler put both on whichever node happens to
-      # have room. maxSkew: 1 means "no node may hold more than 1 pod more
-      # than the least-loaded node" — with 2 replicas and 2 worker nodes
-      # (see kind-config.yaml), that forces the two pods onto two distinct
-      # nodes. whenUnsatisfiable: ScheduleAnyway (not DoNotSchedule) means
-      # a genuinely resource-starved cluster still schedules the pod
-      # somewhere rather than leaving it Pending forever — spread is a
-      # preference here, not a hard requirement, matching how a real
-      # cluster autoscaler-backed deployment would be configured.
+
       topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: kubernetes.io/hostname

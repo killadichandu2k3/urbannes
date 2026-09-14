@@ -1,13 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: urbannes
-# Each entry below is a DIRECTORY, not a single file — Kustomize
-# auto-discovers every .yaml in it. This is the split, enterprise-style
-# layout: one folder per service/component, one file per Kubernetes
-# object kind inside it (deployment.yaml, service.yaml, hpa.yaml,
-# pdb.yaml, ...), rather than one combined multi-document file per
-# service. Both are valid Kustomize patterns; this repo uses the split
-# style throughout.
+
 resources:
   - base/namespace.yaml
   - base/storageclass.yaml
@@ -24,9 +18,5 @@ resources:
   - gateway-graphql/
   - notification-service/
   - gateway/
-  # NetworkPolicies applied LAST — every pod-selector label above must
-  # already exist as a resource in this list for the policies to make
-  # sense; ordering them last is documentation of that dependency, not a
-  # functional requirement (Kubernetes itself doesn't care about apply
-  # order for NetworkPolicy vs. the pods it selects).
+
   - base/networkpolicies.yaml

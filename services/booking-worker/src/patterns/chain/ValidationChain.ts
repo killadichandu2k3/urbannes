@@ -1,10 +1,3 @@
-// ============================================================================
-// PATTERN: CHAIN OF RESPONSIBILITY — a booking request passes through
-// independent validators (auth, event-open, seat-count, fraud) before seats
-// get locked. Each checker only knows its own job; new checks slot in
-// without touching existing ones.
-// ============================================================================
-
 export interface BookingRequestContext {
   userId: string;
   eventId: string;

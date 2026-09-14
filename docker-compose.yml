@@ -1,47 +1,7 @@
-# =============================================================================
-# UrbanNes — full local stack.
-# -----------------------------------------------------------------------------
-# Topology (see README.md for the diagram):
-#   frontend (Angular dev server, port 5173, optional) OR served via gateway :8080
-#   gateway (NGINX)         :8080  <- single public entrypoint (auth, rate
-#                                     limiting, load balancing, reverse proxy —
-#                                     see gateway/nginx/nginx.conf)
-#     -> gateway-graphql    :4500  (Apollo Gateway — composes auth/booking/analytics)
-#        -> auth-api        :4600  (register/login/me, direct Postgres + Redis cache)
-#        -> booking-api     :4000  (GraphQL, Kafka producer + Redis Pub/Sub waiter)
-#        -> analytics-api   :4300  (read-only aggregates, direct Postgres + Redis cache)
-#     -> booking-api        :4000  (direct, for /graphql/ws + /s/:code — bypasses federation)
-#   booking-worker (no exposed port — pure Kafka consumer)
-#   notification-service    :4100  (health only — pure Kafka consumer)
-#   postgres                :5432  (single instance — sharding has been removed)
-#   redis-cache             :6380->6379 (single instance — GET-side cache-aside)
-#   redis-coord             :6379  (single instance — seat locks + Pub/Sub reply/push channels)
-#   kafka + zookeeper       :9092
-#   kafka-ui                :8081  (optional, browse topics/consumer groups)
-#
-# CONTAINER NAMES: every service below sets `container_name` to the exact
-# same string Docker Compose already uses as its DNS hostname (the
-# top-level service key) — so `docker ps` shows the same name every other
-# service's env vars/config already reference, with no separate alias to
-# keep track of. Each service also gets a one-line comment stating what it
-# is and why it exists, so `docker ps`/`docker compose config` reads as
-# self-documenting rather than a bare list of names. Two services keep
-# deliberately close names for a deliberate reason (see gateway vs
-# gateway-graphql below) — that overlap is explained where it happens,
-# not hidden by renaming one of them.
-#
-# SHARDING REMOVED: this project used to run 2 independent Postgres shard
-# instances (routed by a consistent hash ring) and a 6-node Redis Cluster
-# for cache-aside. Both have been collapsed to a single Postgres instance
-# and a single cache Redis instance — see each service's PGHOST/PGPORT and
-# REDIS_HOST/REDIS_PORT env vars below, and services/*/src/db/pool.ts in
-# each service for the application-side change.
-# =============================================================================
-
 name: urbannes
 services:
   zookeeper:
-    container_name: zookeeper # Kafka's metadata/coordination store (broker registry, partition leader election) — Kafka cannot start without it on this version
+    container_name: zookeeper
     image: confluentinc/cp-zookeeper:7.6.1
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
@@ -53,7 +13,7 @@ services:
       retries: 10
 
   kafka:
-    container_name: kafka # the request bus — every async request/reply and domain event in this system flows through here (see services/booking-api/src/kafka/requestReply.ts)
+    container_name: kafka
     image: confluentinc/cp-kafka:7.6.1
     depends_on:
       - zookeeper
@@ -74,7 +34,7 @@ services:
       retries: 15
 
   kafka-ui:
-    container_name: kafka-ui # optional browser UI for inspecting Kafka topics/consumer groups/lag — not part of the request path, purely an operator convenience
+    container_name: kafka-ui
     image: provectuslabs/kafka-ui:latest
     depends_on:
       - kafka
@@ -85,7 +45,7 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
 
   postgres:
-    container_name: postgres # single Postgres instance — sharding has been removed (see header comment). booking-worker applies schema.sql + seed.sql here on boot; auth-api and analytics-api connect directly for their own reads/writes.
+    container_name: postgres
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: urbannes
@@ -102,7 +62,7 @@ services:
       retries: 10
 
   redis-cache:
-    container_name: redis-cache # single Redis instance — GET-side cache-aside for auth-api (me), analytics-api (venueStats/eventStats/platformStats/search), and booking-worker (seat maps/events). Used to be a 6-node Redis Cluster; collapsed to one instance alongside the Postgres de-sharding (see header comment).
+    container_name: redis-cache
     image: redis:7-alpine
     ports:
       - "6380:6379"
@@ -115,7 +75,7 @@ services:
       retries: 10
 
   redis-coord:
-    container_name: redis-coord # SEPARATE single Redis instance from redis-cache above — holds seat locks (TTL-based) and the Pub/Sub reply/push channels booking-api's request/reply bridge depends on; kept apart from the GET-cache instance since a lock/channel needs one authoritative place to live and shouldn't share eviction/memory pressure with cache data
+    container_name: redis-coord
     image: redis:7-alpine
     ports:
       - "6379:6379"
@@ -126,7 +86,7 @@ services:
       retries: 10
 
   auth-api:
-    container_name: auth-api # register/login/me — the ONLY service that reads/writes the `users` table; talks to Postgres directly (like analytics-api), not through Kafka, since bcrypt hashing + a login check is inherently synchronous request/response work. `me` is cache-aside through redis-cache. Also sends OTP verification emails via Resend on signup (see src/otp.ts) and exposes myNotifications/markNotificationRead for the frontend's bell icon.
+    container_name: auth-api
     build:
       context: .
       dockerfile: services/auth-api/Dockerfile
@@ -150,7 +110,7 @@ services:
       - "4600"
 
   booking-api:
-    container_name: booking-api # the booking GraphQL subgraph — every query/mutation here is a Kafka request published to booking-worker and awaited over Redis Pub/Sub (see src/kafka/requestReply.ts); this process itself never touches Postgres or the cache Redis directly
+    container_name: booking-api
     build:
       context: .
       dockerfile: services/booking-api/Dockerfile
@@ -169,7 +129,7 @@ services:
       - "4000"
 
   booking-worker:
-    container_name: booking-worker # the actual booking business logic — consumes booking.requests from Kafka, does cache-aside against redis-cache, seat locking against redis-coord, and the Postgres transaction; the ONLY thing that talks to Postgres for bookings (also applies schema.sql + seed.sql on boot). Also creates/verifies Razorpay payment orders (test mode) — see src/payments/razorpay.ts.
+    container_name: booking-worker
     build:
       context: .
       dockerfile: services/booking-worker/Dockerfile
@@ -193,12 +153,9 @@ services:
       PUBLIC_SHORT_URL_BASE: http://localhost:8080/s
       RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
       RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
-    # Scale horizontally with: docker compose up -d --scale booking-worker=3
-    # (the `deploy.replicas` key only takes effect under `docker stack
-    # deploy`/Swarm, not plain Compose, so real local scaling uses --scale)
 
   notification-service:
-    container_name: notification-service # Kafka consumer — reacts to booking.created/confirmed/cancelled/payment.processed to actually send email (Resend) and write in-app notification rows to Postgres (see src/patterns/adapter/ChannelAdapters.ts); exposes only a health endpoint, nothing else calls into it
+    container_name: notification-service
     build:
       context: .
       dockerfile: services/notification-service/Dockerfile
@@ -219,7 +176,7 @@ services:
       - "4100:4100"
 
   analytics-api:
-    container_name: analytics-api # read-only aggregates (revenue/bookings per venue) — talks directly to Postgres (not through booking-worker's Kafka path, since an aggregate read doesn't need the write-path queue), cache-aside through redis-cache
+    container_name: analytics-api
     build:
       context: .
       dockerfile: services/analytics-api/Dockerfile
@@ -239,7 +196,7 @@ services:
       - "4300"
 
   gateway-graphql:
-    container_name: gateway-graphql # the APOLLO Gateway — composes auth-api/booking-api/analytics-api into ONE GraphQL schema via Apollo Federation. Different concept from the `gateway` service below despite the similar name: this one only does GraphQL schema composition, `gateway` (NGINX) is the network-level edge. Both names are accurate to what each does — see gateway/nginx/nginx.conf's header comment for the full disambiguation.
+    container_name: gateway-graphql
     build:
       context: .
       dockerfile: services/gateway-graphql/Dockerfile
@@ -257,7 +214,7 @@ services:
       - "4500"
 
   gateway:
-    container_name: gateway # NGINX — the single public entrypoint for the whole app. Owns reverse-proxy routing, load balancing across replicas, and rate limiting (see gateway/nginx/nginx.conf) — this is the ONLY container with a port published straight to your host now that Kong has been removed; every other service is reachable only from inside the Compose network.
+    container_name: gateway
     build:
       context: .
       dockerfile: gateway/Dockerfile
@@ -271,38 +228,3 @@ services:
 volumes:
   postgres_data:
   redis_cache_data:
-
-# =============================================================================
-# RUNNING THIS ACROSS MULTIPLE REAL MACHINES (not just multiple containers)
-# -----------------------------------------------------------------------------
-# `docker compose up` is single-host by design — every container above runs
-# on the one machine you invoke it from, on Compose's own bridge network.
-# Containers already reach each other by service name over that network
-# (that IS real inter-container networking — Docker's embedded DNS), but
-# it's all one host.
-#
-# For services genuinely running on SEPARATE nodes that still discover and
-# talk to each other by name, Docker has a built-in mode for exactly this
-# case: SWARM. It reads this SAME file — no rewrite needed — and schedules
-# each service's containers across every machine (node) that has joined
-# the swarm, over an overlay network that gives every container the same
-# by-name reachability across host boundaries that Compose gives it on one
-# host. This project's k8s/ manifests are the other, more commonly-used
-# answer to the same question — see k8s/README-equivalent notes in the
-# top-level README for a from-scratch multi-node Kubernetes setup via
-# Kind's own multi-node support (kind-config.yaml runs 2 worker nodes).
-#
-# To try Swarm with THIS file, on real separate machines (or separate VMs):
-#   # on the machine that will be the Swarm manager:
-#   docker swarm init --advertise-addr <manager-ip>
-#   # copy the `docker swarm join --token ...` command it prints, run it
-#   # on each other machine to have them join as workers
-#   docker stack deploy -c docker-compose.yml urbannes
-#   docker service ls                      # see every service's replicas
-#   docker node ps <node-id>                # see which containers landed on a given node
-# `build:` sections need each node to either build the image locally or
-# pull it from a registry you've pushed to — Swarm does not build for you
-# on remote nodes the way Compose builds locally, so push each image
-# `scripts/build-images.sh` builds to a registry ALL nodes can reach
-# before `docker stack deploy` if you're trying this across real hardware.
-# =============================================================================

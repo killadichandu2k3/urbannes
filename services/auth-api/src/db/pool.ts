@@ -1,12 +1,3 @@
-// ============================================================================
-// DB POOL — single Postgres instance. Sharding has been removed from this
-// project: `users` used to be fan-out-written to two independent shard
-// instances (see git history / README for the old design); now there is
-// exactly one Postgres instance and one connection pool, so register/login
-// are plain single-instance writes/reads with no fan-out and no partial-
-// shard-failure handling to worry about.
-// ============================================================================
-
 import { Pool } from 'pg';
 import { createLogger } from '@urbannes/shared';
 

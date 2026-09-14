@@ -1,20 +1,8 @@
-# ============================================================================
-# UrbanNes auth-api GraphQL schema — Apollo Federation SUBGRAPH.
-# ----------------------------------------------------------------------------
-# Composed into the same supergraph as booking-api/analytics-api by
-# gateway-graphql (see services/gateway-graphql/src/server.ts — just add
-# this subgraph's URL to its `subgraphs` list). The frontend keeps talking
-# to the ONE Apollo Gateway endpoint; register/login are just more
-# mutations on that same schema, not a separate API to wire up.
-# ============================================================================
-
 type User {
   id: ID!
   email: String!
   displayName: String!
-  # True when this account has no password of its own (Google-only) — the
-  # frontend uses this to hide the "change password" form for an account
-  # where there is no password to change.
+
   hasPassword: Boolean!
 }
 
@@ -23,8 +11,6 @@ type AuthPayload {
   user: User!
 }
 
-# Returned by `register` — no token yet, since the account isn't usable
-# until the emailed code is verified (see verifyEmail below).
 type RegistrationStarted {
   email: String!
   message: String!
@@ -59,37 +45,23 @@ type Notification {
 }
 
 type Query {
-  # Resolves the caller's own identity from the Authorization header —
-  # lets the Angular app restore a session on page reload without
-  # re-sending the password (see AuthService.restoreSession()).
+
   me: User
-  # Most-recent-first, capped server-side (see resolvers.ts) — the bell
-  # dropdown is a recent-activity list, not a full paginated inbox.
+
   myNotifications: [Notification!]!
 }
 
 type Mutation {
-  # Validates input (password strength, duplicate email), creates the
-  # account in an unverified state, and emails a 6-digit code — does NOT
-  # return a token. Call verifyEmail with the code to actually sign in.
+
   register(input: RegisterInput!): RegistrationStarted!
   verifyEmail(email: String!, code: String!): AuthPayload!
   resendVerificationCode(email: String!): RegistrationStarted!
   login(input: LoginInput!): AuthPayload!
-  # Verifies a Google ID token (signed by Google, obtained client-side via
-  # Google Identity Services — see frontend's auth.service.ts) against
-  # Google's public keys, then finds-or-creates a User by google_id and
-  # signs the same kind of JWT login() does. No password is ever involved;
-  # Google's own sign-in check IS the credential check for this path.
+
   loginWithGoogle(idToken: String!): AuthPayload!
-  # Updates the caller's own profile — currently just displayName, the
-  # only user-editable field beyond credentials. Requires auth (see
-  # requireAuth in resolvers.ts), same as markNotificationRead.
+
   updateProfile(input: UpdateProfileInput!): User!
-  # Verifies currentPassword against the stored hash before writing
-  # newPassword — never trusts the caller's session alone for a
-  # credential change, the same defense-in-depth a "re-enter your
-  # password" prompt gives you in any real account settings page.
+
   changePassword(input: ChangePasswordInput!): Boolean!
   markNotificationRead(id: ID!): Boolean!
   markAllNotificationsRead: Boolean!

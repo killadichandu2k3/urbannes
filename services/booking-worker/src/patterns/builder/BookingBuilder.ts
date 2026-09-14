@@ -1,9 +1,3 @@
-// ============================================================================
-// PATTERN: BUILDER — assembles a Booking from its many optional parts
-// (seats, add-ons, discount code) in validated, fluent steps instead of a
-// giant constructor or a raw object literal that could be half-formed.
-// ============================================================================
-
 export interface SeatSelection {
   seatId: string;
   rowLabel: string;

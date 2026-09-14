@@ -1,13 +1,3 @@
-# StatefulSet (not Deployment) because a database pod needs a stable
-# network identity and its OWN persistent volume that survives pod
-# restarts/rescheduling. volumeClaimTemplates gives the replica its own
-# PersistentVolumeClaim.
-#
-# Sharding has been removed from this project — this used to be two of
-# these StatefulSets (postgres-shard-0, postgres-shard-1), each a
-# physically independent Postgres instance selected via a consistent hash
-# ring (see git history / README for the old design). Now there's exactly
-# one Postgres instance and one StatefulSet.
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -44,11 +34,7 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 5
         livenessProbe:
-            # Deliberately more lenient than the readiness probe — pg_isready
-            # can briefly fail during checkpointing/heavy load without the
-            # process actually being dead. A liveness probe that's as
-            # trigger-happy as readiness risks Kubernetes killing a healthy-
-            # but-busy Postgres, which is worse than doing nothing.
+
           exec: {command: ["pg_isready", "-U", "urbannes"]}
           initialDelaySeconds: 30
           periodSeconds: 15

@@ -11,9 +11,7 @@ import { Booking, EventItem } from '../core/models';
 })
 export class HomeComponent implements OnInit, OnDestroy {
   loading = true;
-  // The single soonest CONFIRMED/PAYMENT_PENDING/SEATS_LOCKED booking, if
-  // any — a post-login home's most useful job is answering "what do I have
-  // coming up" in one glance, not repeating the full My Bookings list.
+
   nextBooking: Booking | null = null;
   nextBookingEvent: EventItem | null = null;
   featuredEvents: EventItem[] = [];

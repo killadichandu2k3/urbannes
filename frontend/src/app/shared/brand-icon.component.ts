@@ -4,11 +4,6 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Observable, of } from 'rxjs';
 import { catchError, map, shareReplay } from 'rxjs/operators';
 
-// Icon files live in src/assets/brand-icons/ (vendored from Simple Icons,
-// CC0 — see docs/ASSET_LICENSES.md). Each SVG's <path fill="..."> is
-// stripped so the mark inherits `color` from its container instead of
-// rendering black-on-dark — the standard way to theme a single-color
-// brand mark without keeping a second, recolored copy of every icon.
 const ICON_CACHE = new Map<string, Observable<SafeHtml>>();
 
 @Component({

@@ -1,47 +1,15 @@
-# ============================================================================
-# NetworkPolicies — default-deny-all, then explicit per-service allow rules.
-# ----------------------------------------------------------------------------
-# Without NetworkPolicies, every pod in the namespace can reach every
-# other pod on any port — flat, trust-everything networking. That's fine
-# for local dev-speed iteration, but the opposite of what "production-
-# grade" means: a compromised or misbehaving pod
-# should NOT be able to open a connection straight to Postgres,
-# which it has no legitimate reason to talk to.
-#
-# STRATEGY: one default-deny-ingress policy for the whole namespace
-# (matches all pods, allows nothing by default), then one allow policy
-# per resource describing exactly which pods may reach it and on which
-# port — derived directly from the real dependency graph in this repo
-# (docker-compose.yml's `depends_on`/environment blocks, and each
-# service's actual outbound calls), not a guess.
-#
-# NOTE ON EGRESS: this only governs INGRESS (who may connect IN to each
-# pod). Kubernetes NetworkPolicy can also restrict egress (who a pod may
-# connect OUT to), which would be the natural next layer of defense —
-# left out here to keep this addition scoped to what "production-grade
-# k8s" was asked to cover; egress-restriction is a good next exercise,
-# not a gap glossed over.
-# ============================================================================
-
-# ---- Default deny: applies to every pod in the namespace -------------------
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: default-deny-ingress
   namespace: urbannes
 spec:
-  podSelector: {} # empty selector = matches ALL pods in this namespace
+  podSelector: {}
   policyTypes:
     - Ingress
-  # No `ingress:` rules block at all = deny everything not explicitly
-  # allowed by another NetworkPolicy below.
+
 ---
-# ---- NGINX gateway: the only pod allowed ingress from OUTSIDE the
-# namespace now that Kong has been removed — it IS the public edge
-# (kube-proxy handles NodePort traffic hitting its Service before it ever
-# becomes a "from pod X" question; this policy governs pod-to-pod traffic,
-# and the NodePort exposure itself is a Service-level concern — see
-# gateway/service.yaml — not a NetworkPolicy one). ------------------------
+
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -52,9 +20,8 @@ spec:
     matchLabels: { app: gateway }
   policyTypes: [Ingress]
   ingress:
-    - {} # allow from anywhere — this is the intended public edge
+    - {}
 
-# ---- Apollo Gateway: only the NGINX gateway may reach it -------------------
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -71,11 +38,6 @@ spec:
       ports:
         - port: 4500
 
-# ---- booking-api: reached by the NGINX gateway directly for
-# /graphql/ws subscriptions and /s/:code short links (both deliberately
-# bypass GraphQL Federation — see gateway-graphql/src/server.ts), AND by
-# gateway-graphql for regular queries/mutations (subgraph calls during
-# federation) -----------------------------------------------------------
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -93,7 +55,6 @@ spec:
       ports:
         - port: 4000
 
-# ---- analytics-api: reached only by gateway-graphql (subgraph queries) ----
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -110,9 +71,6 @@ spec:
       ports:
         - port: 4300
 
-# ---- auth-api: reached only by gateway-graphql (subgraph queries) — same
-# shape as analytics-api above, since both talk to Postgres directly
-# instead of going through booking-api's Kafka request/reply path. --------
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -129,14 +87,6 @@ spec:
       ports:
         - port: 4600
 
-
-
-# ---- Postgres: reached by booking-worker (read/write OLTP path),
-# analytics-api (direct read path), and auth-api (direct read/write to the
-# users table — see services/auth-api/src/db/pool.ts) — nothing else has
-# any legitimate reason to open a connection to it. Sharding has been
-# removed, so this is one policy for one instance instead of two.
-# ------------------------------------------------------------------------
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -156,10 +106,6 @@ spec:
       ports:
         - port: 5432
 
-# ---- redis-cache (GET-side cache-aside): booking-worker, analytics-api,
-# and auth-api all read/write it (see each service's cache module) — this
-# used to be a 6-node Redis Cluster with its own gossip port; collapsed to
-# a single instance, so no cluster-gossip rule is needed anymore. --------
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -178,8 +124,6 @@ spec:
       ports:
         - port: 6379
 
-# ---- redis-coord (seat locks + Pub/Sub): booking-worker publishes/locks,
-# booking-api subscribes for push updates -------------------
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -197,8 +141,6 @@ spec:
       ports:
         - port: 6379
 
-# ---- Kafka: booking-api (produces requests), booking-worker (consumes +
-# produces domain events), notification-service (consumes domain events) --
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -219,7 +161,6 @@ spec:
         - port: 9092
         - port: 29092
 
-# ---- Zookeeper: only Kafka itself needs to reach it ------------------------
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy

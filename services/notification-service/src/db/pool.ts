@@ -1,12 +1,3 @@
-// ============================================================================
-// DB POOL — read-only usage only (email lookups for the email channel,
-// writes to `notifications` for the in-app channel). Same single Postgres
-// instance auth-api/analytics-api already connect to directly (see their
-// own db/pool.ts) — this project's actual topology is one shared instance
-// with per-table ownership by convention, not physical isolation, so this
-// mirrors an existing pattern rather than introducing a new one.
-// ============================================================================
-
 import { Pool } from 'pg';
 import { createLogger } from '@urbannes/shared';
 

@@ -53,9 +53,7 @@ export class RegisterComponent implements AfterViewInit {
     this.auth
       .register({ email: this.email, password: this.password, displayName: this.displayName.trim() })
       .subscribe({
-        // register() no longer returns a session — it only creates the
-        // account and emails a code. The verify screen is where a session
-        // actually gets created (see VerifyEmailComponent).
+
         next: (result) => this.router.navigate(['/auth/verify'], { queryParams: { email: result.email } }),
         error: (err) => {
           this.error = err.message || 'Registration failed';
@@ -66,10 +64,7 @@ export class RegisterComponent implements AfterViewInit {
 
   private onGoogleToken(idToken: string): void {
     this.error = '';
-    // A Google account is verified and usable immediately — unlike
-    // email/password registration, there is no OTP step to route through
-    // first, so this goes straight to the same signed-in destination
-    // login() and loginWithGoogle() both use.
+
     this.auth.loginWithGoogle(idToken).subscribe({
       next: () => this.router.navigateByUrl('/dashboard'),
       error: (err) => {

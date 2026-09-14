@@ -1,24 +1,11 @@
-/* ============================================================================
-   UrbanNes -- Design System
-   Premium editorial-minimal: ink-black stage + warm paper, one rust accent.
-   Restraint over decoration: hairlines instead of glow, weight/size instead
-   of color for hierarchy. One family (Outfit) carries both display and body
-   roles at contrasting scale.
-   ============================================================================ */
-
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
-/* Tailwind, layered in for the newer visual work (landing, post-login
-   home, brand-icon strips) — Preflight is disabled in tailwind.config.js
-   so it only ever adds utilities, never resets anything this file already
-   owns. Existing hand-rolled classes below are untouched and still win
-   naturally since Tailwind's utilities carry no !important. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* ---- Surfaces (premium glassmorphism theme) ---- */
+
   --bg: #0b0b0f;
   --bg-elevated: rgba(22, 22, 28, 0.4);
   --bg-elevated-2: rgba(30, 30, 38, 0.5);
@@ -29,12 +16,10 @@
   --border: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.15);
 
-  /* ---- Typography Colors ---- */
   --text: #f8f8fc;
   --text-muted: rgba(248, 248, 252, 0.65);
   --text-faint: rgba(248, 248, 252, 0.4);
 
-  /* ---- Accents & Status (Custom Palette) ---- */
   --accent: #E73F1E;
   --accent-strong: #FB6C00;
   --accent-light: #F9B637;
@@ -49,7 +34,6 @@
   --danger: #ef4444;
   --danger-container: rgba(239, 68, 68, 0.14);
 
-  /* ---- Geometry & Motion ---- */
   --radius-sm: 6px;
   --radius-md: 12px;
   --radius-lg: 20px;
@@ -59,7 +43,6 @@
   --shadow-1: 0 4px 12px rgba(0, 0, 0, 0.3);
   --shadow-2: 0 16px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 
-  /* ---- Spacing scale ---- */
   --sp-1: 4px;
   --sp-2: 8px;
   --sp-3: 12px;
@@ -69,7 +52,6 @@
   --sp-7: 48px;
   --sp-8: 80px;
 
-  /* ---- Type scale ---- */
   --fs-xs: 0.75rem;
   --fs-sm: 0.875rem;
   --fs-base: 1rem;
@@ -78,10 +60,6 @@
   --fs-2xl: 2rem;
   --fs-3xl: 2.75rem;
 }
-
-/* ============================================================================
-   Base
-   ============================================================================ */
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; min-height: 100vh; }
@@ -133,7 +111,6 @@ a {
 }
 a:hover { color: var(--accent); border-color: var(--accent); }
 
-/* Links that are really buttons/nav items shouldn't get the underline rule */
 .btn, .nav-item, .brand, .chip, a.card {
   border-bottom: none;
 }
@@ -142,19 +119,14 @@ a:hover { color: var(--accent); border-color: var(--accent); }
 .faint { color: var(--text-faint); font-size: var(--fs-xs); }
 .price { font-size: var(--fs-lg); font-weight: 700; color: var(--accent); }
 
-/* Global default for icons to use the accent color unless overridden */
 svg.lucide, svg[fill="none"] {
   color: var(--accent);
   transition: color 0.2s var(--ease);
 }
-/* Ensure icons inside buttons always inherit the button's text color */
+
 button svg, .btn svg {
   color: inherit !important;
 }
-
-/* ============================================================================
-   Buttons
-   ============================================================================ */
 
 button, .btn {
   display: inline-flex;
@@ -204,17 +176,11 @@ button.secondary:hover:not(:disabled), .btn-secondary:hover:not(:disabled) {
 
 .full-width { width: 100%; }
 
-/* A link styled as .btn but not a real <button> — [class.disabled] on an
-   <a> doesn't get free :disabled behavior, so give it one explicitly. */
 .btn.disabled {
   opacity: 0.4;
   cursor: not-allowed;
   pointer-events: none;
 }
-
-/* ============================================================================
-   Cards
-   ============================================================================ */
 
 .card {
   background: var(--surface);
@@ -233,10 +199,6 @@ button.secondary:hover:not(:disabled), .btn-secondary:hover:not(:disabled) {
 
 .grid { display: grid; gap: var(--sp-5); }
 .grid-2 { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
-
-/* ============================================================================
-   Layout shell / nav
-   ============================================================================ */
 
 .app-shell {
   max-width: 1600px;
@@ -340,10 +302,6 @@ button.secondary:hover:not(:disabled), .btn-secondary:hover:not(:disabled) {
   .user-name { display: none; }
 }
 
-/* ============================================================================
-   Notification bell
-   ============================================================================ */
-
 .notif-bell-wrap { position: relative; }
 .notif-bell-btn {
   position: relative;
@@ -409,20 +367,12 @@ button.secondary:hover:not(:disabled), .btn-secondary:hover:not(:disabled) {
 .notif-item-title { font-weight: 600; font-size: var(--fs-sm); margin-bottom: 2px; }
 .notif-item-body { font-size: var(--fs-xs); }
 
-/* ============================================================================
-   Hero
-   ============================================================================ */
-
 .hero-banner {
   padding: var(--sp-7) 0 var(--sp-6);
   margin-bottom: var(--sp-6);
   border-bottom: 1px solid var(--border);
 }
 
-/* Photographic hero — full-bleed image, dark gradient for text legibility.
-   Photo: "Concert crowd with hands raised under stage lights" by Joshua
-   Hoehne on Unsplash (Unsplash License, free to use, attribution
-   appreciated not required) — see docs/ASSET_LICENSES.md. */
 .hero-banner--photo {
   position: relative;
   isolation: isolate;
@@ -455,10 +405,6 @@ button.secondary:hover:not(:disabled), .btn-secondary:hover:not(:disabled) {
 }
 .hero-banner-credit a { color: rgba(242, 241, 238, 0.8); border-color: rgba(242, 241, 238, 0.3); }
 
-/* ============================================================================
-   Chips / filters
-   ============================================================================ */
-
 .chip-group { display: flex; gap: var(--sp-2); margin-top: var(--sp-4); flex-wrap: wrap; }
 .chip {
   padding: var(--sp-2) var(--sp-4);
@@ -473,10 +419,6 @@ button.secondary:hover:not(:disabled), .btn-secondary:hover:not(:disabled) {
 }
 .chip:hover { color: var(--text); border-color: var(--text-muted); }
 .chip.active { background: var(--text); color: var(--bg); border-color: var(--text); }
-
-/* ============================================================================
-   Search
-   ============================================================================ */
 
 .search-wrap { position: relative; max-width: 480px; margin-top: var(--sp-5); }
 .search-input-row { position: relative; }
@@ -526,10 +468,6 @@ button.secondary:hover:not(:disabled), .btn-secondary:hover:not(:disabled) {
 .stagger-3 { animation-delay: 0.3s; }
 .stagger-4 { animation-delay: 0.4s; }
 
-/* ============================================================================
-   Forms
-   ============================================================================ */
-
 input, textarea, select {
   width: 100%;
   background: var(--bg-elevated);
@@ -549,10 +487,6 @@ input:focus, textarea:focus, select:focus {
 
 label { color: var(--text-muted); }
 
-/* ============================================================================
-   Auth pages
-   ============================================================================ */
-
 .auth-page {
   min-height: 60vh;
   display: flex;
@@ -563,7 +497,6 @@ label { color: var(--text-muted); }
 .auth-card { width: 100%; max-width: 420px; }
 .auth-switch { color: var(--text-muted); }
 
-/* Split layout: photo panel + form panel, side by side on wide screens. */
 .auth-page--split {
   min-height: calc(100vh - 140px);
   align-items: stretch;
@@ -597,19 +530,11 @@ label { color: var(--text-muted); }
   .auth-visual { display: flex; }
 }
 
-/* ============================================================================
-   Event cards
-   ============================================================================ */
-
 .event-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-3); }
 .event-card-foot {
   display: flex; align-items: center; justify-content: space-between;
   margin-top: var(--sp-3); border-top: 1px solid var(--border); padding-top: var(--sp-3);
 }
-
-/* ============================================================================
-   Badges
-   ============================================================================ */
 
 .badge {
   display: inline-flex; align-items: center; gap: var(--sp-1);
@@ -620,10 +545,6 @@ label { color: var(--text-muted); }
 .badge.ok { background: var(--ok-container); color: var(--ok); border-color: transparent; }
 .badge.warn { background: var(--warn-container); color: var(--warn); border-color: transparent; }
 .badge.danger { background: var(--danger-container); color: var(--danger); border-color: transparent; }
-
-/* ============================================================================
-   Error banner / empty state / skeletons
-   ============================================================================ */
 
 .error-banner {
   display: flex; align-items: center; gap: var(--sp-2);
@@ -656,10 +577,6 @@ label { color: var(--text-muted); }
 }
 .skeleton-card { height: 220px; border-radius: var(--radius-md); }
 .seat-skeleton { width: 48px; height: 48px; border-radius: var(--radius-sm); }
-
-/* ============================================================================
-   Seat map
-   ============================================================================ */
 
 .seat-map-layout {
   display: grid;
@@ -736,10 +653,6 @@ label { color: var(--text-muted); }
   border: 1px solid var(--border-strong);
 }
 
-/* ============================================================================
-   Page header / intro (shared across seat-map, bookings)
-   ============================================================================ */
-
 .page-header {
   display: flex;
   align-items: center;
@@ -747,10 +660,6 @@ label { color: var(--text-muted); }
   margin-bottom: var(--sp-4);
 }
 .page-intro { margin-bottom: var(--sp-6); }
-
-/* ============================================================================
-   Bookings
-   ============================================================================ */
 
 .booking-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-3); }
 .booking-summary-box {
@@ -767,10 +676,6 @@ label { color: var(--text-muted); }
 }
 .booking-summary-row + .booking-summary-row { margin-top: 4px; }
 .booking-summary-value { font-weight: 700; color: var(--text); }
-
-/* ============================================================================
-   Landing page
-   ============================================================================ */
 
 .landing { display: flex; flex-direction: column; gap: var(--sp-8); }
 

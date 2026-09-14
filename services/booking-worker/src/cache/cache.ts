@@ -1,14 +1,3 @@
-// ============================================================================
-// CACHE — cache-aside layer for booking-worker's GET reads (seat maps,
-// events). This used to run against a 6-node Redis Cluster (3 masters + 3
-// replicas), sharded by Redis's own hash slots — see git history for
-// redisCluster.ts. That's been removed along with Postgres sharding: this
-// is now a single Redis instance (the same one already used for seat locks
-// and Pub/Sub — see cache/seatLock.ts and ws/replyPublisher.ts), using
-// plain key/value GET/SET/DEL with a TTL. No cluster topology, no slot
-// hashing, no node-error handling — just cache-aside against one instance.
-// ============================================================================
-
 import Redis from 'ioredis';
 import { createLogger } from '@urbannes/shared';
 

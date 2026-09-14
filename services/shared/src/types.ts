@@ -1,8 +1,3 @@
-// Shared domain-agnostic types used across UrbanNes microservices.
-// This is the contract layer — services should not depend on each other's
-// internal models, only on these shared shapes when communicating over
-// HTTP or Kafka.
-
 export interface ApiSuccess<T> {
   success: true;
   data: T;
@@ -28,16 +23,11 @@ export function fail(code: string, message: string, details?: unknown): ApiError
   return { success: false, error: { code, message, details } };
 }
 
-// ---- Kafka event envelope -------------------------------------------------
-// Every event published to Kafka in this system uses this envelope so that
-// consumers can log/trace/replay uniformly (a light Observer/Mediator
-// pattern at the infrastructure level).
-
 export interface EventEnvelope<T = unknown> {
   eventId: string;
   eventType: string;
   producedBy: string;
-  producedAt: string; // ISO timestamp
+  producedAt: string;
   payload: T;
   traceId?: string;
 }
@@ -55,8 +45,6 @@ export const KAFKA_TOPICS = {
 } as const;
 
 export type KafkaTopic = (typeof KAFKA_TOPICS)[keyof typeof KAFKA_TOPICS];
-
-// ---- Rate limiter shared config -------------------------------------------
 
 export interface RateLimitConfig {
   windowMs: number;

@@ -1,15 +1,13 @@
 <div class="landing">
 
-  <!-- Fascinating modern hero section using Tailwind and modern CSS features -->
   <section class="relative isolate overflow-hidden min-h-[85vh] flex items-center justify-center -mx-5 -mt-8 pt-8 pb-16 rounded-b-[24px] bg-transparent">
-    <!-- Background glow effects -->
+
     <div class="absolute inset-0 z-0 pointer-events-none">
       <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-accent/20 rounded-full blur-[120px] opacity-30"></div>
       <div class="absolute bottom-0 right-0 w-[500px] h-[400px] bg-accent/10 rounded-full blur-[100px] opacity-40"></div>
       <div class="absolute inset-0 bg-gradient-to-t from-[#0b0b0f] via-[#0b0b0f]/40 to-transparent"></div>
     </div>
 
-    <!-- Content -->
     <div class="relative z-10 w-full max-w-5xl mx-auto px-6 flex flex-col items-center text-center">
       <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-surface backdrop-blur-md mb-8 fade-in">
         <span class="flex h-2 w-2 rounded-full bg-accent animate-pulse"></span>
@@ -22,7 +20,7 @@
       </h1>
 
       <p class="text-lg md:text-xl text-text-muted max-w-2xl mx-auto mb-10 leading-relaxed fade-in stagger-2" style="text-wrap: pretty;">
-        Browse concerts, comedy, and festivals near you. Pick your exact seat on a live map, 
+        Browse concerts, comedy, and festivals near you. Pick your exact seat on a live map,
         pay securely, and get your ticket instantly on your phone — no printing, no guesswork.
       </p>
 
@@ -33,7 +31,7 @@
         <a *ngIf="!auth.isLoggedIn" routerLink="/events" class="w-full sm:w-auto px-8 py-4 bg-surface hover:bg-surface-hover border border-border text-white font-semibold rounded-lg backdrop-blur-sm transition-all text-center">
           Browse events
         </a>
-        
+
         <a *ngIf="auth.isLoggedIn" routerLink="/dashboard" class="w-full sm:w-auto px-8 py-4 bg-accent hover:bg-accent-strong text-white font-semibold rounded-lg shadow-[0_0_12px_rgba(231,63,30,0.22)] hover:shadow-[0_0_16px_rgba(231,63,30,0.32)] transition-all transform hover:-translate-y-1 text-center">
           Go to Dashboard
         </a>
@@ -42,7 +40,6 @@
         </a>
       </div>
 
-      <!-- Quick stats/trust below CTA -->
       <div class="mt-16 flex flex-wrap justify-center gap-8 md:gap-16 pt-8 border-t border-border/50 text-left fade-in stagger-4">
         <div>
           <div class="text-3xl font-bold text-white mb-1">100k+</div>
@@ -60,8 +57,6 @@
     </div>
   </section>
 
-  <!-- Concrete numbers, not decoration — a real sequence of facts about
-       the platform, so a plain three-up stat row earns its place here. -->
   <section class="landing-stats">
     <div class="landing-stat">
       <span class="landing-stat-value">Live seat maps</span>
@@ -77,9 +72,6 @@
     </div>
   </section>
 
-  <!-- Payment trust row — real accepted-payment marks, not decoration.
-       Sits right after the "instant confirmation" stat above so the claim
-       ("Razorpay checkout") has visual backup immediately below it. -->
   <div class="flex flex-wrap items-center gap-x-8 gap-y-3 py-2 opacity-80">
     <span class="text-xs font-semibold uppercase tracking-wide text-app-faint">Secure payments via</span>
     <div class="flex items-center gap-6 text-app-muted">
@@ -92,7 +84,6 @@
     </div>
   </div>
 
-  <!-- Real inventory, not placeholder cards. -->
   <section class="landing-section" *ngIf="!loadingEvents && featuredEvents.length > 0">
     <div class="landing-section-head">
       <h2>Happening soon</h2>
@@ -111,8 +102,6 @@
     </div>
   </section>
 
-  <!-- Genuinely sequential (three ordered steps) — numbering earns its
-       place here, unlike a decorative 01/02/03 on non-sequential content. -->
   <section class="landing-section">
     <h2>How it works</h2>
     <div class="landing-steps">
@@ -140,9 +129,6 @@
     <a *ngIf="auth.isLoggedIn" routerLink="/events" class="btn btn-lg">Browse events</a>
   </section>
 
-  <!-- Footer: app-store badges + social — the "classic brand icon"
-       destinations a ticketing brand is expected to show, kept quiet and
-       secondary so the CTA above stays the loudest thing on the page. -->
   <footer class="flex flex-col sm:flex-row items-center justify-between gap-6 pt-8 border-t border-app-border">
     <div class="flex items-center gap-3">
       <a href="#" aria-label="Download on the App Store" class="flex items-center gap-2 rounded-app-sm border border-app-border px-3 py-2 text-app-text hover:border-app-border-strong transition-colors">

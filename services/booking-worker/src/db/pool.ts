@@ -1,15 +1,3 @@
-// ============================================================================
-// DB POOL — single Postgres instance. Sharding has been removed from this
-// project: every booking-domain query used to be routed by eventId through
-// a ConsistentHashRing to one of two physical Postgres instances (see git
-// history for the old shardRouter.ts). Now there is exactly one instance,
-// so `withTransaction` below is a plain transaction wrapper — no routing
-// decision, no scatter-gather across shards, no cross-shard trade-offs to
-// reason about. Every caller that used to call `fanOutQuery` now just runs
-// a single query; every caller that used to call `withShardTransaction`
-// now calls `withTransaction`.
-// ============================================================================
-
 import { Pool, PoolClient } from 'pg';
 import { createLogger } from '@urbannes/shared';
 

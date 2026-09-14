@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
-# Removes everything this project deployed, without touching the Kind
-# cluster itself (so other projects/clusters on your machine are left
-# alone). Use `kind delete cluster --name urbannes` separately if you
-# want to remove the whole cluster.
+
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

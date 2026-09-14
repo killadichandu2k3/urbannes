@@ -1,10 +1,3 @@
-// ============================================================================
-// PATTERN: OBSERVER — when seats are locked/released/confirmed, several
-// unrelated concerns need to react (WebSocket push, in-process metrics).
-// The worker just notifies the subject; observers subscribe independently
-// instead of the core booking logic calling each one directly.
-// ============================================================================
-
 export type SeatEventType = 'LOCKED' | 'RELEASED' | 'CONFIRMED';
 
 export interface SeatEvent {

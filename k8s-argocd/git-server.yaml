@@ -1,17 +1,3 @@
-# A minimal, auth-free Git server — this is ArgoCD's real deploy source
-# now that automated sync is on (see README-argocd.md and
-# application.yaml's syncPolicy). Every restart of this Pod reseeds the
-# bare repo from your on-disk k8s/ folder and force-pushes it to `main`,
-# which is what makes "edit k8s/, restart this pod" work as this
-# project's local, offline stand-in for "commit and push."
-#
-# Deliberately NOT a Deployment: this Pod must land on the control-plane
-# node specifically, because that's the only node with the project
-# folder hostPath-mounted (see kind-config.yaml's extraMounts). A
-# Deployment's ReplicaSet could reschedule it onto a worker node with no
-# such mount — nodeSelector below pins it correctly, a bare Pod makes
-# that pinning explicit rather than implying replicas that would never
-# actually replicate correctly.
 apiVersion: v1
 kind: Pod
 metadata:
@@ -29,8 +15,7 @@ spec:
   containers:
   - name: git-server
     image: alpine/git:2.45.2
-    # Overrides the image's default git entrypoint — this container's
-    # job is to seed + serve a repo, not run one-off git commands.
+
     command: ["/bin/sh", "-c"]
     args:
       - |
@@ -41,12 +26,7 @@ spec:
           mkdir -p "$REPO"
           git init --bare "$REPO"
         fi
-        # Reseed from /source on EVERY start (not just the first) — this
-        # pod is now the real GitOps source for automated sync, so an
-        # edit to k8s/ on disk must reach ArgoCD without a manual reseed
-        # step. Restarting this pod (`kubectl delete pod git-server -n
-        # argocd`) after a k8s/ edit is the "push to git" step in this
-        # local, offline setup.
+
         echo "==> Seeding bare repo from mounted k8s/ source"
         git clone "$REPO" /tmp/work --quiet
         rm -rf /tmp/work/k8s
@@ -56,21 +36,12 @@ spec:
         git config user.name "UrbanNes Git Server"
         git checkout -B main --quiet
         git add -A
-        # --allow-empty: a restart with no actual k8s/ changes since last
-        # boot would otherwise fail this commit (nothing to commit) and
-        # abort the whole script under `set -e`.
+
         git commit -m "Sync from k8s/ manifests" --quiet --allow-empty
         git push origin HEAD:refs/heads/main --quiet --force
         cd /
         rm -rf /tmp/work
-        # The push above creates refs/heads/main INSIDE the bare repo, but
-        # `git init --bare` already set that bare repo's own HEAD to point
-        # at refs/heads/master (git's default), which never gets created
-        # here — so HEAD is left dangling at a branch that doesn't exist.
-        # This must run against the BARE repo directly (not the /tmp/work
-        # working clone, whose HEAD is a different ref entirely) or
-        # `git clone` against this daemon fails with "remote HEAD refers
-        # to nonexistent ref".
+
         git --git-dir="$REPO" symbolic-ref HEAD refs/heads/main
         which git-daemon >/dev/null 2>&1 || apk add --no-cache git-daemon --quiet
         echo "==> Starting git daemon on :9418 (read-only, no auth — cluster-internal only)"
@@ -99,17 +70,11 @@ spec:
   volumes:
   - name: source
     hostPath:
-      # Matches kind-config.yaml's extraMounts containerPath — this is
-      # the whole urbannes project folder as it exists on your host
-      # disk, read-only.
+
       path: /urbannes-repo
       type: Directory
   - name: repo-data
-    # The bare repo itself lives in an emptyDir, not back on the host —
-    # it's fully reconstructed from /source on every Pod start, which is
-    # exactly what you want: edit k8s/ on your host, restart this Pod
-    # (`kubectl delete pod git-server -n argocd`), and ArgoCD sees the
-    # update on its next refresh. No stale copy ever persists.
+
     emptyDir: {}
 ---
 apiVersion: v1

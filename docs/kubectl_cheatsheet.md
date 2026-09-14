@@ -176,4 +176,3 @@ kubectl port-forward svc/argocd-server -n argocd 8090:443
 kubectl delete pod git-server -n argocd
 kubectl apply -f k8s-argocd/git-server.yaml
 ```
-

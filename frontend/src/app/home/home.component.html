@@ -1,8 +1,7 @@
 <div class="flex flex-col gap-10">
 
-  <!-- Fascinating Authenticated Hero Section -->
   <section class="relative isolate overflow-hidden min-h-[40vh] flex flex-col justify-center -mx-5 -mt-8 pt-12 pb-16 px-5 rounded-b-[24px] bg-transparent">
-    <!-- Background glow effects -->
+
     <div class="absolute inset-0 z-0 pointer-events-none">
       <div class="absolute top-0 right-0 w-[600px] h-[500px] bg-app-accent/20 rounded-full blur-[120px] opacity-60"></div>
       <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-app-accent/10 rounded-full blur-[100px] opacity-40"></div>
@@ -10,7 +9,7 @@
     </div>
 
     <div class="relative z-10 w-full max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
-      <!-- Greeting -->
+
       <div class="fade-in flex-1">
         <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-app-border bg-app-surface backdrop-blur-md mb-6">
           <span class="flex h-2 w-2 rounded-full bg-app-ok animate-pulse"></span>
@@ -25,7 +24,6 @@
         </p>
       </div>
 
-      <!-- Next booking spotlight (Hero Card) -->
       <div *ngIf="!loading && nextBooking && nextBookingEvent" class="fade-in stagger-2 w-full max-w-md">
         <div class="relative p-[1px] rounded-2xl bg-gradient-to-br from-app-accent/50 to-transparent">
           <div class="rounded-2xl bg-app-surface/80 backdrop-blur-xl p-6 shadow-2xl">
@@ -44,7 +42,6 @@
         </div>
       </div>
 
-      <!-- Empty state if no next booking -->
       <div *ngIf="!loading && (!nextBooking || !nextBookingEvent)" class="fade-in stagger-2 w-full max-w-md">
         <div class="rounded-2xl bg-app-surface/40 border border-app-border backdrop-blur-md p-6 text-center flex flex-col items-center">
           <div class="mb-4 opacity-50">
@@ -58,10 +55,8 @@
     </div>
   </section>
 
-  <!-- Quick nav — the three real destinations in the app -->
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 fade-in stagger-3">
 
-  <!-- Featured events -->
   <div *ngIf="!loading && featuredEvents.length > 0">
     <div class="flex items-baseline justify-between mb-4">
       <h2 class="m-0">Happening soon</h2>

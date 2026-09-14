@@ -1,20 +1,12 @@
-/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./src/**/*.{html,ts}'],
   corePlugins: {
-    // styles.css already defines the reset, box-sizing, and base typography
-    // for this app — Tailwind's own Preflight reset would fight it (double
-    // margin resets, conflicting font stacks). Utilities still work fine
-    // with Preflight off; only the opinionated "zero everything out" layer
-    // is skipped.
+
     preflight: false,
   },
   theme: {
     extend: {
-      // Mirrors the CSS custom properties in styles.css so Tailwind
-      // utilities (bg-app-accent, text-app-muted, etc.) stay in sync with
-      // the existing design system instead of introducing a second,
-      // competing palette.
+
       colors: {
         'app-bg': 'var(--bg)',
         'app-bg-elevated': 'var(--bg-elevated)',

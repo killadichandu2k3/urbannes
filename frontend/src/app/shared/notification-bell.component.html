@@ -24,8 +24,8 @@
       >
         <div class="notif-item-title">{{ n.title }}</div>
         <div class="notif-item-body muted">{{ n.body }}</div>
-        <button 
-          (click)="$event.stopPropagation(); deleteNotification(n.id)" 
+        <button
+          (click)="$event.stopPropagation(); deleteNotification(n.id)"
           style="position: absolute; right: var(--sp-2); top: var(--sp-2); background: transparent; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer; padding: 4px;"
           title="Delete notification"
         >

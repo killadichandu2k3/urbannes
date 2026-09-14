@@ -12,7 +12,7 @@ COPY services/booking-worker services/booking-worker
 
 RUN npm run build --workspace=@urbannes/shared
 RUN npm run build --workspace=@urbannes/booking-worker
-# Copy SQL assets into dist (tsc doesn't copy non-.ts files)
+
 RUN mkdir -p services/booking-worker/dist/db
 RUN cp services/booking-worker/src/db/schema.sql services/booking-worker/dist/db/schema.sql
 RUN cp services/booking-worker/src/db/seed.sql services/booking-worker/dist/db/seed.sql

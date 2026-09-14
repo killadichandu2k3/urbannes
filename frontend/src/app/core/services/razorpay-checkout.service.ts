@@ -1,12 +1,3 @@
-// ============================================================================
-// RAZORPAY CHECKOUT — wraps the third-party `Razorpay` global (loaded via
-// <script> in index.html — see its comment) behind one typed method, so
-// no other file in this app needs to know Razorpay's callback-based API
-// shape. Mirrors this app's existing pattern of isolating a third-party
-// SDK behind one small service (see graphql-ws.service.ts for the
-// graphql-ws equivalent).
-// ============================================================================
-
 import { Injectable } from '@angular/core';
 import { PaymentOrder } from '../models';
 
@@ -37,12 +28,7 @@ export interface RazorpaySuccessResponse {
 
 @Injectable({ providedIn: 'root' })
 export class RazorpayCheckoutService {
-  /**
-   * Opens the Checkout widget for the given order. Resolves with the
-   * signed payment response on success, or rejects with a plain 'dismissed'
-   * error if the user closes the widget without paying — the caller
-   * decides what "cancelled" means for its own UI state.
-   */
+
   open(order: PaymentOrder, opts: { description?: string; userEmail?: string; userName?: string }): Promise<RazorpaySuccessResponse> {
     return new Promise((resolve, reject) => {
       if (!window.Razorpay) {

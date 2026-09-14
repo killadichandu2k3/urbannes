@@ -1,6 +1,3 @@
-// CI smoke test — register a user, verify email with test code, run authenticated query.
-// Called from .github/workflows/ci.yml after the full Docker Compose stack is up.
-
 async function gql(query, variables, token) {
   const headers = { 'content-type': 'application/json' };
   if (token) headers['authorization'] = 'Bearer ' + token;
@@ -37,4 +34,3 @@ async function gql(query, variables, token) {
 
   console.log('✅  Smoke test passed!');
 })().catch(err => { console.error('❌', err); process.exit(1); });
-

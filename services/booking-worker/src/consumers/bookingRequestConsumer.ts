@@ -1,17 +1,3 @@
-// ============================================================================
-// BOOKING REQUEST CONSUMER — API 2. Consumes `booking.requests`, does the
-// real work (validation chain -> cache-aside against Redis -> Postgres
-// transaction), then replies via Redis Pub/Sub and pushes live updates.
-// ----------------------------------------------------------------------------
-// Run as N replicas in the SAME Kafka consumer group ('booking-workers'):
-// Kafka automatically partitions `booking.requests` across replicas, so
-// scaling this service horizontally is just `kubectl scale` — no code
-// change, no coordination logic to write ourselves. This is the practical
-// payoff of "Kafka as the request bus" beyond the CQRS-looking API split.
-// Postgres sharding has been removed — see db/pool.ts — so there's no
-// shard-routing step here anymore, just a single connection pool.
-// ============================================================================
-
 import { Kafka, logLevel } from 'kafkajs';
 import { v4 as uuidv4 } from 'uuid';
 import { createLogger, KAFKA_TOPICS } from '@urbannes/shared';
@@ -47,8 +33,6 @@ interface RequestMessage<T = any> {
   payload: T;
   requestedAt: string;
 }
-
-// ---- Individual request-kind handlers --------------------------------------
 
 async function handleListVenues() {
   const { rows } = await pool.query('SELECT * FROM venues');
@@ -157,19 +141,10 @@ async function handleGetBooking(payload: { bookingId: string; eventId: string })
 async function handleListMyBookings(payload: { userId: string }) {
   const { rows } = await pool.query('SELECT * FROM bookings WHERE user_id = $1 ORDER BY created_at DESC', [payload.userId]);
 
-  // DIAGNOSTIC — remove once "my bookings empty despite real bookings"
-  // is confirmed fixed. Compare the userId below against the actual
-  // `user_id` values sitting in the `bookings` table: if this userId
-  // never appears there, the JWT's userId and the row owner disagree
-  // (stale token, or bookings created before the current auth model),
-  // which is a data issue, not a code bug.
   logger.info('LIST_MY_BOOKINGS queried', { userId: payload.userId, rowsFound: rows.length });
 
   if (rows.length === 0) return { data: [] };
 
-  // Same seats/add-ons join handleGetBooking uses for a single booking,
-  // batched here across every row this user owns in one round trip each
-  // (two IN-queries total) rather than N+1 queries per booking.
   const bookingIds = rows.map((b: any) => b.id);
   const [seatsRes, addonsRes] = await Promise.all([
     pool.query('SELECT booking_id, seat_id FROM booking_seats WHERE booking_id = ANY($1::uuid[])', [bookingIds]),
@@ -191,8 +166,7 @@ async function handleListMyBookings(payload: { userId: string }) {
 
   const data = await Promise.all(rows.map(async (b: any) => {
     let status = b.status;
-    // Auto-expire stale locks if they've been sitting in SEATS_LOCKED for >5 mins.
-    // This avoids needing a dedicated sweeping cron job just for UI accuracy.
+
     if (status === 'SEATS_LOCKED') {
       const ageMs = Date.now() - new Date(b.created_at).getTime();
       if (ageMs > 5 * 60 * 1000) {
@@ -230,7 +204,7 @@ async function handleCreateBooking(payload: {
     userId: payload.userId,
     eventId: payload.eventId,
     seatIds: payload.seatIds,
-    eventBookingOpen: true, // re-validated against real event row inside the transaction below
+    eventBookingOpen: true,
   });
   if (!validation.passed) throw new Error(validation.reason);
 
@@ -333,7 +307,6 @@ async function handleCreateBooking(payload: {
       };
     });
 
-    // Cache invalidation: the seat map just changed, so drop the stale cached copy.
     await invalidateSeatMap(payload.eventId);
 
     await publishDomainEvent(KAFKA_TOPICS.BOOKING_CREATED, booking, booking.id);
@@ -387,10 +360,7 @@ async function handleConfirmPayment(payload: {
   razorpayPaymentId: string;
   razorpaySignature: string;
 }) {
-  // Trust boundary: nothing below runs unless the signature genuinely
-  // proves Razorpay processed this exact order+payment pair (see
-  // verifyPaymentSignature's doc comment) — a client claiming success
-  // without paying cannot get past this check.
+
   const signatureValid = verifyPaymentSignature(payload.razorpayOrderId, payload.razorpayPaymentId, payload.razorpaySignature);
   if (!signatureValid) {
     await withTransaction(async (client) => {
@@ -412,10 +382,7 @@ async function handleConfirmPayment(payload: {
     const res = await client.query('SELECT * FROM bookings WHERE id = $1 AND event_id = $2', [payload.bookingId, payload.eventId]);
     if (res.rows.length === 0) throw new Error('Booking not found');
     const current = res.rows[0];
-    // Ownership check: booking-api's resolver already proved the caller is
-    // authenticated (see requireAuth() there), but not that this specific
-    // booking is theirs. That's a DB-level fact, so it's enforced here
-    // against the authoritative row, not in the resolver.
+
     if (current.user_id !== payload.userId) throw new Error('This booking does not belong to you');
     const paid = nextBookingStatus(current.status as BookingStatus, 'PAY');
     const confirmed = nextBookingStatus(paid, 'CONFIRM');
@@ -448,7 +415,7 @@ async function handleCancelBooking(payload: { bookingId: string; eventId: string
     const res = await client.query('SELECT * FROM bookings WHERE id = $1 AND event_id = $2', [payload.bookingId, payload.eventId]);
     if (res.rows.length === 0) throw new Error('Booking not found');
     const current = res.rows[0];
-    // Same ownership check as handleConfirmPayment above — see its comment.
+
     if (current.user_id !== payload.userId) throw new Error('This booking does not belong to you');
     const cancelled = nextBookingStatus(current.status as BookingStatus, 'CANCEL');
     const now = new Date().toISOString();
@@ -490,8 +457,6 @@ async function handleResolveShortLink(payload: { code: string }) {
   return { data: result ? { targetUrl: result.target_url } : null };
 }
 
-// ---- Dispatch table ---------------------------------------------------------
-
 const HANDLERS: Record<string, (payload: any) => Promise<{ data: any; servedFromCache?: boolean }>> = {
   LIST_VENUES: handleListVenues as any,
   LIST_EVENTS: handleListEvents as any,
@@ -506,8 +471,6 @@ const HANDLERS: Record<string, (payload: any) => Promise<{ data: any; servedFrom
   CREATE_SHORT_LINK: handleCreateShortLink,
   RESOLVE_SHORT_LINK: handleResolveShortLink,
 };
-
-// ---- Consumer loop with retry + dead-letter --------------------------------
 
 const DLQ_TOPIC = 'booking.requests.dlq';
 
@@ -549,9 +512,6 @@ export async function startConsumer(): Promise<void> {
         }
       }
 
-      // Exhausted retries — reply with the error so the caller doesn't just
-      // time out blindly, AND publish to a dead-letter topic for later
-      // inspection/replay (a real at-least-once delivery pattern).
       await sendReply(request.requestId, { requestId: request.requestId, ok: false, error: lastError?.message ?? 'Unknown error' });
       await dlqProducer.send({
         topic: DLQ_TOPIC,

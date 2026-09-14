@@ -1,12 +1,3 @@
-// ============================================================================
-// analytics-api SERVER — an Apollo Federation SUBGRAPH, not a standalone
-// GraphQL server. It's never called directly by the frontend; the Apollo
-// Gateway (gateway-graphql service) queries it internally and composes its
-// schema with booking-api's. buildSubgraphSchema (not makeExecutableSchema)
-// is what adds the federation directives/machinery (@key, _entities, etc.)
-// that make that composition possible.
-// ============================================================================
-
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';

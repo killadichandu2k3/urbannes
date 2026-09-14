@@ -1,5 +1,5 @@
 <div class="flex flex-col gap-12 pb-16">
-  <!-- Gorgeous modern banner for the events page -->
+
   <div class="relative isolate overflow-hidden min-h-[40vh] flex flex-col justify-center -mx-5 -mt-8 pt-12 pb-16 px-5 rounded-b-[24px] bg-[#0b0b0f]">
     <div class="absolute inset-0 z-0 pointer-events-none">
       <div class="absolute top-1/2 left-1/4 -translate-y-1/2 w-[600px] h-[500px] bg-app-accent/20 rounded-full blur-[120px] opacity-70"></div>
@@ -43,19 +43,18 @@
     <p class="text-app-muted">Check back soon for new event schedules.</p>
   </div>
 
-  <!-- Reusable Template for Event Grid -->
   <ng-template #eventGrid let-events="events">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div class="group relative flex flex-col justify-between p-5 rounded-2xl border border-app-border bg-app-surface transition-all hover:-translate-y-1 hover:border-app-accent/50 hover:shadow-[0_8px_32px_rgba(255,56,122,0.1)]"
            *ngFor="let event of events; let i = index"
            style="opacity: 0; animation: fadeIn 0.5s ease-out forwards;"
            [style.animation-delay]="(i * 0.1) + 's'">
-        
+
         <div>
           <div class="flex items-start justify-between mb-3">
             <span class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border"
-                  [ngClass]="event.bookingOpen ? 'bg-app-ok/10 text-app-ok border-app-ok/20' : 'bg-app-danger/10 text-app-danger border-app-danger/20'">
-              {{ event.bookingOpen ? 'Booking Open' : 'Sold Out' }}
+                  [ngClass]="isBookingOpen(event) ? 'bg-app-ok/10 text-app-ok border-app-ok/20' : 'bg-app-danger/10 text-app-danger border-app-danger/20'">
+              {{ isBookingOpen(event) ? 'Booking Open' : 'Sold Out' }}
             </span>
             <span *ngIf="getTrendingStatus(event) as status" class="px-2.5 py-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider rounded-full border"
                   [ngClass]="{
@@ -85,29 +84,28 @@
             </div>
           </div>
 
-          <!-- Analytics Seats Bar -->
           <div *ngIf="event.stats" class="mb-5 px-1">
             <div class="flex justify-between text-xs mb-1.5">
               <span class="text-white font-medium">{{ getFillPercentage(event) }}% Full</span>
               <span class="text-app-muted">{{ event.stats.seatsRemaining }} seats left</span>
             </div>
             <div class="w-full h-1.5 bg-app-bg-elevated rounded-full overflow-hidden">
-              <div class="h-full rounded-full transition-all" 
+              <div class="h-full rounded-full transition-all"
                    [ngClass]="getFillPercentage(event) > 85 ? 'bg-app-accent' : (getFillPercentage(event) > 50 ? 'bg-app-warn' : 'bg-app-ok')"
                    [style.width.%]="getFillPercentage(event)">
               </div>
             </div>
           </div>
-          
+
           <div class="flex items-center justify-between border-t border-app-border pt-4">
             <div>
               <p class="text-xs text-app-faint m-0 mb-0.5">Starting from</p>
               <p class="text-lg font-bold text-app-ok m-0">₹{{ event.basePrice }}</p>
             </div>
-            <a [routerLink]="['/events', event.id, 'seats']" 
+            <a [routerLink]="isBookingOpen(event) ? ['/events', event.id, 'seats'] : []"
                class="px-4 py-2 text-sm font-semibold rounded-lg transition-all"
-               [ngClass]="event.bookingOpen ? 'bg-app-accent text-white hover:bg-white hover:text-black hover:shadow-[0_0_8px_rgba(255,255,255,0.25)]' : 'bg-app-bg-elevated text-app-muted cursor-not-allowed pointer-events-none'">
-              Select Seats
+               [ngClass]="isBookingOpen(event) ? 'bg-app-accent text-white hover:bg-white hover:text-black hover:shadow-[0_0_8px_rgba(255,255,255,0.25)]' : 'bg-app-bg-elevated text-app-muted cursor-not-allowed pointer-events-none'">
+              {{ isBookingOpen(event) ? 'Select Seats' : 'Sold Out' }}
             </a>
           </div>
         </div>
@@ -116,7 +114,7 @@
   </ng-template>
 
   <div class="w-full max-w-6xl mx-auto px-5" *ngIf="!loading && !error">
-    <!-- Concerts & Sports -->
+
     <section class="mb-16 fade-in" *ngIf="concerts.length > 0">
       <div class="flex items-center gap-3 mb-6">
         <h2 class="text-2xl font-bold m-0">Concerts & Sports</h2>
@@ -125,7 +123,6 @@
       <ng-container *ngTemplateOutlet="eventGrid; context: { events: concerts }"></ng-container>
     </section>
 
-    <!-- Theatre & Arts -->
     <section class="mb-16 fade-in stagger-1" *ngIf="theatre.length > 0">
       <div class="flex items-center gap-3 mb-6">
         <h2 class="text-2xl font-bold m-0">Theatre & Arts</h2>
@@ -134,7 +131,6 @@
       <ng-container *ngTemplateOutlet="eventGrid; context: { events: theatre }"></ng-container>
     </section>
 
-    <!-- Movies -->
     <section class="mb-8 fade-in stagger-2" *ngIf="movies.length > 0">
       <div class="flex items-center gap-3 mb-6">
         <h2 class="text-2xl font-bold m-0">Movies</h2>

@@ -21,20 +21,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Simple poll rather than a new GraphQL subscription — notifications
-    // are already pushed in real time to email/in-app via Kafka on the
-    // backend (see notification-service), but wiring a THIRD live
-    // transport (on top of the existing bookingUpdated/seatMapUpdated
-    // subscriptions) for a dropdown that's opened occasionally isn't worth
-    // the added connection; a 20s poll while logged in is enough for a
-    // bell icon's actual use pattern.
-    //
-    // Gated on isLoggedIn: the template already hides this component
-    // entirely for signed-out visitors (see notification-bell.component.html),
-    // but with a public landing page now in the route tree, a signed-out
-    // poll would otherwise still fire in the background and hit
-    // myNotifications' auth check every 20s for no reason — this guard
-    // stops that at the source instead of relying only on the template.
+
     this.pollSub = interval(5_000)
       .pipe(
         startWith(0),
@@ -44,7 +31,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (list) => (this.notifications = list),
         error: () => {
-          /* silent — a failed poll just leaves the last-known list showing */
+
         },
       });
   }

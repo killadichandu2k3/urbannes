@@ -1,11 +1,3 @@
-// ============================================================================
-// PATTERN: STATE — a Booking moves through a strict lifecycle (CREATED ->
-// SEATS_LOCKED -> PAYMENT_PENDING -> CONFIRMED, with CANCELLED/EXPIRED
-// reachable from most states). Each state object knows only its own legal
-// transitions; illegal jumps throw immediately instead of silently
-// corrupting the row.
-// ============================================================================
-
 export type BookingStatus = 'CREATED' | 'SEATS_LOCKED' | 'PAYMENT_PENDING' | 'CONFIRMED' | 'CANCELLED' | 'EXPIRED';
 export type BookingAction = 'LOCK_SEATS' | 'PAY' | 'CONFIRM' | 'CANCEL' | 'EXPIRE';
 

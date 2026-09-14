@@ -1,4 +1,3 @@
-# Multi-stage build: build in a full node image, run in a slim one.
 FROM node:20-alpine AS build
 WORKDIR /app
 
@@ -6,7 +5,6 @@ COPY package.json ./
 COPY services/shared/package.json services/shared/
 COPY services/booking-api/package.json services/booking-api/
 
-# Install workspace deps (shared + booking-api together, so TS project refs resolve)
 RUN npm install --workspaces --include-workspace-root --ignore-scripts
 
 COPY services/shared services/shared
@@ -14,7 +12,7 @@ COPY services/booking-api services/booking-api
 
 RUN npm run build --workspace=@urbannes/shared
 RUN npm run build --workspace=@urbannes/booking-api
-# Copy the .graphql SDL file into dist (tsc doesn't copy non-.ts assets)
+
 RUN cp services/booking-api/src/graphql/schema.graphql services/booking-api/dist/graphql/schema.graphql
 
 FROM node:20-alpine AS runtime

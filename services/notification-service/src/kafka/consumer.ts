@@ -1,19 +1,3 @@
-// ============================================================================
-// NOTIFICATION CONSUMER — subscribes to `booking.events` (the domain-event
-// topic booking-worker publishes to). This is a genuinely independent
-// consumer group ('notification-workers'): it can lag, restart, or scale
-// to N replicas without ever affecting booking-worker's own processing,
-// because Kafka decouples producer and consumer completely — the booking
-// flow already returned a reply to the user long before this runs.
-//
-// Retry + Dead Letter Queue: if a message's processing throws after
-// MAX_RETRIES attempts (e.g. every channel somehow fails), it's moved to
-// `booking.events.dlq` instead of being silently dropped or blocking the
-// partition forever. A human/ops process can inspect and replay the DLQ
-// topic later — this is the real mechanism behind "at-least-once delivery"
-// claims, not just an assertion in a README.
-// ============================================================================
-
 import { Kafka, logLevel } from 'kafkajs';
 import { EventEnvelope, createLogger } from '@urbannes/shared';
 import { dispatch } from '../patterns/facade/NotificationDispatcher';
@@ -27,14 +11,11 @@ const kafka = new Kafka({
   retry: { retries: 15, initialRetryTime: 1000 },
 });
 
-const SOURCE_TOPIC = 'booking.events'; // wildcard-ish: booking-worker publishes each KAFKA_TOPICS.* value; we subscribe to all of them below
+const SOURCE_TOPIC = 'booking.events';
 const DLQ_TOPIC = 'booking.events.dlq';
 const CONSUMER_GROUP = 'notification-workers';
 const MAX_RETRIES = 3;
 
-// booking-worker actually publishes to distinct topic names (booking.created,
-// booking.confirmed, etc.) rather than one combined "booking.events" topic —
-// subscribe to the full set explicitly so nothing is silently missed.
 const TOPICS = ['booking.created', 'booking.confirmed', 'booking.cancelled', 'payment.processed'];
 
 export async function startNotificationConsumer(): Promise<void> {

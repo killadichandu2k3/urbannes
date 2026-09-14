@@ -1,10 +1,3 @@
-// ============================================================================
-// KAFKA PRODUCER — domain events (`booking.events` topic) consumed by
-// notification-service. Separate from the request/reply plumbing: these are
-// durable, replayable business events ("a booking was confirmed"), not
-// ephemeral RPC replies.
-// ============================================================================
-
 import { Kafka, Producer, logLevel } from 'kafkajs';
 import { EventEnvelope, KAFKA_TOPICS, createLogger } from '@urbannes/shared';
 import { v4 as uuidv4 } from 'uuid';

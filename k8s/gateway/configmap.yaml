@@ -18,22 +18,6 @@ data:
       access_log /dev/stdout gateway;
       error_log /dev/stderr warn;
 
-      # This is the ONLY public entrypoint into the cluster now that Kong
-      # is gone — NGINX itself owns reverse-proxy routing, load balancing
-      # (see the upstream blocks below), and rate limiting (this zone).
-      # Per-user AUTHENTICATION (verifying who's calling) is deliberately
-      # NOT done here: GraphQL multiplexes every query/mutation — auth's
-      # own register/login included — through one POST /graphql endpoint,
-      # so NGINX has no URL to key an "is this request authenticated"
-      # decision on without parsing the GraphQL request body itself (which
-      # would mean re-implementing GraphQL parsing in nginx.conf or adding
-      # the njs/lua-resty-jwt module — real options, but a lot of new
-      # moving parts for what application-layer JWT verification already
-      # does correctly). Every resolver that needs a caller's identity
-      # verifies the JWT itself (see booking-api's requireAuth() and
-      # auth-api's `me` resolver) — NGINX's job stops at "is this client
-      # sending too many requests," which IS purely a per-IP, URL-agnostic
-      # concern and the right fit for limit_req here.
       limit_req_zone $binary_remote_addr zone=general_zone:10m rate=20r/s;
       limit_req_status 429;
 
@@ -41,22 +25,11 @@ data:
         server booking-api:4000;
         keepalive 32;
       }
-      # Apollo Gateway — composes booking/analytics/auth into one schema.
-      # Queries/mutations (including register/login) route here now, not
-      # to any subgraph directly, mirroring gateway/nginx/nginx.conf (the
-      # Compose version). Subscriptions still bypass this and go straight
-      # to booking-api below — see services/gateway-graphql/src/server.ts
-      # for why.
+
       upstream graphql_gateway_upstream {
         server gateway-graphql:4500;
         keepalive 32;
       }
-      # NOTE: "load balancing across replicas" collapses to one `server`
-      # line per upstream here — the Service DNS name — because kube-proxy
-      # already balances across every matching pod endpoint behind it.
-      # Compare to gateway/nginx/nginx.conf's Docker Compose version, which
-      # lists individual container addresses explicitly; that difference
-      # IS the thing worth noticing across the two setups.
 
       server {
         listen 8080;

@@ -1,10 +1,3 @@
-// ============================================================================
-// PATTERN: FACADE — NotificationDispatcher hides "figure out which channels
-// this event type needs, resolve the recipient's email, build the message,
-// invoke each adapter, tolerate individual channel failures" behind one
-// simple `dispatch(event)` call for the Kafka consumer to use.
-// ============================================================================
-
 import { EventEnvelope, KAFKA_TOPICS, createLogger } from '@urbannes/shared';
 import {
   EmailChannelAdapter,
@@ -48,8 +41,6 @@ export async function dispatch(envelope: EventEnvelope<any>): Promise<{ channel:
     return [];
   }
 
-  // One lookup, shared by every channel this dispatch touches — the email
-  // channel needs it, the in-app/SMS/push channels ignore it.
   let toEmail: string | null = null;
   try {
     toEmail = await getUserEmail(base.userId);

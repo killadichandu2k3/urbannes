@@ -1,25 +1,3 @@
-// ============================================================================
-// SEAT LOCK MANAGER — a SEPARATE single Redis instance, deliberately not
-// the Redis Cluster used for cache-aside above.
-// ----------------------------------------------------------------------------
-// Why not use the Cluster for locks too: multi-key atomic operations (our
-// Lua compare-and-delete/extend scripts) require all keys touched by one
-// EVAL to live on the same hash slot in Redis Cluster (a CROSSSLOT error
-// otherwise). We only ever lock one seat key at a time per script call so
-// this WOULD technically work on the Cluster, but keeping the coordination
-// primitive (locks, which must be linearizable and low-latency) on a
-// dedicated single instance is the safer, more standard separation of
-// concerns: cache-aside data can tolerate the Cluster's eventual node
-// failover hiccups, but an in-flight seat lock cannot.
-//
-// SET key value NX PX ttl is the actual primitive: NX = atomic
-// compare-and-set (only if absent), PX = auto-expiring TTL so an abandoned
-// checkout self-heals without a sweeper. The lock's VALUE is a fencing
-// token (requestId) verified via Lua before release/extend, so a client
-// can never release a lock it no longer owns after expiry+reacquisition by
-// someone else.
-// ============================================================================
-
 import Redis from 'ioredis';
 import { createLogger } from '@urbannes/shared';
 

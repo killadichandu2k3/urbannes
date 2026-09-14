@@ -1,16 +1,5 @@
 #!/usr/bin/env bash
-# Installs metrics-server into the Kind cluster.
-#
-# This is cluster-wide infrastructure, not part of the urbannes app itself
-# — it's what feeds CPU/memory numbers to `kubectl top` and the HPAs in
-# k8s/. Without it, `kubectl top` errors out and HPA has no CPU metric to
-# scale on.
-#
-# Kind's nodes use kubelet certificates metrics-server doesn't trust out of
-# the box (upstream metrics-server expects a real cert chain; Kind's is
-# self-signed per-node) — so this script applies the standard upstream
-# manifest, then patches in --kubelet-insecure-tls, which is the documented,
-# safe-for-local-dev fix (never do this on a real cluster).
+
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

@@ -98,12 +98,6 @@ export class MyBookingsComponent implements OnInit, OnDestroy {
     return raw || 'Unable to load bookings at this time. Please try again.';
   }
 
-  /**
-   * Sort hierarchy:
-   * Rank 1: Active bookings (CONFIRMED, ACCEPTED)
-   * Rank 2: Seats held / expired (SEATS_LOCKED, PAYMENT_PENDING, CREATED, EXPIRED)
-   * Rank 3: Canceled bookings (CANCELLED)
-   */
   getBookingRank(b: Booking): number {
     const s = (b.status || '').toUpperCase();
     if (s === 'CONFIRMED' || s === 'ACCEPTED') return 1;
@@ -244,7 +238,7 @@ export class MyBookingsComponent implements OnInit, OnDestroy {
         error: (err) => {
           console.error('Cancel booking error:', err);
           this.cancellingId = null;
-          
+
           const errorMessage = this.formatUserFriendlyError(err) || 'Failed to cancel booking. Please try again.';
           this.showNotification('error', errorMessage);
         },

@@ -1,7 +1,3 @@
-// A tiny structured-logging Facade. Every service imports this instead of
-// calling console.log directly, so log format stays consistent and could be
-// swapped for a real backend (e.g. pino -> Loki) without touching call sites.
-
 type Level = 'debug' | 'info' | 'warn' | 'error';
 
 function emit(level: Level, service: string, message: string, meta?: Record<string, unknown>) {
@@ -12,7 +8,7 @@ function emit(level: Level, service: string, message: string, meta?: Record<stri
     message,
     ...meta,
   };
-  // eslint-disable-next-line no-console
+
   console.log(JSON.stringify(line));
 }
 

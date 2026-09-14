@@ -1,15 +1,3 @@
-// ============================================================================
-// OTP — 6-digit signup verification codes. Codes are hashed with bcrypt
-// before storage (same rationale as password_hash: never store anything
-// an attacker could use directly from a DB dump) and expire in 10 minutes.
-// Delivery is via Resend — the same free-tier email provider
-// notification-service uses for booking emails (see
-// services/notification-service/src/patterns/adapter/ChannelAdapters.ts) —
-// kept as a separate small client here rather than a cross-service import,
-// since auth-api and notification-service are independent services that
-// each own their own outbound email calls.
-// ============================================================================
-
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { Resend } from 'resend';
@@ -27,8 +15,7 @@ const FROM_ADDRESS = process.env.NOTIFICATIONS_FROM_EMAIL || 'UrbanNes <onboardi
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 function generateCode(): string {
-  // 6-digit numeric code, zero-padded. crypto.randomInt is cryptographically
-  // sound (unlike Math.random) and still trivial to type/read on a phone.
+
   return crypto.randomInt(0, 1_000_000).toString().padStart(6, '0');
 }
 
@@ -43,9 +30,7 @@ export async function issueOtp(email: string): Promise<void> {
   );
 
   if (!resend) {
-    // No Resend key configured — log the code so local dev without an API
-    // key can still complete signup end-to-end (mirrors booking-worker's
-    // treatment of missing RAZORPAY_KEY_* as a warned-but-not-fatal gap).
+
     logger.warn('[OTP] RESEND_API_KEY not set - verification code for ' + email + ' is ' + code);
     return;
   }

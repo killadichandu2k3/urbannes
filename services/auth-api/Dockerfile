@@ -1,4 +1,3 @@
-# Multi-stage build: build in a full node image, run in a slim one.
 FROM node:20-alpine AS build
 WORKDIR /app
 

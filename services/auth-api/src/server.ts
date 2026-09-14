@@ -1,9 +1,3 @@
-// ============================================================================
-// auth-api SERVER — Apollo Server (HTTP only, no subscriptions here) exposed
-// as a federation subgraph, same pattern as booking-api/analytics-api. This
-// is the ONLY service that talks to the `users` table.
-// ============================================================================
-
 import 'dotenv/config';
 import 'reflect-metadata';
 import express from 'express';
@@ -25,11 +19,7 @@ const logger = createLogger('auth-api');
 const PORT = Number(process.env.PORT || 4600);
 
 async function main() {
-  // TypeORM connects and validates entity metadata before the server
-  // accepts traffic — the same "fail fast on a bad connection at startup,
-  // not on the first request" posture the raw `pool` (db/pool.ts) already
-  // has, just for the ORM-backed resolvers (register/login/me/
-  // notifications) rather than the pg Pool ones.
+
   await initDataSource();
   logger.info('TypeORM data source initialized');
 
@@ -53,9 +43,7 @@ async function main() {
     cors<cors.CorsRequest>(),
     bodyParser.json(),
     expressMiddleware(apollo, {
-      // Forward headers into context the same way booking-api/analytics-api
-      // do, so resolvers (specifically `me`) can read the Authorization
-      // header the Apollo Gateway passes through.
+
       context: async ({ req }) => ({ headers: req.headers }),
     }),
   );

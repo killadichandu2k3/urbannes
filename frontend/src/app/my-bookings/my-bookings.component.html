@@ -1,12 +1,11 @@
 <div class="flex flex-col gap-8 max-w-6xl mx-auto pb-16 pt-8 px-4 sm:px-6">
 
-  <!-- Gorgeous Modern Header -->
   <div class="relative isolate overflow-hidden rounded-[24px] p-8 sm:p-10 bg-transparent border border-app-border/40 shadow-2xl">
     <div class="absolute inset-0 z-0 pointer-events-none">
       <div class="absolute -top-10 -right-10 w-[300px] h-[300px] bg-app-accent/20 rounded-full blur-[80px] opacity-60"></div>
       <div class="absolute inset-0 bg-gradient-to-br from-app-surface/80 to-app-bg-elevated/80 backdrop-blur-xl"></div>
     </div>
-    
+
     <div class="relative z-10 fade-in flex flex-col md:flex-row md:items-end md:justify-between gap-6">
       <div>
         <p class="text-xs font-bold tracking-widest text-app-accent uppercase mb-1">Overview</p>
@@ -14,7 +13,6 @@
         <p class="text-sm text-app-muted max-w-xl">View and manage your active reservations, hold statuses, and cancellation history.</p>
       </div>
 
-      <!-- Quick Metrics Summary -->
       <div class="flex items-center gap-3">
         <div class="px-4 py-2 rounded-xl bg-app-surface border border-app-border flex flex-col items-center min-w-[75px]">
           <span class="text-xs text-app-faint">Active</span>
@@ -32,26 +30,25 @@
     </div>
   </div>
 
-  <!-- Filter Pills Bar -->
   <div class="flex items-center gap-2 overflow-x-auto pb-2" *ngIf="!loading && bookings.length > 0">
-    <button (click)="setFilter('ALL')" 
+    <button (click)="setFilter('ALL')"
             class="px-4 py-2 rounded-full text-xs font-semibold tracking-wide border transition-all cursor-pointer whitespace-nowrap"
             [ngClass]="selectedFilter === 'ALL' ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.3)]' : 'bg-app-surface text-app-muted border-app-border hover:text-white hover:border-app-border-strong'">
       All ({{ bookings.length }})
     </button>
-    <button (click)="setFilter('ACTIVE')" 
+    <button (click)="setFilter('ACTIVE')"
             class="px-4 py-2 rounded-full text-xs font-semibold tracking-wide border transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5"
             [ngClass]="selectedFilter === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'bg-app-surface text-app-muted border-app-border hover:text-emerald-400 hover:border-emerald-500/30'">
       <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
       Active ({{ activeBookings.length }})
     </button>
-    <button (click)="setFilter('HELD')" 
+    <button (click)="setFilter('HELD')"
             class="px-4 py-2 rounded-full text-xs font-semibold tracking-wide border transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5"
             [ngClass]="selectedFilter === 'HELD' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.3)]' : 'bg-app-surface text-app-muted border-app-border hover:text-amber-300 hover:border-amber-500/30'">
       <span class="w-2 h-2 rounded-full bg-amber-400"></span>
       Seats Held & Expired ({{ heldOrExpiredBookings.length }})
     </button>
-    <button (click)="setFilter('CANCELLED')" 
+    <button (click)="setFilter('CANCELLED')"
             class="px-4 py-2 rounded-full text-xs font-semibold tracking-wide border transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5"
             [ngClass]="selectedFilter === 'CANCELLED' ? 'bg-red-500/20 text-red-300 border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'bg-app-surface text-app-muted border-app-border hover:text-red-400 hover:border-red-500/30'">
       <span class="w-2 h-2 rounded-full bg-red-400"></span>
@@ -59,7 +56,6 @@
     </button>
   </div>
 
-  <!-- Error Alert with Retry Action -->
   <div *ngIf="error" class="p-5 bg-app-danger/10 border border-app-danger/30 rounded-2xl text-app-danger flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 fade-in shadow-[0_4px_20px_rgba(239,68,68,0.1)]">
     <div class="flex items-center gap-3.5">
       <div class="w-10 h-10 rounded-full bg-app-danger/20 flex items-center justify-center flex-shrink-0 text-app-danger">
@@ -80,12 +76,10 @@
     </button>
   </div>
 
-  <!-- Loading Skeletons -->
   <div *ngIf="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 fade-in">
     <div class="h-[220px] bg-app-surface border border-app-border rounded-2xl animate-pulse" *ngFor="let _ of [1,2,3,4,5,6]"></div>
   </div>
 
-  <!-- Empty State -->
   <div class="flex flex-col items-center justify-center text-center py-20 px-4 fade-in" *ngIf="!loading && bookings.length === 0">
     <div class="w-24 h-24 rounded-full bg-app-surface border border-app-border flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(255,255,255,0.05)]">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 opacity-80 text-app-muted"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" /></svg>
@@ -97,7 +91,6 @@
     </a>
   </div>
 
-  <!-- Reusable Single Booking Card Template (Same Color & Aesthetic as Events Card) -->
   <ng-template #bookingCard let-b="b" let-i="i">
     <div class="group relative flex flex-col justify-between p-5 rounded-2xl border border-app-border bg-app-surface transition-all duration-200 hover:-translate-y-1 hover:border-app-accent/50 hover:shadow-[0_8px_32px_rgba(255,56,122,0.1)]"
          [ngClass]="{
@@ -106,9 +99,9 @@
          }"
          style="opacity: 0; animation: fadeIn 0.5s ease-out forwards;"
          [style.animation-delay]="(i * 0.08) + 's'">
-      
+
       <div>
-        <!-- Top Status & ID Row -->
+
         <div class="flex items-start justify-between mb-3">
           <span *ngIf="getStatusBadge(b) as badge"
                 class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border flex items-center gap-1.5"
@@ -118,20 +111,17 @@
           </span>
           <span class="text-xs text-app-faint font-mono">#{{ b.id.slice(0, 8) }}</span>
         </div>
-        
-        <!-- Event Title -->
+
         <h3 class="text-xl font-bold text-white mb-2 line-clamp-2">{{ eventTitle(b.eventId) }}</h3>
 
-        <!-- Event Date (if found) -->
         <p *ngIf="eventDate(b.eventId) as date" class="text-xs text-app-muted flex items-center gap-1.5 mb-4">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5 text-app-accent"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
           {{ date }}
         </p>
       </div>
 
-      <!-- Details & Footer -->
       <div class="flex flex-col gap-3">
-        <!-- Seat Reservation info bar -->
+
         <div class="flex items-center justify-between p-3 rounded-lg bg-app-bg-elevated border border-app-border/50 text-xs">
           <span class="text-app-muted flex items-center gap-1.5">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 opacity-70"><path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.01.75.75 0 00.42-.643 4.875 4.875 0 00-6.957-4.611 8.586 8.586 0 011.71 5.157v.003z" /></svg>
@@ -140,17 +130,15 @@
           <span class="font-semibold text-white">{{ b.seatIds ? b.seatIds.length : 0 }} Seat{{ (b.seatIds && b.seatIds.length === 1) ? '' : 's' }}</span>
         </div>
 
-        <!-- Price and Action Bar -->
         <div class="flex items-center justify-between border-t border-app-border pt-4">
           <div>
             <p class="text-xs text-app-faint m-0 mb-0.5">{{ b.status === 'CANCELLED' ? 'Amount (Cancelled)' : 'Total Paid' }}</p>
             <p class="text-lg font-bold m-0" [ngClass]="b.status === 'CANCELLED' ? 'text-app-muted line-through' : 'text-app-ok'">₹{{ b.finalPrice }}</p>
           </div>
 
-          <!-- Actions -->
           <div *ngIf="canCancel(b)">
-            <button class="px-4 py-2 text-sm font-semibold rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer" 
-                    [disabled]="cancellingId === b.id" 
+            <button class="px-4 py-2 text-sm font-semibold rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer"
+                    [disabled]="cancellingId === b.id"
                     (click)="promptCancel(b)">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -172,17 +160,14 @@
           </div>
         </div>
       </div>
-      
+
     </div>
   </ng-template>
 
-  <!-- Content Presentation: Either Categorized Sections (when ALL) or Filtered List -->
   <div *ngIf="!loading && bookings.length > 0">
 
-    <!-- When ALL is selected: Order is Active at Top, then Seats Held / Expired, then Cancelled -->
     <div *ngIf="selectedFilter === 'ALL'" class="flex flex-col gap-10">
 
-      <!-- 1. Active Bookings Section -->
       <section *ngIf="activeBookings.length > 0">
         <div class="flex items-center gap-2.5 mb-4">
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.6)]"></span>
@@ -198,7 +183,6 @@
         </div>
       </section>
 
-      <!-- 2. Seats Held & Expired Section -->
       <section *ngIf="heldOrExpiredBookings.length > 0">
         <div class="flex items-center gap-2.5 mb-4">
           <span class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.6)]"></span>
@@ -214,7 +198,6 @@
         </div>
       </section>
 
-      <!-- 3. Cancelled Bookings Section -->
       <section *ngIf="cancelledBookings.length > 0">
         <div class="flex items-center gap-2.5 mb-4">
           <span class="w-2.5 h-2.5 rounded-full bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.6)]"></span>
@@ -232,7 +215,6 @@
 
     </div>
 
-    <!-- When a Specific Filter is Selected -->
     <div *ngIf="selectedFilter !== 'ALL'">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="filteredBookings.length > 0">
         <ng-container *ngFor="let b of filteredBookings; let i = index">
@@ -246,17 +228,14 @@
 
   </div>
 
-  <!-- In-App Cancel Confirmation Modal -->
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md fade-in"
        *ngIf="bookingToCancel"
        (click)="closeCancelModal()">
     <div class="relative w-full max-w-md rounded-2xl border border-app-border bg-[#121218] p-6 shadow-[0_25px_60px_rgba(0,0,0,0.9)] overflow-hidden"
          (click)="$event.stopPropagation()">
-      
-      <!-- Top subtle accent line -->
+
       <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-amber-500"></div>
 
-      <!-- Icon & Title -->
       <div class="flex items-start gap-4 mb-4">
         <div class="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.2)]">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" class="w-6 h-6">
@@ -271,7 +250,6 @@
         </div>
       </div>
 
-      <!-- Booking snapshot details -->
       <div class="my-5 p-3.5 rounded-xl bg-app-bg-elevated border border-app-border/60 flex items-center justify-between text-sm">
         <div>
           <span class="text-xs text-app-faint block">Reservation ID</span>
@@ -283,7 +261,6 @@
         </div>
       </div>
 
-      <!-- Action Buttons -->
       <div class="flex items-center justify-end gap-3 pt-2">
         <button type="button"
                 class="px-4 py-2 text-sm font-medium rounded-lg border border-app-border bg-app-bg-elevated text-app-muted hover:text-white hover:border-white/20 transition-all cursor-pointer disabled:opacity-50"
@@ -309,8 +286,7 @@
     </div>
   </div>
 
-  <!-- In-App Toast Notification -->
-  <div *ngIf="notification" 
+  <div *ngIf="notification"
        class="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-xl border shadow-2xl backdrop-blur-md fade-in max-w-md transition-all"
        [ngClass]="{
          'bg-emerald-950/90 border-emerald-500/40 text-emerald-200': notification.type === 'success',

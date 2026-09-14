@@ -17,7 +17,7 @@ export class EventsComponent implements OnInit, OnDestroy {
   movies: EventWithVenue[] = [];
   concerts: EventWithVenue[] = [];
   theatre: EventWithVenue[] = [];
-  
+
   loading = true;
   error = '';
 
@@ -35,7 +35,7 @@ export class EventsComponent implements OnInit, OnDestroy {
         .subscribe({
           next: ({ events, venues }) => {
             try {
-              // Defensive: build venue map
+
               if (!venues || !Array.isArray(venues)) {
                 this.error = 'Invalid venues data from server';
                 this.loading = false;
@@ -55,34 +55,27 @@ export class EventsComponent implements OnInit, OnDestroy {
                 }
               }
 
-              // Enrich events with venues
               const enrichedEvents: EventWithVenue[] = [];
 
               for (const event of events) {
-                // Skip events without venueId
+
                 if (!event || !event.venueId) {
                   continue;
                 }
 
-                // Get venue
                 const venue = venueMap.get(event.venueId);
                 if (!venue) {
-                  continue; // Skip if venue not found
+                  continue;
                 }
 
                 enrichedEvents.push({ ...event, venue });
               }
 
-              // Sort by date (earliest first)
               enrichedEvents.sort(
                 (a, b) =>
                   new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
               );
 
-              // Categorize safely across venue types with priority sorting:
-              // 1. Trending first
-              // 2. Fast Filling second
-              // 3. Available and Sold Out mixed
               this.movies = this.sortEvents(
                 enrichedEvents.filter(
                   (e) => (e.venue?.venueType || '').toUpperCase() === 'CINEMA'
@@ -129,11 +122,18 @@ export class EventsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  isBookingOpen(event: EventWithVenue): boolean {
+    if (!event.bookingOpen) return false;
+    if (event.stats && event.stats.seatsRemaining <= 0) return false;
+    return true;
+  }
+
   getEventRank(event: EventWithVenue): number {
+    if (!this.isBookingOpen(event)) return 4;
     const status = this.getTrendingStatus(event);
-    if (status?.icon === 'trending') return 1; // 1. Trending first
-    if (status?.icon === 'fire') return 2;     // 2. Then Fast Filling
-    return 3;                                 // 3. Then Available and Sold Out mixed
+    if (status?.icon === 'trending') return 1;
+    if (status?.icon === 'fire') return 2;
+    return 3;
   }
 
   private sortEvents(events: EventWithVenue[]): EventWithVenue[] {
@@ -143,8 +143,7 @@ export class EventsComponent implements OnInit, OnDestroy {
       if (rankA !== rankB) {
         return rankA - rankB;
       }
-      // Within the same rank (including available and sold out mixed),
-      // sort chronologically by event start date
+
       return new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
     });
   }
@@ -166,24 +165,22 @@ export class EventsComponent implements OnInit, OnDestroy {
   getFillPercentage(event: EventWithVenue): number {
     if (!event.stats) return 0;
     const total = event.stats.seatsSold + event.stats.seatsRemaining;
-    if (total === 0) return 0;
-    return Math.round((event.stats.seatsSold / total) * 100);
+    if (total === 0) return 100;
+    return Math.min(100, Math.round((event.stats.seatsSold / total) * 100));
   }
 
   getTrendingStatus(
     event: EventWithVenue
   ): { label: string; icon: string } | null {
-    if (!event.bookingOpen) return null;
+    if (!this.isBookingOpen(event)) return null;
 
     const fill = this.getFillPercentage(event);
     const sold = event.stats?.seatsSold ?? 0;
 
-    // 1. Trending: 40% to 74% booked with strong momentum
     if (fill >= 40 && fill < 75) {
       return { label: 'Trending', icon: 'trending' };
     }
 
-    // 2. Fast Filling: 75% or higher occupancy
     if (fill >= 75) {
       return { label: 'Fast Filling', icon: 'fire' };
     }

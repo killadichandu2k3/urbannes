@@ -21,8 +21,7 @@ spec:
       labels:
         app: gateway-graphql
     spec:
-      # Spreads replicas across different nodes — see booking-api/deployment.yaml's
-      # topologySpreadConstraints comment for the full explanation.
+
       topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: kubernetes.io/hostname
@@ -47,11 +46,7 @@ spec:
           value: "http://analytics-api:4300/graphql"
         readinessProbe:
           httpGet: {path: /health, port: 4500}
-            # Longer initial delay than most services — on startup this
-            # Gateway must successfully introspect ALL THREE subgraphs (see
-            # IntrospectAndCompose in server.ts) before it can serve
-            # anything, so it needs auth-api, booking-api, and
-            # analytics-api to already be reachable, not just itself.
+
           initialDelaySeconds: 15
           periodSeconds: 10
         livenessProbe:

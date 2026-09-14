@@ -1,8 +1,3 @@
-# Single instance — deliberately NOT the same instance as redis-cache
-# (k8s/redis-cache/). Backs seat locks (needs simple multi-key Lua scripts without Cluster's
-# CROSSSLOT restriction) and the Pub/Sub reply/push channels for the
-# request/reply bridge and chat/booking WebSocket fan-out. See
-# services/booking-worker/src/cache/seatLock.ts for the full rationale.
 apiVersion: apps/v1
 kind: Deployment
 metadata:

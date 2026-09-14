@@ -18,10 +18,6 @@ export class SeatMapComponent implements OnInit, OnDestroy {
   loading = true;
   error = '';
 
-  // Checkout progresses through these phases; the template shows different
-  // panels for each rather than a single boolean "booking in progress" flag,
-  // since "seats held, awaiting payment" and "payment confirmed" need very
-  // different UI (a Pay button vs a ticket).
   phase: 'SELECTING' | 'CREATING_BOOKING' | 'AWAITING_PAYMENT' | 'CONFIRMING' | 'CONFIRMED' = 'SELECTING';
   activeBookingId: string | null = null;
   confirmedBooking: { bookingId: string; message: string } | null = null;
@@ -52,6 +48,10 @@ export class SeatMapComponent implements OnInit, OnDestroy {
     this.seatMapSub?.unsubscribe();
   }
 
+  get hasAvailableSeats(): boolean {
+    return !this.seatMap || this.seatMap.seats.length === 0 || this.seatMap.seats.some((s) => s.status === 'AVAILABLE');
+  }
+
   seatLabel(seatId: string): string {
     const seat = this.seatMap?.seats.find((s) => s.id === seatId);
     return seat ? `Row ${seat.rowLabel}, Seat ${seat.seatNumber} (${seat.tier})` : seatId;
@@ -75,7 +75,7 @@ export class SeatMapComponent implements OnInit, OnDestroy {
   calculateTotal(): number {
     if (!this.seatMap) return 0;
     let total = 0;
-    const basePrice = 500; // default base estimate
+    const basePrice = 500;
     for (const id of this.selected) {
       const seat = this.seatMap.seats.find((s) => s.id === id);
       if (seat) {
@@ -103,7 +103,6 @@ export class SeatMapComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** Step 1: lock the seats (unchanged backend call — still just CREATE_BOOKING). */
   createBooking(): void {
     if (!this.auth.isLoggedIn) {
       this.router.navigate(['/auth/login'], { queryParams: { returnUrl: this.router.url } });
@@ -132,7 +131,6 @@ export class SeatMapComponent implements OnInit, OnDestroy {
       });
   }
 
-  /** Step 2: open Razorpay Checkout for the locked booking's price. */
   private startPayment(bookingId: string): void {
     this.phase = 'AWAITING_PAYMENT';
     this.graphql.createPaymentOrder(bookingId, this.eventId).subscribe({
@@ -145,10 +143,7 @@ export class SeatMapComponent implements OnInit, OnDestroy {
           })
           .then((response) => this.confirmPayment(bookingId, response))
           .catch((err: Error) => {
-            // A dismissed widget isn't a hard error — the seats stay held
-            // (5-minute TTL — see booking-worker's seat_locks) and the
-            // person can retry payment without re-selecting seats, so
-            // this returns to the summary panel rather than SELECTING.
+
             this.error = err.message === 'dismissed' ? 'Payment was cancelled. Your seats are still held — you can try again.' : err.message;
             this.phase = 'SELECTING';
           });
@@ -160,7 +155,6 @@ export class SeatMapComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** Step 3: server-side signature verification, then real confirmation. */
   private confirmPayment(bookingId: string, response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }): void {
     this.phase = 'CONFIRMING';
     this.graphql

@@ -1,12 +1,3 @@
-// ============================================================================
-// JWT issuance — replaces the hardcoded Kong dev API key that used to sit
-// in the Angular bundle (see graphql.module.ts's old comment). auth-api is
-// the only service that SIGNS tokens; verification is shared logic (see
-// @urbannes/shared's jwt.ts) so booking-api and any other service can
-// verify the exact same token this service issues, off the same
-// JWT_SECRET env var, without duplicating the jsonwebtoken.verify() call.
-// ============================================================================
-
 import jwt from 'jsonwebtoken';
 import type { AuthTokenPayload } from '@urbannes/shared';
 

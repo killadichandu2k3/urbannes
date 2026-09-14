@@ -1,12 +1,3 @@
-// ============================================================================
-// GraphQL service — talks to /graphql, which NGINX reverse-proxies
-// through to the Apollo Gateway's composed booking + analytics + auth
-// schema. Every method here corresponds 1:1 to a
-// query/mutation booking-api's resolvers expose, same as the old
-// graphqlClient.ts — this is an Angular-idiomatic port (apollo-angular +
-// RxJS Observables) of that same file, not a behavior change.
-// ============================================================================
-
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { Observable, timer } from 'rxjs';
@@ -27,8 +18,8 @@ const VENUES_QUERY = gql`
 
 const EVENTS_QUERY = gql`
   query Events {
-    events { 
-      id title venueId startsAt endsAt basePrice bookingOpen 
+    events {
+      id title venueId startsAt endsAt basePrice bookingOpen
       stats { seatsSold seatsRemaining }
     }
   }
@@ -116,12 +107,7 @@ export class GraphqlService {
   constructor(private readonly apollo: Apollo) {}
 
   search(query: string, limit = 10): Observable<SearchResult[]> {
-    // Hits analytics-api's search resolver (Apollo Gateway routes it
-    // there automatically — see gateway-graphql). That resolver queries
-    // Postgres directly (cache-aside through Redis — see analytics-api's
-    // cache/statsCache.ts), bypassing booking-api's Kafka request/reply
-    // path entirely — search traffic never touches the OLTP write path or
-    // its queue.
+
     return this.apollo
       .watchQuery<{ search: SearchResult[] }>({
         query: SEARCH_QUERY,

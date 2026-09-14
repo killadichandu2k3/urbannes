@@ -1,23 +1,9 @@
-# =============================================================================
-# CI override — pulls pre-built GHCR images instead of rebuilding from source.
-# The docker-build-push job has already built and pushed these images.
-# Also injects CI=true into auth-api so the OTP test bypass works.
-# =============================================================================
-#
-# Usage (in CI):
-#   REGISTRY=ghcr.io IMAGE_NAMESPACE=<owner>/urbannes \
-#     docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d
-#
-# How it works: when both `build` and `image` are set on a service, Docker
-# Compose pulls the `image` instead of building — unless --build is passed.
-# Since we never pass --build in CI, the GHCR images are pulled directly.
-
 services:
   auth-api:
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/auth-api:${IMAGE_TAG:-latest}
     environment:
       CI: "true"
-      # Clear API key during CI so we don't try to send real emails to @example.com
+
       RESEND_API_KEY: ""
 
   booking-api:
@@ -29,7 +15,7 @@ services:
   notification-service:
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/notification-service:${IMAGE_TAG:-latest}
     environment:
-      # Clear API key during CI so we don't try to send real emails to @example.com
+
       RESEND_API_KEY: ""
 
   analytics-api:
@@ -40,4 +26,3 @@ services:
 
   gateway:
     image: ${REGISTRY}/${IMAGE_NAMESPACE}/gateway:${IMAGE_TAG:-latest}
-

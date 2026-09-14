@@ -49,10 +49,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package.json
       - run: cd frontend && npm install --no-audit --no-fund
-      # Angular's own build (ng build) runs full TypeScript type-checking
-      # as part of compilation — no separate typecheck-only step needed,
-      # unlike the old vue-tsc + vite build two-step (Vite doesn't
-      # typecheck on its own).
+
       - run: cd frontend && npx ng build --configuration production
 
   k8s-validate:
@@ -63,9 +60,7 @@ jobs:
       - name: Validate k8s YAML (kubeconform)
         run: |
           curl -sSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz
-          # Recursive glob — manifests now live nested one directory per
-          # service (k8s/<service>/deployment.yaml etc.), not flat under
-          # k8s/<category>/*.yaml, so this needs **/*.yaml, not */*.yaml.
+
           ./kubeconform -summary -ignore-missing-schemas k8s/**/*.yaml
 
   docker-build-push:
@@ -123,7 +118,7 @@ jobs:
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
       RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_KEY_SECRET }}
-      # docker-compose.ci.yml interpolates these to pull GHCR images
+
       IMAGE_TAG: latest
     steps:
       - uses: actions/checkout@v4
@@ -134,8 +129,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Pull the images the docker-build-push job just pushed — no
-      # local rebuild needed.
       - name: Pull pre-built images from GHCR
         run: |
           docker compose -f docker-compose.yml -f docker-compose.ci.yml pull

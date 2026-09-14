@@ -1,23 +1,3 @@
-// ============================================================================
-// analytics-api resolvers.
-// ----------------------------------------------------------------------------
-// Two kinds of resolvers here:
-//   1. Ordinary Query resolvers (venueStats, eventStats, platformStats).
-//   2. A Federation `__resolveReference` on Venue/EventType — this is what
-//      lets the Apollo Gateway ask "given this Venue id from booking-api,
-//      give me the `stats` field this subgraph owns." Federation calls this
-//      automatically whenever a client requests a field this subgraph
-//      contributes to an entity it doesn't own the rest of.
-// ----------------------------------------------------------------------------
-// Sharding has been removed (see db/pool.ts): every query below runs once
-// against the single Postgres instance — no more fan-out across shards, no
-// de-duplication of reference rows, no partial-shard fail-soft logic.
-// Every read here also goes through getOrCompute (see cache/statsCache.ts),
-// a Redis cache-aside layer, since these aggregate queries are the most
-// expensive reads in the system and are read far more often than the
-// underlying booking data changes.
-// ============================================================================
-
 import { pool } from '../db/pool';
 import { getOrCompute } from '../cache/statsCache';
 import { createLogger } from '@urbannes/shared';
@@ -31,13 +11,11 @@ const SEARCH_TTL_SEC = 30;
 
 async function venueStatsFor(venueId: string) {
   return getOrCompute(`stats:venue:${venueId}`, VENUE_STATS_TTL_SEC, async () => {
-    const { rows } = await pool.query<{ status: string; final_price: string; seat_count: string }>(
-      `SELECT b.status, b.final_price, COUNT(bs.seat_id) AS seat_count
+    const { rows } = await pool.query<{ status: string; final_price: string }>(
+      `SELECT b.status, b.final_price
        FROM bookings b
        JOIN events e ON e.id = b.event_id
-       LEFT JOIN booking_seats bs ON bs.booking_id = b.id
-       WHERE e.venue_id = $1
-       GROUP BY b.id, b.status, b.final_price`,
+       WHERE e.venue_id = $1`,
       [venueId],
     );
 
@@ -45,20 +23,28 @@ async function venueStatsFor(venueId: string) {
     let confirmedBookings = 0;
     let cancelledBookings = 0;
     let totalRevenue = 0;
-    let seatsSold = 0;
 
     for (const row of rows) {
       totalBookings += 1;
       if (row.status === 'CONFIRMED') {
         confirmedBookings += 1;
         totalRevenue += Number(row.final_price);
-        seatsSold += Number(row.seat_count);
       }
       if (row.status === 'CANCELLED') cancelledBookings += 1;
     }
 
-    const venueRows = await pool.query<{ total_seats: number }>('SELECT total_seats FROM venues WHERE id = $1', [venueId]);
-    const totalSeats = venueRows.rows[0]?.total_seats ?? 0;
+    const seatsRes = await pool.query<{ count: string }>('SELECT COUNT(*) AS count FROM seats WHERE venue_id = $1', [venueId]);
+    const totalSeats = Number(seatsRes.rows[0]?.count ?? 0);
+
+    const bookedRes = await pool.query<{ count: string }>(
+      `SELECT COUNT(DISTINCT bs.seat_id) AS count
+       FROM booking_seats bs
+       JOIN bookings b ON b.id = bs.booking_id
+       JOIN events e ON e.id = b.event_id
+       WHERE e.venue_id = $1 AND b.status = 'CONFIRMED'`,
+      [venueId],
+    );
+    const seatsSold = Number(bookedRes.rows[0]?.count ?? 0);
 
     return {
       venueId,
@@ -66,33 +52,29 @@ async function venueStatsFor(venueId: string) {
       confirmedBookings,
       cancelledBookings,
       totalRevenue,
-      occupancyRate: totalSeats > 0 ? seatsSold / totalSeats : 0,
+      occupancyRate: totalSeats > 0 ? Math.min(1, seatsSold / totalSeats) : 0,
     };
   });
 }
 
 async function eventStatsFor(eventId: string) {
   return getOrCompute(`stats:event:${eventId}`, EVENT_STATS_TTL_SEC, async () => {
-    const { rows } = await pool.query<{ status: string; final_price: string; seat_count: string }>(
-      `SELECT b.status, b.final_price, COUNT(bs.seat_id) AS seat_count
-       FROM bookings b
-       LEFT JOIN booking_seats bs ON bs.booking_id = b.id
-       WHERE b.event_id = $1
-       GROUP BY b.id, b.status, b.final_price`,
+    const { rows } = await pool.query<{ status: string; final_price: string }>(
+      `SELECT status, final_price
+       FROM bookings
+       WHERE event_id = $1`,
       [eventId],
     );
 
     let totalBookings = 0;
     let confirmedBookings = 0;
     let totalRevenue = 0;
-    let seatsSold = 0;
 
     for (const row of rows) {
       totalBookings += 1;
       if (row.status === 'CONFIRMED') {
         confirmedBookings += 1;
         totalRevenue += Number(row.final_price);
-        seatsSold += Number(row.seat_count);
       }
     }
 
@@ -100,9 +82,19 @@ async function eventStatsFor(eventId: string) {
     const venueId = eventRows.rows[0]?.venue_id;
     let totalSeats = 0;
     if (venueId) {
-      const venueRows = await pool.query<{ total_seats: number }>('SELECT total_seats FROM venues WHERE id = $1', [venueId]);
-      totalSeats = venueRows.rows[0]?.total_seats ?? 0;
+      const seatsRes = await pool.query<{ count: string }>('SELECT COUNT(*) AS count FROM seats WHERE venue_id = $1', [venueId]);
+      totalSeats = Number(seatsRes.rows[0]?.count ?? 0);
     }
+
+    const bookedRes = await pool.query<{ count: string }>(
+      `SELECT COUNT(DISTINCT bs.seat_id) AS count
+       FROM booking_seats bs
+       JOIN bookings b ON b.id = bs.booking_id
+       WHERE b.event_id = $1 AND b.status IN ('SEATS_LOCKED', 'PAYMENT_PENDING', 'CONFIRMED')`,
+      [eventId],
+    );
+    const seatsSold = Number(bookedRes.rows[0]?.count ?? 0);
+    const seatsRemaining = Math.max(totalSeats - seatsSold, 0);
 
     return {
       eventId,
@@ -110,7 +102,7 @@ async function eventStatsFor(eventId: string) {
       confirmedBookings,
       totalRevenue,
       seatsSold,
-      seatsRemaining: Math.max(totalSeats - seatsSold, 0),
+      seatsRemaining,
     };
   });
 }
@@ -142,9 +134,7 @@ export const resolvers = {
 
     platformStats: async () => {
       return getOrCompute('stats:platform', PLATFORM_STATS_TTL_SEC, async () => {
-        // created_at is the range-partition key on `bookings` (see the
-        // partitioning migration) — filtering/grouping on it lets Postgres
-        // do partition pruning instead of scanning the whole table.
+
         const { rows } = await pool.query<{ month: string; total_revenue: string; booking_count: string }>(
           `SELECT to_char(date_trunc('month', created_at), 'YYYY-MM') AS month,
                   SUM(final_price) FILTER (WHERE status = 'CONFIRMED') AS total_revenue,
@@ -173,11 +163,6 @@ export const resolvers = {
     },
   },
 
-  // ---- Federation entity resolution ---------------------------------------
-  // When the Gateway needs this subgraph's contribution to a Venue/EventType
-  // that booking-api returned, it calls __resolveReference with just the
-  // @key fields (here, just `id`) and expects the full entity-shaped object
-  // for THIS subgraph's fields back.
   Venue: {
     __resolveReference: async (ref: { id: string }) => {
       logger.info('Resolving Venue reference for stats', { venueId: ref.id });

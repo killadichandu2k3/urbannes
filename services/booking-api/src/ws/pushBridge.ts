@@ -1,15 +1,3 @@
-// ============================================================================
-// WEBSOCKET PUSH LAYER
-// ----------------------------------------------------------------------------
-// Separate from the request/reply channel. booking-worker, after completing
-// a write, publishes to Redis Pub/Sub channel `push:booking` or
-// `push:seatmap` (fire-and-forget broadcast — NOT keyed to one requestId).
-// This process re-broadcasts those to any connected GraphQL subscription
-// clients over WebSocket (via graphql-ws), giving "other users watching the
-// same seat map see it update live" — the actual behavior you'd want from
-// a BookMyShow-style seat picker, not just the original requester.
-// ============================================================================
-
 import Redis from 'ioredis';
 import { PubSub } from 'graphql-subscriptions';
 import { createLogger } from '@urbannes/shared';

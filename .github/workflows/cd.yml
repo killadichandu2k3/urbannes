@@ -52,19 +52,7 @@ jobs:
 
       - name: Force rollout of updated images
         run: |
-          # WHY THIS STEP EXISTS: every Deployment here uses `image:
-          # ...:latest` with `imagePullPolicy: IfNotPresent`. Kind nodes
-          # have their own isolated containerd image store (no registry
-          # involved), and `kind load docker-image` above already loaded
-          # the freshly-built image into it — but the Deployment spec's
-          # image STRING never changes (it's always ":latest"), so
-          # `kubectl apply -k` alone sees no diff and won't schedule new
-          # pods. Kubernetes only rolls out on a spec change; a same-tag
-          # image swap isn't one. `kubectl rollout restart` forces new
-          # pods regardless, which then pick up the freshly-loaded image
-          # per IfNotPresent (present now, so used) — this is the
-          # standard fix for exactly this local-cluster + :latest-tag
-          # combination, not a workaround specific to this repo.
+
           kubectl rollout restart deployment/auth-api -n urbannes
           kubectl rollout restart deployment/booking-api -n urbannes
           kubectl rollout restart deployment/booking-worker -n urbannes
@@ -85,19 +73,12 @@ jobs:
 
       - name: Confirm pods are actually spread across nodes
         run: |
-          # topologySpreadConstraints (see k8s/booking-api/deployment.yaml)
-          # only EXPRESSES the intent that replicas land on different
-          # nodes — this step confirms the scheduler actually honored it
-          # on this real 3-worker-node Kind cluster (see kind-config.yaml),
-          # rather than trusting the manifest and hoping.
+
           kubectl get pods -n urbannes -o wide
 
       - name: Post-deploy smoke test
         run: |
-          # NGINX's own NodePort (:30000) is the public entrypoint now
-          # that Kong has been removed — see kind-config.yaml and
-          # k8s/gateway/service.yaml. No API key or auth header needed for
-          # this public query.
+
           URL="http://localhost:30000"
           curl -sf "$URL/graphql" -X POST \
             -H "content-type: application/json" \

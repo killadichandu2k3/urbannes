@@ -1,19 +1,5 @@
 #!/usr/bin/env bash
-# One-time setup: turns this folder into a git repo wired up for the CI/CD
-# workflows already in .github/workflows/ci.yml and cd.yml, and walks you
-# through registering a self-hosted GitHub Actions runner on THIS machine
-# (the one running your Kind cluster — cd.yml requires `runs-on:
-# [self-hosted, kind]` because deploying to a local Kind cluster only
-# makes sense from the machine that cluster actually lives on; GitHub's
-# own hosted runners have no route to it).
-#
-# What this script automates: git init, .gitignore sanity check, first
-# commit, remote add, runner binary download + config. What it CANNOT
-# automate: the registration token itself, which GitHub issues per-repo,
-# expires in ~1 hour, and can only be fetched from your browser while
-# logged in — there is no API for a script to mint one non-interactively
-# without a personal access token you'd have to paste in here. This
-# script pauses and tells you exactly where to get it.
+
 set -euo pipefail
 export PATH="$PATH:/c/Windows/System32:/c/Windows/System32/WindowsPowerShell/v1.0:/c/WINDOWS/System32:/c/WINDOWS/System32/WindowsPowerShell/v1.0"
 cd "$(dirname "$0")/.."

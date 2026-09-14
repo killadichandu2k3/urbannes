@@ -1,11 +1,3 @@
-// ============================================================================
-// Shared model interfaces. The original Vue app duplicated small versions
-// of these inline in each view's <script setup> block; consolidating them
-// here is a genuine improvement the framework switch made natural, not a
-// behavior change — every field matches what booking-api's GraphQL schema
-// actually returns.
-// ============================================================================
-
 export interface Venue {
   id: string;
   name: string;
@@ -14,7 +6,7 @@ export interface Venue {
 }
 
 export interface SearchResult {
-  kind: string; // "EVENT" | "VENUE"
+  kind: string;
   id: string;
   title: string;
   subtitle: string;
@@ -39,7 +31,7 @@ export interface Seat {
   rowLabel: string;
   seatNumber: number;
   tier: string;
-  status: string; // AVAILABLE | LOCKED | BOOKED
+  status: string;
 }
 
 export interface SeatMap {

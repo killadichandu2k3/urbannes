@@ -6,9 +6,7 @@ import { AuthService } from '../core/services/auth.service';
   templateUrl: './profile.component.html',
 })
 export class ProfileComponent {
-  // Separate loading/error/success state per form — a failure in the
-  // password form shouldn't show a stale success message from the name
-  // form (or vice versa), so these are deliberately not shared state.
+
   displayName = '';
   nameSaving = false;
   nameError = '';

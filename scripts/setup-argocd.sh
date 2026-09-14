@@ -1,17 +1,5 @@
 #!/usr/bin/env bash
-# Installs ArgoCD into the Kind cluster, then registers UrbanNes as an
-# ArgoCD Application with automated sync (prune + self-heal) turned on —
-# see k8s-argocd/README-argocd.md and application.yaml's syncPolicy.
-# ArgoCD is now the real deploy path: it applies k8s/ to the cluster and
-# reverts drift automatically, including a pod deleted by hand — delete a
-# pod via `kubectl delete pod` or the ArgoCD UI and self-heal recreates it
-# from the Deployment's desired replica count within seconds, same as it
-# always would have; deleting the DEPLOYMENT itself in k8s/ and letting
-# ArgoCD sync is how you actually remove something for good.
-#
-# This is still separate from deploy-kind.sh on purpose: ArgoCD is
-# cluster tooling (like metrics-server was), installed once, that then
-# takes over continuous reconciliation of the urbannes namespace.
+
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -46,11 +34,7 @@ kubectl wait --for=jsonpath='{.status.sync.status}'=Synced application/urbannes 
   echo "    (still syncing — check with: kubectl get application urbannes -n argocd)"
 
 echo "==> Exposing the ArgoCD UI on https://localhost:8090"
-# ArgoCD's server Service defaults to ClusterIP — kubectl port-forward is
-# the simplest way to reach it from your host without editing the Service
-# or adding another Kind extraPortMapping. This runs in the background so
-# the script can finish; kill it later with the PID printed below, or just
-# close your terminal / restart Docker.
+
 kubectl port-forward svc/argocd-server -n argocd 8090:443 >/tmp/argocd-port-forward.log 2>&1 &
 PF_PID=$!
 sleep 2

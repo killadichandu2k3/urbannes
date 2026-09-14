@@ -17,6 +17,14 @@
     <span>{{ error }}</span>
   </div>
 
+  <div *ngIf="!loading && !hasAvailableSeats" class="mb-6 p-4 rounded-xl bg-app-danger/10 border border-app-danger/30 text-app-danger flex items-center gap-3">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 flex-shrink-0"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clip-rule="evenodd" /></svg>
+    <div>
+      <h4 class="font-bold text-sm m-0">Event Fully Booked</h4>
+      <p class="text-xs text-app-danger/80 m-0">All seats for this event are currently reserved or locked. Please check back later or explore other events.</p>
+    </div>
+  </div>
+
   <div class="seat-map-layout">
     <div class="card">
       <div class="stage-bar">STAGE / SCREEN</div>

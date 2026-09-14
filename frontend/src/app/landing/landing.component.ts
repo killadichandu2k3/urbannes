@@ -8,9 +8,7 @@ import { EventItem } from '../core/models';
   templateUrl: './landing.component.html',
 })
 export class LandingComponent implements OnInit {
-  // Featured strip shows real upcoming events, not placeholder cards — a
-  // visitor's first impression should be actual inventory, not marketing
-  // filler that goes stale the moment a booking is made.
+
   featuredEvents: EventItem[] = [];
   loadingEvents = true;
 
@@ -26,8 +24,7 @@ export class LandingComponent implements OnInit {
         this.loadingEvents = false;
       },
       error: () => {
-        // Landing page should degrade gracefully — an events-fetch failure
-        // here just means an empty featured strip, never a broken page.
+
         this.loadingEvents = false;
       },
     });

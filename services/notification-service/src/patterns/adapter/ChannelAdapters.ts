@@ -1,20 +1,3 @@
-// ============================================================================
-// PATTERN: ADAPTER — unchanged shape from the original stub version (see
-// git history): each channel still normalizes its own "native" provider
-// shape behind one NotificationChannel interface. What changed:
-//   - EmailChannelAdapter now calls Resend for real (free tier: 3,000
-//     sends/month, 100/day, no card required — see docs/NOTIFICATIONS.md)
-//     instead of just logging.
-//   - A new InAppChannelAdapter writes a row to `notifications` so the
-//     frontend's bell icon has something real to query — this is NOT a
-//     third-party API at all, just Postgres, but it fits the same
-//     interface so NotificationDispatcher doesn't need to know the
-//     difference between "call a vendor" and "write a row."
-// SMS/push remain stubs — no free SMS/push provider was in scope, and
-// swapping them for a real one later is, per the Adapter pattern's whole
-// point, a new class here with zero changes to the dispatcher.
-// ============================================================================
-
 import { Resend } from 'resend';
 import { createLogger } from '@urbannes/shared';
 import { pool } from '../../db/pool';

@@ -1,10 +1,3 @@
-# maxUnavailable: 0 — same reasoning as the Postgres shards: this is a
-# singleton (replicas: 1), and losing it mid-drain would break every
-# in-flight seat lock and Pub/Sub reply channel across the whole app.
-# A real production setup would more likely run this as a small Redis
-# Sentinel/replica pair specifically to avoid this single point of
-# failure — noted as a natural next step, not implemented here since it
-# would change redis-coord's whole topology, which wasn't asked for.
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:

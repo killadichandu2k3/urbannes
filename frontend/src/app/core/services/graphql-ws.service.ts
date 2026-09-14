@@ -1,15 +1,3 @@
-// ============================================================================
-// graphql-ws client — subscribes to seatMapUpdated/bookingUpdated so the
-// seat picker updates live when ANY user (not just you) locks/releases/
-// confirms a seat. Angular port of wsClient.ts — kept as a direct
-// graphql-ws client (not routed through apollo-angular's subscription
-// link) to match the original's architecture exactly: this deliberately
-// bypasses the Apollo Gateway's HTTP path entirely, connecting straight to
-// booking-api's WS endpoint via NGINX's /graphql/ws passthrough (see
-// gateway-graphql's server.ts and the nginx.conf routing notes for why
-// subscriptions stay out of band from GraphQL Federation).
-// ============================================================================
-
 import { Injectable } from '@angular/core';
 import { createClient, Client } from 'graphql-ws';
 import { Observable } from 'rxjs';

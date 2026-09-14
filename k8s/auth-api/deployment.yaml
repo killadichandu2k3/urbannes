@@ -13,8 +13,7 @@ spec:
       labels:
         app: auth-api
     spec:
-      # Spreads replicas across different nodes — see booking-api/deployment.yaml's
-      # topologySpreadConstraints comment for the full explanation.
+
       topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: kubernetes.io/hostname

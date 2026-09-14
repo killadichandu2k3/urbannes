@@ -1,15 +1,3 @@
-// ============================================================================
-// booking-worker ENTRYPOINT
-// ----------------------------------------------------------------------------
-// On boot: apply schema.sql + seed.sql to the single Postgres instance
-// (idempotent — CREATE TABLE IF NOT EXISTS / ON CONFLICT DO NOTHING), then
-// start the Kafka consumer loop. This means a fresh `docker compose up` or
-// a fresh k8s deployment self-initializes Postgres without a manual
-// migration step. Sharding has been removed — this used to apply the same
-// schema to two independent shard instances in a loop (see git history);
-// now there's exactly one instance to initialize.
-// ============================================================================
-
 import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
@@ -47,7 +35,7 @@ async function applySchema(): Promise<void> {
     }
   }
 
-  await pool.query('CREATE EXTENSION IF NOT EXISTS pgcrypto'); // for gen_random_uuid()
+  await pool.query('CREATE EXTENSION IF NOT EXISTS pgcrypto');
   await pool.query(schema);
   await pool.query(seed);
   await pool.end();

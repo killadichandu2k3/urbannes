@@ -5,4 +5,3 @@ resources:
   - zookeeper-service.yaml
   - kafka-deployment.yaml
   - kafka-service.yaml
-

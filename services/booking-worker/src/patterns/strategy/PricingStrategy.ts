@@ -1,13 +1,7 @@
-// ============================================================================
-// PATTERN: STRATEGY — swappable pricing algorithms (flat / surge /
-// early-bird) selected at runtime based on demand and timing, without the
-// booking flow itself knowing which one is active.
-// ============================================================================
-
 import { SeatSelection } from '../builder/BookingBuilder';
 
 export interface PricingContext {
-  demandFactor: number; // 0..1
+  demandFactor: number;
   isWeekend: boolean;
   hoursUntilEvent: number;
 }

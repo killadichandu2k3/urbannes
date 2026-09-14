@@ -1,9 +1,3 @@
-// ============================================================================
-// PATTERN: DECORATOR — add-ons (insurance, snacks, recliner, parking) wrap
-// a base ticket price, each adding its own cost/line item, avoiding a
-// combinatorial explosion of subclasses for every add-on combination.
-// ============================================================================
-
 export interface PricedLine {
   describe(): string;
   price(): number;

@@ -1,33 +1,3 @@
-// ============================================================================
-// gateway-graphql — the Apollo Gateway. This is the ONE GraphQL endpoint the
-// frontend talks to. It does not implement any resolvers itself; at startup
-// it introspects booking-api, analytics-api, and auth-api, composes their
-// schemas into one supergraph, and at request time plans + executes a query
-// across whichever subgraph(s) actually own the requested fields —
-// including stitching together fields for the same entity (Venue,
-// EventType) that live in two different subgraphs. auth-api's User/
-// register/login types compose in the same way, just with no entities to
-// stitch (nothing else extends User).
-//
-// NAMING NOTE — this is a different "gateway" from the NGINX `gateway`
-// service (see gateway/nginx/nginx.conf). NGINX is the network-level
-// public edge (reverse proxy, load balancing, rate limiting — previously
-// fronted by Kong, which has since been removed). This Apollo Gateway is
-// GraphQL-schema-composition-specific and only concerns itself with
-// combining subgraphs. Both run, doing different jobs, and the naming
-// collision is just an industry-wide overload of the word "gateway" —
-// worth knowing, not a bug in this setup.
-//
-// IntrospectAndCompose (below) polls each subgraph's URL and recomposes the
-// schema in-process — simplest thing that works for local dev, and fine
-// for this project's scale. A real production setup would instead run
-// `rover subgraph publish` from CI to push each subgraph's schema to Apollo
-// Studio / GraphOS, and have the Gateway fetch a pre-composed supergraph
-// schema from there instead of introspecting subgraphs live on every boot —
-// that avoids a startup-time dependency on every subgraph being reachable
-// and catches composition errors in CI instead of at runtime.
-// ============================================================================
-
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -54,17 +24,10 @@ async function main() {
         { name: 'analytics', url: ANALYTICS_API_URL },
         { name: 'auth', url: AUTH_API_URL },
       ],
-      // Retry subgraph introspection on startup — a subgraph container can
-      // legitimately still be booting when the gateway container starts
-      // (Compose/K8s don't guarantee GraphQL-readiness ordering, only
-      // process-started ordering), so fail fast is the wrong default here.
+
       pollIntervalInMs: 10_000,
     }),
-    // Forward the original request's auth/context headers down to each
-    // subgraph. auth-api's `me` query reads this to resolve the caller's
-    // identity from their JWT; booking-api's resolvers read it to attach
-    // the authenticated userId to mutations instead of trusting a
-    // client-supplied field (see booking-api/src/graphql/resolvers.ts).
+
     buildService({ url }) {
       return new RemoteGraphQLDataSource({
         url,
