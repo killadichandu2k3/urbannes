@@ -4,6 +4,8 @@ import { takeUntil } from 'rxjs/operators';
 import { GraphqlService } from '../core/services/graphql.service';
 import { Booking, EventItem } from '../core/models';
 
+export type BookingCategoryFilter = 'ALL' | 'ACTIVE' | 'HELD' | 'CANCELLED';
+
 @Component({
   selector: 'app-my-bookings',
   templateUrl: './my-bookings.component.html',
@@ -16,6 +18,7 @@ export class MyBookingsComponent implements OnInit, OnDestroy {
   cancellingId: string | null = null;
   bookingToCancel: Booking | null = null;
   notification: { type: 'success' | 'error'; message: string } | null = null;
+  selectedFilter: BookingCategoryFilter = 'ALL';
   private notificationTimer: any = null;
 
   private readonly destroy$ = new Subject<void>();
@@ -23,8 +26,6 @@ export class MyBookingsComponent implements OnInit, OnDestroy {
   constructor(private readonly graphql: GraphqlService) {}
 
   ngOnInit(): void {
-    // Bookings only carry an eventId — fetch events once and join
-    // client-side so the list can show a title instead of a raw id.
     this.loadBookings();
   }
 
@@ -39,7 +40,7 @@ export class MyBookingsComponent implements OnInit, OnDestroy {
   private loadBookings(): void {
     this.loading = true;
     this.error = '';
-    
+
     combineLatest({
       bookings: this.graphql.myBookings(),
       events: this.graphql.events(),
@@ -48,7 +49,7 @@ export class MyBookingsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: ({ bookings, events }) => {
           this.eventsById = new Map(events.map((e) => [e.id, e]));
-          this.bookings = bookings;
+          this.bookings = this.sortBookings(bookings);
           this.loading = false;
           this.error = '';
         },
@@ -60,8 +61,116 @@ export class MyBookingsComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Sort hierarchy:
+   * Rank 1: Active bookings (CONFIRMED, ACCEPTED)
+   * Rank 2: Seats held / expired (SEATS_LOCKED, PAYMENT_PENDING, CREATED, EXPIRED)
+   * Rank 3: Canceled bookings (CANCELLED)
+   */
+  getBookingRank(b: Booking): number {
+    const s = (b.status || '').toUpperCase();
+    if (s === 'CONFIRMED' || s === 'ACCEPTED') return 1;
+    if (s === 'SEATS_LOCKED' || s === 'PAYMENT_PENDING' || s === 'CREATED' || s === 'EXPIRED') return 2;
+    if (s === 'CANCELLED') return 3;
+    return 4;
+  }
+
+  private sortBookings(bookings: Booking[]): Booking[] {
+    return [...bookings].sort((a, b) => {
+      const rankA = this.getBookingRank(a);
+      const rankB = this.getBookingRank(b);
+      if (rankA !== rankB) {
+        return rankA - rankB;
+      }
+      const timeA = new Date(a.createdAt || 0).getTime();
+      const timeB = new Date(b.createdAt || 0).getTime();
+      return timeB - timeA;
+    });
+  }
+
+  get activeBookings(): Booking[] {
+    return this.bookings.filter((b) => this.getBookingRank(b) === 1);
+  }
+
+  get heldOrExpiredBookings(): Booking[] {
+    return this.bookings.filter((b) => this.getBookingRank(b) === 2);
+  }
+
+  get cancelledBookings(): Booking[] {
+    return this.bookings.filter((b) => this.getBookingRank(b) === 3);
+  }
+
+  get filteredBookings(): Booking[] {
+    if (this.selectedFilter === 'ACTIVE') return this.activeBookings;
+    if (this.selectedFilter === 'HELD') return this.heldOrExpiredBookings;
+    if (this.selectedFilter === 'CANCELLED') return this.cancelledBookings;
+    return this.bookings;
+  }
+
+  setFilter(filter: BookingCategoryFilter): void {
+    this.selectedFilter = filter;
+  }
+
   eventTitle(eventId: string): string {
     return this.eventsById.get(eventId)?.title ?? 'Event';
+  }
+
+  eventDate(eventId: string): string | null {
+    const event = this.eventsById.get(eventId);
+    if (!event?.startsAt) return null;
+    return new Date(event.startsAt).toLocaleDateString(undefined, {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  }
+
+  getStatusBadge(b: Booking): { label: string; bgClass: string; textClass: string; borderClass: string } {
+    const s = (b.status || '').toUpperCase();
+    if (s === 'CONFIRMED' || s === 'ACCEPTED') {
+      return {
+        label: 'Active Booking',
+        bgClass: 'bg-emerald-500/15',
+        textClass: 'text-emerald-400',
+        borderClass: 'border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.2)]',
+      };
+    }
+    if (s === 'SEATS_LOCKED' || s === 'PAYMENT_PENDING' || s === 'CREATED') {
+      return {
+        label: s === 'SEATS_LOCKED' ? 'Seats Held' : (s === 'PAYMENT_PENDING' ? 'Payment Pending' : 'Seats Reserved'),
+        bgClass: 'bg-amber-500/15',
+        textClass: 'text-amber-300',
+        borderClass: 'border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.2)]',
+      };
+    }
+    if (s === 'EXPIRED') {
+      return {
+        label: 'Hold Expired',
+        bgClass: 'bg-zinc-500/15',
+        textClass: 'text-zinc-400',
+        borderClass: 'border-zinc-500/30',
+      };
+    }
+    if (s === 'CANCELLED') {
+      return {
+        label: 'Cancelled',
+        bgClass: 'bg-red-500/15',
+        textClass: 'text-red-400',
+        borderClass: 'border-red-500/30 shadow-[0_0_10px_rgba(239,68,68,0.2)]',
+      };
+    }
+    return {
+      label: b.status,
+      bgClass: 'bg-white/10',
+      textClass: 'text-white',
+      borderClass: 'border-white/20',
+    };
+  }
+
+  canCancel(b: Booking): boolean {
+    const s = (b.status || '').toUpperCase();
+    return s === 'CONFIRMED' || s === 'ACCEPTED' || s === 'SEATS_LOCKED' || s === 'PAYMENT_PENDING';
   }
 
   promptCancel(booking: Booking): void {

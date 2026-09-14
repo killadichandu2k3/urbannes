@@ -35,7 +35,7 @@ export class LoginComponent implements AfterViewInit {
     this.submitting = true;
     this.error = '';
     this.auth.login({ email: this.email, password: this.password }).subscribe({
-      next: () => this.router.navigateByUrl('/home'),
+      next: () => this.router.navigateByUrl('/dashboard'),
       error: (err) => {
         this.error = err.message || 'Login failed';
         this.submitting = false;
@@ -46,7 +46,7 @@ export class LoginComponent implements AfterViewInit {
   private onGoogleToken(idToken: string): void {
     this.error = '';
     this.auth.loginWithGoogle(idToken).subscribe({
-      next: () => this.router.navigateByUrl('/home'),
+      next: () => this.router.navigateByUrl('/dashboard'),
       error: (err) => {
         this.error = err.message || 'Google sign-in failed. Please try again.';
       },

@@ -79,17 +79,26 @@ export class EventsComponent implements OnInit, OnDestroy {
                   new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
               );
 
-              // Categorize safely across venue types
-              this.movies = enrichedEvents.filter(
-                (e) => (e.venue?.venueType || '').toUpperCase() === 'CINEMA'
+              // Categorize safely across venue types with priority sorting:
+              // 1. Trending first
+              // 2. Fast Filling second
+              // 3. Available and Sold Out mixed
+              this.movies = this.sortEvents(
+                enrichedEvents.filter(
+                  (e) => (e.venue?.venueType || '').toUpperCase() === 'CINEMA'
+                )
               );
-              this.theatre = enrichedEvents.filter(
-                (e) => (e.venue?.venueType || '').toUpperCase() === 'THEATRE'
+              this.theatre = this.sortEvents(
+                enrichedEvents.filter(
+                  (e) => (e.venue?.venueType || '').toUpperCase() === 'THEATRE'
+                )
               );
-              this.concerts = enrichedEvents.filter((e) => {
-                const vt = (e.venue?.venueType || '').toUpperCase();
-                return vt !== 'CINEMA' && vt !== 'THEATRE';
-              });
+              this.concerts = this.sortEvents(
+                enrichedEvents.filter((e) => {
+                  const vt = (e.venue?.venueType || '').toUpperCase();
+                  return vt !== 'CINEMA' && vt !== 'THEATRE';
+                })
+              );
 
               this.loading = false;
               this.error = '';
@@ -120,6 +129,26 @@ export class EventsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  getEventRank(event: EventWithVenue): number {
+    const status = this.getTrendingStatus(event);
+    if (status?.icon === 'trending') return 1; // 1. Trending first
+    if (status?.icon === 'fire') return 2;     // 2. Then Fast Filling
+    return 3;                                 // 3. Then Available and Sold Out mixed
+  }
+
+  private sortEvents(events: EventWithVenue[]): EventWithVenue[] {
+    return [...events].sort((a, b) => {
+      const rankA = this.getEventRank(a);
+      const rankB = this.getEventRank(b);
+      if (rankA !== rankB) {
+        return rankA - rankB;
+      }
+      // Within the same rank (including available and sold out mixed),
+      // sort chronologically by event start date
+      return new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
+    });
+  }
+
   formatDate(iso: string): string {
     try {
       return new Date(iso).toLocaleString(undefined, {
@@ -144,14 +173,21 @@ export class EventsComponent implements OnInit, OnDestroy {
   getTrendingStatus(
     event: EventWithVenue
   ): { label: string; icon: string } | null {
+    if (!event.bookingOpen) return null;
+
     const fill = this.getFillPercentage(event);
-    if (fill > 85) return { label: 'Fast Filling', icon: 'fire' };
-    if (fill > 50) return { label: 'Trending', icon: 'trending' };
-    if (event.stats && event.stats.seatsSold > 100)
-      return {
-        label: `${event.stats.seatsSold}+ Booked`,
-        icon: 'users',
-      };
+    const sold = event.stats?.seatsSold ?? 0;
+
+    // 1. Trending: 40% to 74% booked with strong momentum
+    if (fill >= 40 && fill < 75) {
+      return { label: 'Trending', icon: 'trending' };
+    }
+
+    // 2. Fast Filling: 75% or higher occupancy
+    if (fill >= 75) {
+      return { label: 'Fast Filling', icon: 'fire' };
+    }
+
     return null;
   }
 

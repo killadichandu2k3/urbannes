@@ -38,7 +38,7 @@ export class VerifyEmailComponent implements OnInit {
 
     this.submitting = true;
     this.auth.verifyEmail({ email: this.email, code: this.code.trim() }).subscribe({
-      next: () => this.router.navigateByUrl('/home'),
+      next: () => this.router.navigateByUrl('/dashboard'),
       error: (err) => {
         this.error = err.message || 'Verification failed';
         this.submitting = false;

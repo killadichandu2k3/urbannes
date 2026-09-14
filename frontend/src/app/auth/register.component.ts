@@ -71,7 +71,7 @@ export class RegisterComponent implements AfterViewInit {
     // first, so this goes straight to the same signed-in destination
     // login() and loginWithGoogle() both use.
     this.auth.loginWithGoogle(idToken).subscribe({
-      next: () => this.router.navigateByUrl('/home'),
+      next: () => this.router.navigateByUrl('/dashboard'),
       error: (err) => {
         this.error = err.message || 'Google sign-in failed. Please try again.';
       },

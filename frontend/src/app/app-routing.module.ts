@@ -23,7 +23,8 @@ const routes: Routes = [
     path: '',
     canActivate: [AuthGuard],
     children: [
-      { path: 'home', loadChildren: () => import('./home/home.module').then((m) => m.HomeModule) },
+      { path: 'dashboard', loadChildren: () => import('./home/home.module').then((m) => m.HomeModule) },
+      { path: 'home', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'events', loadChildren: () => import('./events/events.module').then((m) => m.EventsModule) },
       {
         path: 'events/:eventId/seats',

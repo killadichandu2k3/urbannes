@@ -34,11 +34,11 @@
           Browse events
         </a>
         
-        <a *ngIf="auth.isLoggedIn" routerLink="/events" class="w-full sm:w-auto px-8 py-4 bg-accent hover:bg-accent-strong text-white font-semibold rounded-lg shadow-[0_0_24px_rgba(255,56,122,0.4)] transition-all transform hover:-translate-y-1 text-center">
-          Browse events
+        <a *ngIf="auth.isLoggedIn" routerLink="/dashboard" class="w-full sm:w-auto px-8 py-4 bg-accent hover:bg-accent-strong text-white font-semibold rounded-lg shadow-[0_0_24px_rgba(255,56,122,0.4)] transition-all transform hover:-translate-y-1 text-center">
+          Go to Dashboard
         </a>
-        <a *ngIf="auth.isLoggedIn" routerLink="/my-bookings" class="w-full sm:w-auto px-8 py-4 bg-surface hover:bg-surface-hover border border-border text-white font-semibold rounded-lg backdrop-blur-sm transition-all text-center">
-          View my bookings
+        <a *ngIf="auth.isLoggedIn" routerLink="/events" class="w-full sm:w-auto px-8 py-4 bg-surface hover:bg-surface-hover border border-border text-white font-semibold rounded-lg backdrop-blur-sm transition-all text-center">
+          Browse events
         </a>
       </div>
 
