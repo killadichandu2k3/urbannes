@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { GraphqlService } from '../core/services/graphql.service';
 import { EventItem, SearchResult, Venue } from '../core/models';
 
@@ -12,7 +13,7 @@ export interface EventWithVenue extends EventItem {
   selector: 'app-events',
   templateUrl: './events.component.html',
 })
-export class EventsComponent implements OnInit {
+export class EventsComponent implements OnInit, OnDestroy {
   movies: EventWithVenue[] = [];
   concerts: EventWithVenue[] = [];
   theatre: EventWithVenue[] = [];
@@ -20,36 +21,127 @@ export class EventsComponent implements OnInit {
   loading = true;
   error = '';
 
+  private readonly destroy$ = new Subject<void>();
+
   constructor(private readonly graphql: GraphqlService, private readonly router: Router) {}
 
   ngOnInit(): void {
-    forkJoin({
-      events: this.graphql.events(),
-      venues: this.graphql.venues(),
-    }).subscribe({
-      next: ({ events, venues }) => {
-        const venueMap = new Map(venues.map(v => [v.id, v]));
-        
-        const enrichedEvents = events
-          .map(e => ({ ...e, venue: venueMap.get(e.venueId)! }))
-          .filter(e => e.venue && new Date(e.startsAt).getTime() > Date.now()) // Show only future events
-          .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
+    try {
+      forkJoin({
+        events: this.graphql.events(),
+        venues: this.graphql.venues(),
+      })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: ({ events, venues }) => {
+            try {
+              // Defensive: build venue map
+              if (!venues || !Array.isArray(venues)) {
+                this.error = 'Invalid venues data from server';
+                this.loading = false;
+                return;
+              }
 
-        this.movies = enrichedEvents.filter(e => e.venue.venueType === 'CINEMA');
-        this.concerts = enrichedEvents.filter(e => e.venue.venueType === 'STADIUM');
-        this.theatre = enrichedEvents.filter(e => e.venue.venueType === 'THEATRE');
+              if (!events || !Array.isArray(events)) {
+                this.error = 'Invalid events data from server';
+                this.loading = false;
+                return;
+              }
 
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = err.message || 'Failed to load events';
-        this.loading = false;
-      },
-    });
+              const venueMap = new Map<string, Venue>();
+              for (const venue of venues) {
+                if (venue && venue.id) {
+                  venueMap.set(venue.id, venue);
+                }
+              }
+
+              // Enrich events with venues
+              const enrichedEvents: EventWithVenue[] = [];
+              const now = Date.now();
+
+              for (const event of events) {
+                // Skip events without venueId
+                if (!event || !event.venueId) {
+                  continue;
+                }
+
+                // Skip past events
+                try {
+                  const startTime = new Date(event.startsAt).getTime();
+                  if (startTime <= now) {
+                    continue;
+                  }
+                } catch {
+                  continue;
+                }
+
+                // Get venue
+                const venue = venueMap.get(event.venueId);
+                if (!venue) {
+                  continue; // Skip if venue not found
+                }
+
+                enrichedEvents.push({ ...event, venue });
+              }
+
+              // Sort by date
+              enrichedEvents.sort(
+                (a, b) =>
+                  new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
+              );
+
+              // Categorize
+              this.movies = enrichedEvents.filter(
+                (e) => e.venue.venueType === 'CINEMA'
+              );
+              this.concerts = enrichedEvents.filter(
+                (e) => e.venue.venueType === 'STADIUM'
+              );
+              this.theatre = enrichedEvents.filter(
+                (e) => e.venue.venueType === 'THEATRE'
+              );
+
+              this.loading = false;
+              this.error = '';
+            } catch (processErr) {
+              console.error('Error processing events:', processErr);
+              this.error = 'Error processing event data';
+              this.loading = false;
+            }
+          },
+          error: (err) => {
+            console.error('GraphQL error:', err);
+            this.error =
+              err?.message ||
+              err?.error?.message ||
+              'Failed to load events';
+            this.loading = false;
+          },
+        });
+    } catch (initErr) {
+      console.error('Error initializing events:', initErr);
+      this.error = 'Failed to initialize events';
+      this.loading = false;
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   formatDate(iso: string): string {
-    return new Date(iso).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    try {
+      return new Date(iso).toLocaleString(undefined, {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return iso;
+    }
   }
 
   getFillPercentage(event: EventWithVenue): number {
@@ -59,11 +151,17 @@ export class EventsComponent implements OnInit {
     return Math.round((event.stats.seatsSold / total) * 100);
   }
 
-  getTrendingStatus(event: EventWithVenue): { label: string, icon: string } | null {
+  getTrendingStatus(
+    event: EventWithVenue
+  ): { label: string; icon: string } | null {
     const fill = this.getFillPercentage(event);
     if (fill > 85) return { label: 'Fast Filling', icon: 'fire' };
     if (fill > 50) return { label: 'Trending', icon: 'trending' };
-    if (event.stats && event.stats.seatsSold > 100) return { label: `${event.stats.seatsSold}+ Booked`, icon: 'users' };
+    if (event.stats && event.stats.seatsSold > 100)
+      return {
+        label: `${event.stats.seatsSold}+ Booked`,
+        icon: 'users',
+      };
     return null;
   }
 
