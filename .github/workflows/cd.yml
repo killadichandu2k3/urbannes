@@ -65,7 +65,6 @@ jobs:
           kubectl rollout restart deployment/analytics-api -n urbannes
           kubectl rollout restart deployment/gateway-graphql -n urbannes
           kubectl rollout restart deployment/notification-service -n urbannes
-          kubectl rollout restart deployment/chat-service -n urbannes
           kubectl rollout restart deployment/gateway -n urbannes
 
       - name: Wait for rollout
@@ -76,7 +75,6 @@ jobs:
           kubectl rollout status deployment/analytics-api -n urbannes --timeout=180s
           kubectl rollout status deployment/gateway-graphql -n urbannes --timeout=180s
           kubectl rollout status deployment/notification-service -n urbannes --timeout=180s
-          kubectl rollout status deployment/chat-service -n urbannes --timeout=180s
           kubectl rollout status deployment/gateway -n urbannes --timeout=180s
 
       - name: Confirm pods are actually spread across nodes

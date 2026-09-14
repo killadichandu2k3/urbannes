@@ -72,7 +72,6 @@ kubectl rollout restart deployment/booking-worker -n urbannes
 kubectl rollout restart deployment/analytics-api -n urbannes
 kubectl rollout restart deployment/gateway-graphql -n urbannes
 kubectl rollout restart deployment/notification-service -n urbannes
-kubectl rollout restart deployment/chat-service -n urbannes
 kubectl rollout restart deployment/gateway -n urbannes
 
 echo "==> Waiting for application services to be ready"
@@ -81,7 +80,6 @@ kubectl wait --for=condition=available deployment/booking-api -n urbannes --time
 kubectl wait --for=condition=available deployment/analytics-api -n urbannes --timeout=180s
 kubectl wait --for=condition=available deployment/gateway-graphql -n urbannes --timeout=180s
 kubectl wait --for=condition=available deployment/notification-service -n urbannes --timeout=180s
-kubectl wait --for=condition=available deployment/chat-service -n urbannes --timeout=180s
 kubectl wait --for=condition=available deployment/gateway -n urbannes --timeout=180s
 
 echo ""

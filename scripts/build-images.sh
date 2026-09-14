@@ -29,7 +29,6 @@ build_and_load booking-worker services/booking-worker/Dockerfile
 build_and_load analytics-api services/analytics-api/Dockerfile
 build_and_load gateway-graphql services/gateway-graphql/Dockerfile
 build_and_load notification-service services/notification-service/Dockerfile
-build_and_load chat-service services/chat-service/Dockerfile
 
 echo "==> Building gateway (includes frontend build)"
 docker build -f gateway/Dockerfile -t urbannes/gateway:latest .

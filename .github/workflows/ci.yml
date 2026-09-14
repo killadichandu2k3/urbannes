@@ -24,7 +24,6 @@ jobs:
           - analytics-api
           - gateway-graphql
           - notification-service
-          - chat-service
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -91,8 +90,6 @@ jobs:
             dockerfile: services/gateway-graphql/Dockerfile
           - service: notification-service
             dockerfile: services/notification-service/Dockerfile
-          - service: chat-service
-            dockerfile: services/chat-service/Dockerfile
           - service: gateway
             dockerfile: gateway/Dockerfile
     steps:
