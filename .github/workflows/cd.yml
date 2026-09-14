@@ -44,6 +44,12 @@ jobs:
               -p '{"operation":{"sync":{"revision":"HEAD"}}}' >/dev/null 2>&1 || true
           fi
 
+      - name: Wait for backing services (Postgres, Redis, Kafka)
+        run: |
+          kubectl wait --for=condition=ready pod -l app=postgres -n urbannes --timeout=180s
+          kubectl wait --for=condition=ready pod -l app=redis-cache -n urbannes --timeout=180s
+          kubectl wait --for=condition=available deployment/kafka -n urbannes --timeout=180s
+
       - name: Force rollout of updated images
         run: |
           # WHY THIS STEP EXISTS: every Deployment here uses `image:
