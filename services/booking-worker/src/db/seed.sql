@@ -11,7 +11,7 @@ INSERT INTO events (id, venue_id, title, starts_at, ends_at, base_price, booking
 VALUES
 
     ('5308c601-6eed-4cd9-bf1b-d321534817e2', '839fd577-38e3-4644-835b-7a9449b00874',
-     'Oppenheimer (IMAX 70mm Experience)', now() - interval '4 months', now() - interval '4 months' + interval '3 hours', 850, false, now() - interval '4 months 5 days'),
+     'Oppenheimer (IMAX 70mm Experience)', now() + interval '3 days', now() + interval '3 days' + interval '3 hours', 850, true, now() - interval '5 days'),
     ('52ac91e1-24f9-4c5c-b7fa-47d4d034bfa9', '7ecbf5b2-e949-46ef-abe9-73dcd51a5fa4',
      'Ed Sheeran: Mathematics Tour', now() - interval '3 months', now() - interval '3 months' + interval '4 hours', 4500, false, now() - interval '3 months 10 days'),
     ('63805fdc-cc0b-474a-bc4e-a2af79e7bd28', '7afe7855-f5f0-4e15-b2dd-e94c822b83a3',

@@ -53,8 +53,8 @@
         <div>
           <div class="flex items-start justify-between mb-3">
             <span class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border"
-                  [ngClass]="isBookingOpen(event) ? 'bg-app-ok/10 text-app-ok border-app-ok/20' : 'bg-app-danger/10 text-app-danger border-app-danger/20'">
-              {{ isBookingOpen(event) ? 'Booking Open' : 'Sold Out' }}
+                  [ngClass]="getEventStatus(event).badgeClass">
+              {{ getEventStatus(event).badge }}
             </span>
             <span *ngIf="getTrendingStatus(event) as status" class="px-2.5 py-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider rounded-full border"
                   [ngClass]="{
@@ -102,10 +102,10 @@
               <p class="text-xs text-app-faint m-0 mb-0.5">Starting from</p>
               <p class="text-lg font-bold text-app-ok m-0">₹{{ event.basePrice }}</p>
             </div>
-            <a [routerLink]="isBookingOpen(event) ? ['/events', event.id, 'seats'] : []"
+            <a [routerLink]="getEventStatus(event).isOpen ? ['/events', event.id, 'seats'] : []"
                class="px-4 py-2 text-sm font-semibold rounded-lg transition-all"
-               [ngClass]="isBookingOpen(event) ? 'bg-app-accent text-white hover:bg-white hover:text-black hover:shadow-[0_0_8px_rgba(255,255,255,0.25)]' : 'bg-app-bg-elevated text-app-muted cursor-not-allowed pointer-events-none'">
-              {{ isBookingOpen(event) ? 'Select Seats' : 'Sold Out' }}
+               [ngClass]="getEventStatus(event).isOpen ? 'bg-app-accent text-white hover:bg-white hover:text-black hover:shadow-[0_0_8px_rgba(255,255,255,0.25)]' : 'bg-app-bg-elevated text-app-muted cursor-not-allowed pointer-events-none'">
+              {{ getEventStatus(event).buttonText }}
             </a>
           </div>
         </div>

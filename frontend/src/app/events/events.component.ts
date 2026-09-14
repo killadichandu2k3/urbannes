@@ -124,8 +124,53 @@ export class EventsComponent implements OnInit, OnDestroy {
 
   isBookingOpen(event: EventWithVenue): boolean {
     if (!event.bookingOpen) return false;
+    if (new Date(event.startsAt).getTime() < Date.now()) return false;
     if (event.stats && event.stats.seatsRemaining <= 0) return false;
     return true;
+  }
+
+  getEventStatus(event: EventWithVenue): {
+    isOpen: boolean;
+    badge: string;
+    badgeClass: string;
+    buttonText: string;
+  } {
+    const isPast = new Date(event.startsAt).getTime() < Date.now();
+    const isSoldOut = event.stats !== undefined && event.stats.seatsRemaining <= 0;
+
+    if (isSoldOut) {
+      return {
+        isOpen: false,
+        badge: 'Sold Out',
+        badgeClass: 'bg-app-danger/10 text-app-danger border-app-danger/20',
+        buttonText: 'Sold Out',
+      };
+    }
+
+    if (isPast) {
+      return {
+        isOpen: false,
+        badge: 'Event Ended',
+        badgeClass: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30',
+        buttonText: 'Event Ended',
+      };
+    }
+
+    if (!event.bookingOpen) {
+      return {
+        isOpen: false,
+        badge: 'Booking Closed',
+        badgeClass: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+        buttonText: 'Booking Closed',
+      };
+    }
+
+    return {
+      isOpen: true,
+      badge: 'Booking Open',
+      badgeClass: 'bg-app-ok/10 text-app-ok border-app-ok/20',
+      buttonText: 'Select Seats',
+    };
   }
 
   getEventRank(event: EventWithVenue): number {
