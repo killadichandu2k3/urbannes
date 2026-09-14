@@ -4,8 +4,8 @@
   <section class="relative isolate overflow-hidden min-h-[85vh] flex items-center justify-center -mx-5 -mt-8 pt-8 pb-16 rounded-b-[24px] bg-transparent">
     <!-- Background glow effects -->
     <div class="absolute inset-0 z-0 pointer-events-none">
-      <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-accent/20 rounded-full blur-[120px] opacity-70"></div>
-      <div class="absolute bottom-0 right-0 w-[500px] h-[400px] bg-accent/10 rounded-full blur-[100px] opacity-50"></div>
+      <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-accent/20 rounded-full blur-[120px] opacity-30"></div>
+      <div class="absolute bottom-0 right-0 w-[500px] h-[400px] bg-accent/10 rounded-full blur-[100px] opacity-40"></div>
       <div class="absolute inset-0 bg-gradient-to-t from-[#0b0b0f] via-[#0b0b0f]/40 to-transparent"></div>
     </div>
 
@@ -27,14 +27,14 @@
       </p>
 
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto fade-in stagger-3">
-        <a *ngIf="!auth.isLoggedIn" routerLink="/auth/register" class="w-full sm:w-auto px-8 py-4 bg-accent hover:bg-accent-strong text-white font-semibold rounded-lg shadow-[0_0_24px_rgba(255,56,122,0.4)] transition-all transform hover:-translate-y-1 text-center">
+        <a *ngIf="!auth.isLoggedIn" routerLink="/auth/register" class="w-full sm:w-auto px-8 py-4 bg-accent hover:bg-accent-strong text-white font-semibold rounded-lg shadow-[0_0_12px_rgba(231,63,30,0.22)] hover:shadow-[0_0_16px_rgba(231,63,30,0.32)] transition-all transform hover:-translate-y-1 text-center">
           Create your account
         </a>
         <a *ngIf="!auth.isLoggedIn" routerLink="/events" class="w-full sm:w-auto px-8 py-4 bg-surface hover:bg-surface-hover border border-border text-white font-semibold rounded-lg backdrop-blur-sm transition-all text-center">
           Browse events
         </a>
         
-        <a *ngIf="auth.isLoggedIn" routerLink="/dashboard" class="w-full sm:w-auto px-8 py-4 bg-accent hover:bg-accent-strong text-white font-semibold rounded-lg shadow-[0_0_24px_rgba(255,56,122,0.4)] transition-all transform hover:-translate-y-1 text-center">
+        <a *ngIf="auth.isLoggedIn" routerLink="/dashboard" class="w-full sm:w-auto px-8 py-4 bg-accent hover:bg-accent-strong text-white font-semibold rounded-lg shadow-[0_0_12px_rgba(231,63,30,0.22)] hover:shadow-[0_0_16px_rgba(231,63,30,0.32)] transition-all transform hover:-translate-y-1 text-center">
           Go to Dashboard
         </a>
         <a *ngIf="auth.isLoggedIn" routerLink="/events" class="w-full sm:w-auto px-8 py-4 bg-surface hover:bg-surface-hover border border-border text-white font-semibold rounded-lg backdrop-blur-sm transition-all text-center">
