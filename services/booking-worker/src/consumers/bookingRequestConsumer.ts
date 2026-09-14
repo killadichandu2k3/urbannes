@@ -52,7 +52,14 @@ interface RequestMessage<T = any> {
 
 async function handleListVenues() {
   const { rows } = await pool.query('SELECT * FROM venues');
-  return { data: rows };
+  const data = rows.map((v: any) => ({
+    id: v.id,
+    name: v.name,
+    venueType: v.venue_type,
+    totalSeats: v.total_seats,
+    city: v.city,
+  }));
+  return { data };
 }
 
 async function handleListEvents() {

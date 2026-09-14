@@ -34,10 +34,13 @@
   --text-muted: rgba(248, 248, 252, 0.65);
   --text-faint: rgba(248, 248, 252, 0.4);
 
-  /* ---- Accents & Status (Sunset Sky Theme) ---- */
-  --accent: #FF387A;
-  --accent-strong: #FF5A92;
+  /* ---- Accents & Status (Custom Palette) ---- */
+  --accent: #E73F1E;
+  --accent-strong: #FB6C00;
+  --accent-light: #F9B637;
+  --accent-pale: #FFDD9C;
   --on-accent: #ffffff;
+  --on-accent-hover: #0b0b0f;
 
   --ok: #10b981;
   --ok-container: rgba(16, 185, 129, 0.14);
@@ -139,6 +142,16 @@ a:hover { color: var(--accent); border-color: var(--accent); }
 .faint { color: var(--text-faint); font-size: var(--fs-xs); }
 .price { font-size: var(--fs-lg); font-weight: 700; color: var(--accent); }
 
+/* Global default for icons to use the accent color unless overridden */
+svg.lucide, svg[fill="none"] {
+  color: var(--accent);
+  transition: color 0.2s var(--ease);
+}
+/* Ensure icons inside buttons always inherit the button's text color */
+button svg, .btn svg {
+  color: inherit !important;
+}
+
 /* ============================================================================
    Buttons
    ============================================================================ */
@@ -160,12 +173,13 @@ button, .btn {
   transition: all 0.2s var(--ease);
   text-decoration: none;
   user-select: none;
-  box-shadow: 0 4px 12px rgba(255, 107, 74, 0.2);
+  box-shadow: 0 4px 12px rgba(231, 63, 30, 0.25);
 }
 button:hover:not(:disabled), .btn:hover:not(:disabled) {
-  background: var(--accent-strong);
-  border-color: var(--accent-strong);
-  box-shadow: 0 6px 16px rgba(255, 107, 74, 0.4);
+  background: var(--accent-light);
+  color: var(--on-accent-hover);
+  border-color: var(--accent-light);
+  box-shadow: 0 6px 16px rgba(249, 182, 55, 0.4);
   transform: translateY(-1px);
 }
 
@@ -181,7 +195,8 @@ button.secondary, .btn-secondary {
   border: 1px solid var(--border-strong);
 }
 button.secondary:hover:not(:disabled), .btn-secondary:hover:not(:disabled) {
-  border-color: var(--text-muted);
+  border-color: var(--accent-strong);
+  color: var(--accent-strong);
   background: var(--bg-elevated);
 }
 
