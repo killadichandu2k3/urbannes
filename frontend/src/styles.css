@@ -787,8 +787,6 @@ label { color: var(--text-muted); }
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: var(--sp-6);
   padding: var(--sp-6) 0;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
 }
 .landing-stat { display: flex; flex-direction: column; gap: var(--sp-1); }
 .landing-stat-value { font-size: var(--fs-lg); font-weight: 700; color: var(--text); }
