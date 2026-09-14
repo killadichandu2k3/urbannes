@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { combineLatest, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { combineLatest, Subject, timer } from 'rxjs';
+import { takeUntil, retry } from 'rxjs/operators';
 import { GraphqlService } from '../core/services/graphql.service';
 import { Booking, EventItem } from '../core/models';
 
@@ -37,7 +37,7 @@ export class MyBookingsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private loadBookings(): void {
+  loadBookings(): void {
     this.loading = true;
     this.error = '';
 
@@ -45,7 +45,14 @@ export class MyBookingsComponent implements OnInit, OnDestroy {
       bookings: this.graphql.myBookings(),
       events: this.graphql.events(),
     })
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        retry({
+          count: 2,
+          delay: (_, retryCount) => timer(retryCount * 1200),
+          resetOnSuccess: true,
+        }),
+        takeUntil(this.destroy$)
+      )
       .subscribe({
         next: ({ bookings, events }) => {
           this.eventsById = new Map(events.map((e) => [e.id, e]));
@@ -55,10 +62,40 @@ export class MyBookingsComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('Failed to load bookings:', err);
-          this.error = err?.message || 'Failed to load bookings';
+          this.error = this.formatUserFriendlyError(err);
           this.loading = false;
         },
       });
+  }
+
+  formatUserFriendlyError(err: any): string {
+    let raw = '';
+    if (err?.message) {
+      raw = err.message;
+    } else if (err?.error?.message) {
+      raw = err.error.message;
+    } else if (err?.error?.errors && Array.isArray(err.error.errors) && err.error.errors.length > 0) {
+      raw = err.error.errors[0].message || '';
+    } else if (err?.graphQLErrors && Array.isArray(err.graphQLErrors) && err.graphQLErrors.length > 0) {
+      raw = err.graphQLErrors[0].message || '';
+    } else if (typeof err === 'string') {
+      raw = err;
+    }
+
+    const isTimeout = /timed out|timeout|5000ms|8000ms|10000ms/i.test(raw);
+    const isNetwork = /network|failed to fetch|connection/i.test(raw);
+    const isInternal = /requestid|kafka|reply|nats|graphql|internal|list_my_bookings/i.test(raw);
+
+    if (isTimeout) {
+      return 'The reservation service is taking a moment to respond. Please try again.';
+    }
+    if (isNetwork) {
+      return 'Unable to connect to the reservation service. Please check your network connection and try again.';
+    }
+    if (isInternal) {
+      return 'We had trouble retrieving your bookings right now. Please try again in a few moments.';
+    }
+    return raw || 'Unable to load bookings at this time. Please try again.';
   }
 
   /**
@@ -208,19 +245,7 @@ export class MyBookingsComponent implements OnInit, OnDestroy {
           console.error('Cancel booking error:', err);
           this.cancellingId = null;
           
-          let errorMessage = 'Failed to cancel booking';
-          if (err?.message) {
-            errorMessage = err.message;
-          } else if (err?.error?.message) {
-            errorMessage = err.error.message;
-          } else if (err?.error?.errors && Array.isArray(err.error.errors) && err.error.errors.length > 0) {
-            errorMessage = err.error.errors[0].message || errorMessage;
-          } else if (err?.graphQLErrors && Array.isArray(err.graphQLErrors) && err.graphQLErrors.length > 0) {
-            errorMessage = err.graphQLErrors[0].message || errorMessage;
-          } else if (typeof err === 'string') {
-            errorMessage = err;
-          }
-
+          const errorMessage = this.formatUserFriendlyError(err) || 'Failed to cancel booking. Please try again.';
           this.showNotification('error', errorMessage);
         },
       });

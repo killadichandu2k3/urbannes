@@ -34,7 +34,7 @@ import { createLogger } from '@urbannes/shared';
 
 const logger = createLogger('booking-api:request-reply');
 
-const REPLY_TIMEOUT_MS = Number(process.env.REPLY_TIMEOUT_MS || 5000);
+const REPLY_TIMEOUT_MS = Number(process.env.REPLY_TIMEOUT_MS || 10000);
 const REQUEST_TOPIC = 'booking.requests';
 
 export interface RequestMessage<TPayload = unknown> {

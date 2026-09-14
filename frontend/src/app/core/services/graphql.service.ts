@@ -9,7 +9,8 @@
 
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { Observable, map } from 'rxjs';
+import { Observable, timer } from 'rxjs';
+import { map, retry } from 'rxjs/operators';
 import { Booking, BookingAccepted, AppNotification, EventItem, PaymentOrder, SearchResult, SeatMap, Venue } from '../models';
 
 const SEARCH_QUERY = gql`
@@ -139,7 +140,14 @@ export class GraphqlService {
   events(): Observable<EventItem[]> {
     return this.apollo
       .watchQuery<{ events: EventItem[] }>({ query: EVENTS_QUERY, fetchPolicy: 'network-only' })
-      .valueChanges.pipe(map((result) => result.data.events));
+      .valueChanges.pipe(
+        map((result) => result.data.events),
+        retry({
+          count: 2,
+          delay: (_, retryCount) => timer(retryCount * 800),
+          resetOnSuccess: true,
+        })
+      );
   }
 
   seatMap(eventId: string): Observable<SeatMap> {
@@ -155,7 +163,14 @@ export class GraphqlService {
   myBookings(): Observable<Booking[]> {
     return this.apollo
       .watchQuery<{ myBookings: Booking[] }>({ query: MY_BOOKINGS_QUERY, fetchPolicy: 'network-only' })
-      .valueChanges.pipe(map((result) => result.data.myBookings));
+      .valueChanges.pipe(
+        map((result) => result.data.myBookings),
+        retry({
+          count: 2,
+          delay: (_, retryCount) => timer(retryCount * 800),
+          resetOnSuccess: true,
+        })
+      );
   }
 
   createBooking(input: { eventId: string; seatIds: string[] }): Observable<BookingAccepted> {
