@@ -28,7 +28,7 @@ spec:
       containers:
       - name: gateway
         image: urbannes/gateway:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         volumeMounts:
